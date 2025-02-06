@@ -9,33 +9,32 @@ The app focuses on authentic, real-world interactions, making networking and soc
 
 ## 💡 Tech Stack:
 
-📱 Mobile App (Main Platform)
-
+### 📱 Mobile App (Main Platform)
 ✅ React Native (Expo for ease, or bare React Native if needed)
 ✅ React Native NFC Manager (Handles NFC interactions)
 ✅ React Native Camera (For capturing selfies)
 ✅ React Context (For state management)
-💻 Web App (Admin & Viewing Platform)
 
+### 💻 Web App (Admin & Viewing Platform)
 ✅ Vite + React (Frontend for web dashboard)
 ✅ React Router (For navigation)
 ✅ Tailwind CSS (For styling)
 ✅ Supabase SDK (For database, auth, and storage integration)
-🛠 Backend & Database
 
+### 🛠 Backend & Database
 ✅ Supabase (PostgreSQL) (Database, Auth, Real-time Sync)
 ✅ Supabase Auth (Handles user authentication)
 ✅ Supabase Storage (For images and media)
 ✅ Supabase Realtime (For live updates in the feed)
 ✅ Node.js (For potential future backend logic)
-📡 Deployment & DevOps
 
+### 📡 Deployment & DevOps
 ✅ GitHub Projects (For sprint tracking & issues)
 ✅ Vercel (For web app deployment)
 ✅ Expo EAS (For mobile builds)
 ✅ Supabase Hosted Backend (No need to manage servers)
-🔗 Collaboration & Task Management
 
+### 🔗 Collaboration & Task Management
 ✅ GitHub (Version control & CI/CD)
 ✅ GitHub Projects (Kanban board for tasks)
 ✅ Discord (For team communication & async updates)
