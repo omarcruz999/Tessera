@@ -1,13 +1,20 @@
-import { useState } from 'react';
+// filepath: /Users/alexmatei/git/tessera/src/App.tsx
+import { useState, useContext } from 'react';
 import { BrowserRouter as Router, Route, Routes, Link } from 'react-router-dom';
 import reactLogo from './assets/react.svg';
 import viteLogo from '/vite.svg';
 import './App.css';
 import Home from './pages/Home';
 import About from './pages/About';
+import { UserContext } from './UserContext';
 
 function App() {
   const [count, setCount] = useState(0);
+  const userContext = useContext(UserContext);
+  if (!userContext) {
+    return <div>Error: UserContext is not provided</div>;
+  }
+  const { user, login, logout } = userContext;
 
   return (
     <Router>
@@ -48,6 +55,18 @@ function App() {
       <p className="read-the-docs">
         Click on the Vite and React logos to learn more
       </p>
+      <div>
+        {user ? (
+          <div>
+            <p>Welcome, {user.name}</p>
+            <button onClick={logout}>Logout</button>
+          </div>
+        ) : (
+          <button onClick={() => login({ id: '1', name: 'John Doe', email: 'john@example.com' })}>
+            Login
+          </button>
+        )}
+      </div>
     </Router>
   );
 }
