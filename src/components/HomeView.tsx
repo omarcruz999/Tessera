@@ -6,6 +6,7 @@ function HomeView() {
     return (
 
         <div
+            id="HomeViewGrid"
             style={{
                 display: "grid",
                 gridTemplateColumns: "repeat(4, 1fr)", // Four equal columns

@@ -47,7 +47,7 @@ function PeerCard() {
                         fontFamily: 'Arial',
                         fontWeight: 'bold',
                         fontSize: '24px',
-                        marginTop: '8px'
+                        marginTop: '8px',
                     }}
                 >
                     Joseph Schmo
