@@ -1,4 +1,3 @@
-// filepath: /Users/alexmatei/git/tessera/src/App.tsx
 import { useState, useContext } from 'react';
 import { BrowserRouter as Router, Route, Routes, Link } from 'react-router-dom';
 import reactLogo from './assets/react.svg';
@@ -62,8 +61,8 @@ function App() {
             <button onClick={logout}>Logout</button>
           </div>
         ) : (
-          <button onClick={() => login({ id: '1', name: 'John Doe', email: 'john@example.com' })}>
-            Login
+          <button onClick={login}>
+            Login with Google
           </button>
         )}
       </div>
