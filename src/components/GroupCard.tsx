@@ -56,10 +56,6 @@ function GroupCard() {
                             fontFamily: 'Arial',
                             fontWeight: 'bold',
                             fontSize: '24px',
-                            /* Overflow Handling
-                            overflowWrap: "break-word",
-                            maxHeight: "30px",
-                            overflow: "hidden" */
                         }}
                     >
                         Group Name
@@ -72,10 +68,6 @@ function GroupCard() {
                             color: '#424242',
                             fontFamily: 'Arial',
                             fontSize: '18px',
-                            /* Overflow Handling
-                            overflowWrap: "break-word",
-                            maxHeight: "110px",
-                            overflow: "hidden" */
                         }}
                     >
                         This tells the user what is going on. What should the character limit be?
