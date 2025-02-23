@@ -1,5 +1,3 @@
-import React from "react"
-
 function GroupCard() {
     return (
         <div // Group Card Div
@@ -9,10 +7,10 @@ function GroupCard() {
                 height: "250px",
                 width: "420px",
                 display: "flex",
-                alignItems: "center",      // centers vertically
+                alignItems: "center",      
                 justifyContent: "space-evenly",   
-                borderRadius: "12px",      // rounds the corners
-                boxShadow: "0 4px 8px rgba(0, 0, 0, 0.3)"  // adds a gray shadow
+                borderRadius: "12px",      
+                boxShadow: "0 4px 8px rgba(0, 0, 0, 0.3)"  
             }}
         >
 
@@ -56,9 +54,13 @@ function GroupCard() {
                             fontFamily: 'Arial',
                             fontWeight: 'bold',
                             fontSize: '24px',
+                            display: "-webkit-box",          
+                            WebkitBoxOrient: "vertical",      
+                            WebkitLineClamp: 1,               
+                            overflow: "hidden"   
                         }}
                     >
-                        Group Name
+                        Group name This is to test the overflow
                     </p>
                     
                     {/* Group Card Text */}
@@ -68,9 +70,13 @@ function GroupCard() {
                             color: '#424242',
                             fontFamily: 'Arial',
                             fontSize: '18px',
+                            display: "-webkit-box",          
+                            WebkitBoxOrient: "vertical",      
+                            WebkitLineClamp: 4,               // Limit of allowed lines
+                            overflow: "hidden"                
                         }}
                     >
-                        This tells the user what is going on. What should the character limit be?
+                        This tells the user what is going on. What should the character limit be? This is to test the overflow
                     </p>
 
                 </div>

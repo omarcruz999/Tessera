@@ -1,5 +1,3 @@
-import React from "react";
-
 function PeerCard() {
     return (
 
@@ -48,9 +46,13 @@ function PeerCard() {
                         fontWeight: 'bold',
                         fontSize: '24px',
                         marginTop: '8px',
+                        display: "-webkit-box",          
+                        WebkitBoxOrient: "vertical",      
+                        WebkitLineClamp: 2,               
+                        overflow: "hidden" 
                     }}
                 >
-                    Joseph Schmo
+                    Joseph Schmo this is to test the overflow
                 </p>
             </div>
             {/* End Image Div */}
