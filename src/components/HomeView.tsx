@@ -1,4 +1,3 @@
-import React from "react";
 import PeerCard from '../components/PeerCard.tsx'
 import GroupCard from "./GroupCard.tsx";
 
