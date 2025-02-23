@@ -52,7 +52,7 @@ function PeerCard() {
                         overflow: "hidden" 
                     }}
                 >
-                    Joseph Schmo this is to test the overflow
+                    Joseph Schmo 
                 </p>
             </div>
             {/* End Image Div */}
