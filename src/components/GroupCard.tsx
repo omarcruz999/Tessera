@@ -60,7 +60,7 @@ function GroupCard() {
                             overflow: "hidden"   
                         }}
                     >
-                        Group name This is to test the overflow
+                        Group name 
                     </p>
                     
                     {/* Group Card Text */}
@@ -76,7 +76,7 @@ function GroupCard() {
                             overflow: "hidden"                
                         }}
                     >
-                        This tells the user what is going on. What should the character limit be? This is to test the overflow
+                        This tells the user what is going on. What should the character limit be?
                     </p>
 
                 </div>
