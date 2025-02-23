@@ -1,4 +1,4 @@
-// filepath: /Users/alexmatei/git/tessera/src/App.tsx
+import { useContext } from 'react';
 import { BrowserRouter as Router, Route, Routes, Link } from 'react-router-dom';
 import './App.css';
 import Home from './pages/Home';
@@ -7,11 +7,6 @@ import About from './pages/About';
 //import { useState, useContext } from 'react';
 
 function App() {
-
-
-  {/* 
-  
-  // Get the user information and functions from userContext
   const userContext = useContext(UserContext);
   
   // If there is no userContext show an error
@@ -48,11 +43,7 @@ function App() {
           <Route path="/" element={<Home />} />
           <Route path="/about" element={<About />} />
         </Routes>
-      </div> 
-    
-
-      {/*
-      // Section for User Login and Logout
+      </div>
       <div>
         {user ? (
           <div>
@@ -60,8 +51,8 @@ function App() {
             <button onClick={logout}>Logout</button>
           </div>
         ) : (
-          <button onClick={() => login({ id: '1', name: 'John Doe', email: 'john@example.com' })}>
-            Login
+          <button onClick={login}>
+            Login with Google
           </button>
         )}
       </div>
