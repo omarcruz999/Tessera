@@ -13,7 +13,7 @@ function ProfileView() {
   }
 
   return (
-    <div style={{ display: 'flex', gap: '16px', padding: '16px', width: '100vw', height: '100vh', boxSizing: 'border-box', overflow: 'hidden' }}>
+    <div style={{ display: 'flex', gap: '16px', padding: '16px', width: '100vw', height: '100vh', boxSizing: 'border-box', overflow: 'hidden', maxWidth: "100%"}}>
     {/* Profile Section (1/3) */}
     <div style={{ flex: '1', border: '1px solid #ccc', padding: '16px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', boxSizing: 'border-box' }}>
         <img src="/defaultProfilePicture.png" alt="Profile" style={{ width: '100%', maxWidth: '150px', marginBottom: '16px' }} />
