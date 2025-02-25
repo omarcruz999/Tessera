@@ -4,6 +4,7 @@ import './App.css';
 import Home from './pages/Home';
 import About from './pages/About';
 import { UserContext } from './UserContext';
+import Profile from './pages/Profile';
 
 function App() {
   const userContext = useContext(UserContext);
@@ -29,12 +30,15 @@ function App() {
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/about" element={<About />} />
+          <Route path="/profile" element={<Profile />} />
         </Routes>
       </div>
       <div>
         {user ? (
           <div>
-            <p>Welcome, {user.name}</p>
+            <p>
+              Welcome, <Link to="/profile">{user.name}</Link>
+            </p>
             <button onClick={logout}>Logout</button>
           </div>
         ) : (
