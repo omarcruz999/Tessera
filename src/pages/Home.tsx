@@ -1,5 +1,11 @@
+import HomeView from '../components/HomeView.tsx'
+
 function Home() {
-    return <h2>Home</h2>;
+    return (
+      <div>
+        <HomeView />
+      </div>
+    );
   }
   
   export default Home;
