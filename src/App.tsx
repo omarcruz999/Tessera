@@ -1,9 +1,9 @@
-import { useContext } from 'react';
-import { BrowserRouter as Router, Route, Routes, Link } from 'react-router-dom';
-import './App.css';
-import Home from './pages/Home';
-import About from './pages/About';
-import { UserContext } from './UserContext';
+import { useContext } from "react";
+import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
+import NavBar from "./components/NavBar";
+import Home from "./pages/Home";
+import About from "./pages/About";
+import { UserContext } from "./UserContext";
 
 function App() {
   const userContext = useContext(UserContext);
@@ -15,33 +15,23 @@ function App() {
   return (
     <Router>
       <div>
-        <nav>
-          <ul>
-            <li>
-              <Link to="/">Home</Link>
-            </li>
-            <li>
-              <Link to="/about">About</Link>
-            </li>
-          </ul>
-        </nav>
-
-        <Routes>
-          <Route path="/" element={<Home />} />
-          <Route path="/about" element={<About />} />
-        </Routes>
-      </div>
-      <div>
-        {user ? (
+        <NavBar />
+        <div className="pt-20"> {/* Add padding to account for the fixed NavBar height */}
+          <Routes>
+            <Route path="/" element={<Home />} />
+            <Route path="/about" element={<About />} />
+          </Routes>
           <div>
-            <p>Welcome, {user.name}</p>
-            <button onClick={logout}>Logout</button>
+            {user ? (
+              <div>
+                <p>Welcome, {user.name}</p>
+                <button onClick={logout}>Logout</button>
+              </div>
+            ) : (
+              <button onClick={login}>Login with Google</button>
+            )}
           </div>
-        ) : (
-          <button onClick={login}>
-            Login with Google
-          </button>
-        )}
+        </div>
       </div>
     </Router>
   );
