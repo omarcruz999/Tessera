@@ -1,23 +1,33 @@
-import express, { Request, Response } from "express";
-import cors from "cors";
-import dotenv from "dotenv";
+/*
+    Thisis the main entry point of the Express server.
+    It configures middleware, routses, and starts the server.
+*/
 
-dotenv.config();
+import express, { Application } from 'express';
+import cors from 'cors';
 
-const app = express();
-const PORT = process.env.PORT || 5001;
+// Import route groups
+import { authRoutes } from './routes/authRoutes';
+import { userRoutes } from './routes/userRoutes';
+import { connectionRoutes } from './routes/connectionRoutes';
+import { postRoutes } from './routes/postsRoutes';
+import { postMediaRoutes } from './routes/postMediaRoutes';
 
-app.use(cors());
-app.use(express.json());
+const app: Application = express();
+const PORT = process.env.PORT || 4000;
 
-app.get("/api/hello", (req: Request, res: Response) => {
-    res.json({ message: "Hello, world! This is a new API endpoint." });
-});
+// Middleware Setup
+app.use(cors());            // Allow Cross-Origin requests (if needed)
+app.use(express.json());    // Parse incoming JSON data
 
-app.get("/api/jonathan", (req: Request, res: Response) => {
-    res.json({ message: "Hi, my name is Jonathan and I am a contributor to this project." });
-});
+// Routes Setup
+app.use('/api/auth', authRoutes);
+app.use('/api/users', userRoutes);
+app.use('/api/connections', connectionRoutes);
+app.use('/api/posts', postRoutes);
+app.use('/api/post-media', postMediaRoutes);
 
+// Start the server
 app.listen(PORT, () => {
-    console.log(`Server running on http://localhost:${PORT}`);
+    console.log(`Tessera server is running on http://localhost:${PORT}`);
 });
