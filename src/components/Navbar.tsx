@@ -1,12 +1,26 @@
+import { useContext, useState } from "react";
+import { Link } from "react-router-dom";
 import logo from "../assets/Tessera.svg";
 import logoimage from "../assets/tesseraLogo.svg";
 import profile from "../assets/Avatar.svg";
 import acc from "../assets/Profile.svg";
 import home from "../assets/Home Button.svg";
 import dm from "../assets/Direct Messages Button.svg";
-import { Link } from "react-router-dom";
+import { UserContext } from "../UserContext";
 
 const NavBar = () => {
+  const userContext = useContext(UserContext);
+  const { user, login, logout } = userContext || {};
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+
+  const handleMouseEnter = () => {
+    setIsDropdownOpen(true);
+  };
+
+  const handleMouseLeave = () => {
+    setIsDropdownOpen(false);
+  };
+
   return (
     <div className="fixed top-0 left-0 w-full bg-[#3e2723] z-50">
       <nav className="flex w-full justify-between px-4 py-2">
@@ -36,10 +50,63 @@ const NavBar = () => {
             </Link>
           </li>
         </ul>
-        <div className="flex items-center">
-          <Link to="/about">
-            <img src={profile} alt="Avatar" className="h-15" />
-          </Link>
+        <div
+          className="relative flex items-center"
+          onMouseEnter={handleMouseEnter}
+          onMouseLeave={handleMouseLeave}
+        >
+          <img src={profile} alt="Avatar" className="h-15 cursor-pointer" />
+          {isDropdownOpen && (
+            <div className="absolute right-0 top-full w-48 bg-white border rounded shadow-lg">
+              <ul className="py-1">
+                {user ? (
+                  <>
+                    <li>
+                      <Link
+                        to="/profile"
+                        className="block px-4 py-2 text-black hover:bg-gray-200"
+                      >
+                        Profile
+                      </Link>
+                    </li>
+                    <li>
+                      <hr className="my-1 border-gray-300" />
+                    </li>
+                    <li>
+                      <span
+                        onClick={logout}
+                        className="block px-4 py-2 text-black hover:bg-gray-200 cursor-pointer"
+                      >
+                        Logout
+                      </span>
+                    </li>
+                  </>
+                ) : (
+                  <>
+                    <li>
+                      <Link
+                        to="/profile"
+                        className="block px-4 py-2 text-black hover:bg-gray-200"
+                      >
+                        Profile
+                      </Link>
+                    </li>
+                    <li>
+                      <hr className="my-1 border-gray-300" />
+                    </li>
+                    <li>
+                      <span
+                        onClick={login}
+                        className="block px-4 py-2 text-black hover:bg-gray-200 cursor-pointer"
+                      >
+                        Login
+                      </span>
+                    </li>
+                  </>
+                )}
+              </ul>
+            </div>
+          )}
         </div>
       </nav>
     </div>
