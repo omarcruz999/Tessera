@@ -1,10 +1,9 @@
-import { useContext } from 'react';
-import { BrowserRouter as Router, Route, Routes, Link } from 'react-router-dom';
-import './App.css';
-import Home from './pages/Home';
-import About from './pages/About';
-import { UserContext } from './UserContext';
-import Profile from './pages/Profile';
+import { useContext } from "react";
+import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
+import NavBar from "./components/NavBar";
+import Home from "./pages/Home";
+import About from "./pages/About";
+import { UserContext } from "./UserContext";
 
 function App() {
   const userContext = useContext(UserContext);
@@ -30,15 +29,12 @@ function App() {
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/about" element={<About />} />
-          <Route path="/profile" element={<Profile />} />
         </Routes>
       </div>
       <div>
         {user ? (
           <div>
-            <p>
-              Welcome, <Link to="/profile">{user.name}</Link>
-            </p>
+            <p>Welcome, {user.name}</p>
             <button onClick={logout}>Logout</button>
           </div>
         ) : (
