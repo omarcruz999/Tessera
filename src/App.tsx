@@ -4,6 +4,7 @@ import NavBar from "./components/Navbar";
 import Home from "./pages/Home";
 import About from "./pages/About";
 import Profile from "./pages/Profile"; // Import the Profile component
+import DirectMessages from "./pages/DirectMessages";
 import { UserContext } from "./UserContext";
 
 function App() {
@@ -31,6 +32,7 @@ function App() {
           <Route path="/" element={<Home />} />
           <Route path="/about" element={<About />} />
           <Route path="/profile" element={<Profile />} /> {/* Add the profile route */}
+          <Route path="/direct-messages" element={<DirectMessages />} />
         </Routes>
       </div>
     </Router>

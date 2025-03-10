@@ -148,6 +148,68 @@
   flex: 1;
   overflow-y: auto; /* Ensures posts can scroll */
 }
+/* Messages component */
+.messages-container {
+  display: flex;
+  flex-direction: column;
+  height: calc(100vh - 80px); /* Adjust based on navbar height (e.g., 60px) and bottom gap (e.g., 60px) */
+  margin-top: 40px; /* Adjust this to match your navbar height */
+  padding-bottom: 20px; /* Adds space at the bottom */
+  overflow: hidden;
+  align-items: center; /* Center horizontally */
+  justify-content: center; /* Center vertically */
+}
+
+.messages-content {
+  flex: 2;
+  border: 1px solid #ccc;
+  padding: 32px 0;
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
+  background-color: #FDF7F4;
+  color: black;
+  border-radius: 16px;
+  height: 100%;
+  width: 60%;
+  overflow: hidden;
+}
+
+.messages-list {
+  flex: 1;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 0px;
+  width: 100%;
+  padding: 0; /* Ensure no padding restricts width */
+  margin: 0; /* Ensure no margin restricts width */
+}
+
+/* Hide scrollbar for Webkit browsers (Chrome, Safari) */
+.messages-list::-webkit-scrollbar {
+  display: none;
+}
+
+/* Hide scrollbar for IE, Edge, and Firefox */
+.messages-list {
+  -ms-overflow-style: none; /* IE and Edge */
+  scrollbar-width: none; /* Firefox */
+}
+
+.message-preview {
+  padding: 32px;
+  background-color: #FDF7F4;
+  text-align: center;
+  width: 100%; /* Ensure it takes the full width of .messages-list */
+  box-sizing: border-box; /* Ensure padding does not affect width */
+  transition: box-shadow 0.2s ease-in-out, background-color 0.2s ease-in-out; /* Smooth transition */
+}
+
+.message-preview:hover {
+  box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.15); /* Adds a soft shadow on hover */
+  background-color: #f8ede9; /* Slightly darker background to enhance effect */
+}
 
 
 @keyframes logo-spin {
