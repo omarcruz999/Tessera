@@ -1,5 +1,4 @@
-
- #root {
+#root {
   max-width: 100%;
   margin: 0 auto;
    /* padding: 2rem;  */
@@ -149,6 +148,15 @@
   overflow-y: auto; /* Ensures posts can scroll */
 }
 /* Messages component */
+.messages-wrapper {
+  display: flex;
+  width: 100vw;
+  height: 100vh;
+  gap: 0px; /* Adjust spacing between elements */
+  overflow: hidden; /* Prevents unwanted scroll issues */
+}
+
+
 .messages-container {
   display: flex;
   flex-direction: column;
@@ -158,6 +166,43 @@
   overflow: hidden;
   align-items: center; /* Center horizontally */
   justify-content: center; /* Center vertically */
+  width: 100%; /* Full width by default */
+  transition: width 0.3s ease-in-out, margin 0.3s ease-in-out;
+}
+
+.messages-container.shrink {
+  flex: 1; /* Allows it to take up the correct portion dynamically */
+  max-width: 33%; /* Ensures it doesn’t shrink too much */
+  height: calc(100vh - 100px);
+  padding: 0;
+  margin-left: 8px;
+  margin-right: 8px;
+  overflow: hidden;
+}
+
+.chat-container {
+  display: none; /* Initially hidden */
+  flex: 2; /* Takes remaining space */
+  border: 1px solid #ccc;
+  box-sizing: border-box;
+  background-color: #FDF7F4;
+  color: black;
+  border-radius: 16px;
+  height: calc(100vh - 100px);
+  margin-top: 40px;
+  padding: 20px;
+  margin-left: 8px;
+  margin-right: 8px;
+  overflow: hidden;
+  opacity: 0;
+  transition: opacity 0.3s ease-in-out;
+}
+
+.messages-container.shrink + .chat-container {
+  display: flex; /* Make it visible */
+  flex-direction: column;
+  opacity: 1;
+  flex: 2; /* Let it take remaining space dynamically */
 }
 
 .messages-content {
@@ -171,8 +216,13 @@
   color: black;
   border-radius: 16px;
   height: 100%;
-  width: 60%;
+  width: 60%; /* Default width */
   overflow: hidden;
+  transition: width 0.3s ease-in-out; /* Smooth transition */
+}
+
+.messages-container.shrink .messages-content {
+  width: 100%; /* Full width when shrunk */
 }
 
 .messages-list {
@@ -198,9 +248,11 @@
 }
 
 .message-preview {
-  padding: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between; /* Add this line to justify content */
+  padding: 48px; /* Adjust padding as needed */
   background-color: #FDF7F4;
-  text-align: center;
   width: 100%; /* Ensure it takes the full width of .messages-list */
   box-sizing: border-box; /* Ensure padding does not affect width */
   transition: box-shadow 0.2s ease-in-out, background-color 0.2s ease-in-out; /* Smooth transition */
@@ -211,6 +263,35 @@
   background-color: #f8ede9; /* Slightly darker background to enhance effect */
 }
 
+.message-pfp {
+  width: 50px; /* Smaller size for the profile picture */
+  height: 50px;
+  border-radius: 50%;
+  margin-right: 16px; /* Space between image and content */
+}
+
+.camera-icon {
+  width: 20px; /* Adjust size as needed */
+  height: 20px;
+  margin-left: 16px; /* Space between icon and text */
+}
+
+.message-content {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start; /* Align content to the left */
+  flex-grow: 1; /* Ensure it takes up available space */
+}
+
+.message-name {
+  font-weight: bold;
+  margin: 0; /* Remove default margin */
+}
+
+.message-text {
+  margin: 0; /* Remove default margin */
+  font-weight: normal;
+}
 
 @keyframes logo-spin {
   from {
