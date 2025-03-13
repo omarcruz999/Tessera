@@ -6,7 +6,7 @@ const Messages = () => {
     <div className="messages-wrapper">
       <div className="messages-container">
         <div className="messages-content">
-          <h2>Messages</h2>
+        <h2 className="text-xl font-bold border-b py-[18px] border-gray-300">Messages</h2>
           <div className="messages-list">
             <MessagePreview />
             <MessagePreview />
