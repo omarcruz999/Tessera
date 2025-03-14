@@ -45,7 +45,7 @@ const NavBar = () => {
             </Link>
           </li>
           <li>
-            <Link to="/">
+            <Link to="/direct-messages">
               <img src={dm} alt="Direct Messages" className="h-15" />
             </Link>
           </li>
