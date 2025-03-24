@@ -62,5 +62,6 @@ jobs:
           ssh-keyscan -H ${{ secrets.EC2_HOST }} >> ~/.ssh/known_hosts
       - name: Deploy to EC2
         run: |
-          rsync -avz --delete dist/ ${{ secrets.EC2_USERNAME }}@${{ secrets.EC2_HOST }}:/path/to/deployment/directory
-          ssh ${{ secrets.EC2_USERNAME }}@${{ secrets.EC2_HOST }} 'cd /path/to/deployment/directory && pm2 restart tessera || pm2 start npm --name "tessera" -- start'
+          ssh ${{ secrets.EC2_USERNAME }}@${{ secrets.EC2_HOST }} "mkdir -p ~/tessera/"
+          rsync -avz --delete dist/ ${{ secrets.EC2_USERNAME }}@${{ secrets.EC2_HOST }}:~/tessera/
+          ssh ${{ secrets.EC2_USERNAME }}@${{ secrets.EC2_HOST }} 'cd ~/tessera/ && pm2 restart tessera || pm2 start npm --name "tessera" -- start'
