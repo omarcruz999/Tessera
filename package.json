@@ -12,6 +12,7 @@
     "test:ui": "vitest --ui"
   },
   "dependencies": {
+    "@supabase/supabase-js": "^2.49.4",
     "@tailwindcss/vite": "^4.0.9",
     "@testing-library/react": "^16.2.0",
     "axios": "^1.8.1",
