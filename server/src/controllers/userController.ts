@@ -9,9 +9,9 @@ export const getUserProfile: RequestHandler = async (req, res): Promise<void> =>
     try {
         const userId = req.params.id;
 
-        // Fetch user data from Supabase
-        const { data, error } = await supabase
-            .from('users')
+        // Fetch user profile from the 'profiles' table
+        const { data: profile, error } = await supabase
+            .from('profiles')
             .select('*')
             .eq('id', userId)
             .single();
@@ -21,7 +21,7 @@ export const getUserProfile: RequestHandler = async (req, res): Promise<void> =>
             return; // Explicitly return after sending the response
         }
 
-        res.status(200).json(data);
+        res.status(200).json(profile);
         return; // Explicitly return after sending the response
     } catch (error) {
         res.status(500).json({ error: (error as Error).message });
@@ -32,11 +32,11 @@ export const getUserProfile: RequestHandler = async (req, res): Promise<void> =>
 export const updateUserProfile: RequestHandler = async (req, res): Promise<void> => {
     try {
         const userId = req.params.id;
-        const updateData = req.body; // e.g., { name, avatar_url, etc. }
+        const updateData = req.body; // e.g., { full_name, avatar_url, website }
 
-        // Update user data in Supabase
+        // Update user profile in the 'profiles' table
         const { error } = await supabase
-            .from('users')
+            .from('profiles')
             .update(updateData)
             .eq('id', userId);
 
@@ -45,7 +45,7 @@ export const updateUserProfile: RequestHandler = async (req, res): Promise<void>
             return; // Explicitly return after sending the response
         }
 
-        res.status(200).json({ message: 'User data updated successfully' });
+        res.status(200).json({ message: 'User profile updated successfully' });
         return; // Explicitly return after sending the response
     } catch (error) {
         res.status(500).json({ error: (error as Error).message });
@@ -57,10 +57,13 @@ export const deleteUserProfile: RequestHandler = async (req, res): Promise<void>
     try {
         const userId = req.params.id;
 
-        // Delete user data from Supabase
+        // Soft delete the user by setting 'is_active' to FALSE and updating the timestamp
         const { error } = await supabase
-            .from('users')
-            .delete()
+            .from('profiles')
+            .update({
+                is_active: false,
+                is_active_updated_at: new Date().toISOString(), // Set the current timestamp
+            })
             .eq('id', userId);
 
         if (error) {
@@ -68,7 +71,7 @@ export const deleteUserProfile: RequestHandler = async (req, res): Promise<void>
             return; // Explicitly return after sending the response
         }
 
-        res.status(200).json({ message: 'User data deleted successfully' });
+        res.status(200).json({ message: 'User profile deactivated successfully' });
         return; // Explicitly return after sending the response
     } catch (error) {
         res.status(500).json({ error: (error as Error).message });

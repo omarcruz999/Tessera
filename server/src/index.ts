@@ -26,7 +26,7 @@ app.use(express.json());    // Parse incoming JSON data
 app.use(morgan('dev'));     // Log incoming requests
 
 // Routes Setup
-app.use('/api/auth', authRoutes);
+// app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/connections', connectionRoutes);
 app.use('/api/posts', postRoutes);
