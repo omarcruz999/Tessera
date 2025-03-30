@@ -1,40 +1,61 @@
-/*
-    Logic to retrieve and update user data in Supabase
-*/
-
-import { RequestHandler } from 'express';
+import { Request, Response, RequestHandler } from 'express';
 import { supabase } from '../services/supabase'; // Import Supabase client
 
-export const getUserProfile: RequestHandler = async (req, res): Promise<void> => {
-    try {
-        const userId = req.params.id;
 
-        // Fetch user profile from the 'profiles' table
+/**
+ * Get the user profile by user ID.
+ */
+export const getUserProfile: RequestHandler = async (req: Request, res: Response): Promise<void> => {
+    try {
+        const userId = req.query.user_id as string; // Get the user ID from query parameters
+
+        if (!userId) {
+            res.status(400).json({ error: 'Bad Request: user_id is required' });
+            return;
+        }
+
+        // Query the 'profiles' table for the user's profile
         const { data: profile, error } = await supabase
             .from('profiles')
             .select('*')
             .eq('id', userId)
             .single();
 
-        if (error) {
-            res.status(404).json({ error: error.message });
-            return; // Explicitly return after sending the response
+        if (error || !profile) {
+            res.status(404).json({ error: error?.message || 'Profile not found' });
+            return;
         }
 
-        res.status(200).json(profile);
-        return; // Explicitly return after sending the response
+        res.status(200).json(profile); // Return the profile
     } catch (error) {
         res.status(500).json({ error: (error as Error).message });
-        return; // Explicitly return after sending the response
     }
 };
 
-export const updateUserProfile: RequestHandler = async (req, res): Promise<void> => {
+/**
+ * Update the user profile by user ID.
+ */
+export const updateUserProfile: RequestHandler = async (req: Request, res: Response): Promise<void> => {
     try {
-        const userId = req.params.id;
-        const updateData = req.body; // e.g., { full_name, avatar_url, website }
+        const userId = req.body.user_id; // Get the user ID from the request body
 
-        // Update user profile in the 'profiles' table
+        if (!userId) {
+            res.status(400).json({ error: 'Bad Request: user_id is required' });
+            return;
+        }
+
+        const updateData = req.body; // Get the update data from the request body
+
+        // Validate the update data (optional, but recommended)
+        if (!updateData || typeof updateData !== 'object') {
+            res.status(400).json({ error: 'Invalid update data' });
+            return;
+        }
+
+        // Remove user_id from the update data to avoid overwriting it
+        delete updateData.user_id;
+
+        // Update the user's profile in the 'profiles' table
         const { error } = await supabase
             .from('profiles')
             .update(updateData)
@@ -42,39 +63,11 @@ export const updateUserProfile: RequestHandler = async (req, res): Promise<void>
 
         if (error) {
             res.status(400).json({ error: error.message });
-            return; // Explicitly return after sending the response
+            return;
         }
 
         res.status(200).json({ message: 'User profile updated successfully' });
-        return; // Explicitly return after sending the response
     } catch (error) {
         res.status(500).json({ error: (error as Error).message });
-        return; // Explicitly return after sending the response
-    }
-};
-
-export const deleteUserProfile: RequestHandler = async (req, res): Promise<void> => {
-    try {
-        const userId = req.params.id;
-
-        // Soft delete the user by setting 'is_active' to FALSE and updating the timestamp
-        const { error } = await supabase
-            .from('profiles')
-            .update({
-                is_active: false,
-                is_active_updated_at: new Date().toISOString(), // Set the current timestamp
-            })
-            .eq('id', userId);
-
-        if (error) {
-            res.status(400).json({ error: error.message });
-            return; // Explicitly return after sending the response
-        }
-
-        res.status(200).json({ message: 'User profile deactivated successfully' });
-        return; // Explicitly return after sending the response
-    } catch (error) {
-        res.status(500).json({ error: (error as Error).message });
-        return; // Explicitly return after sending the response
     }
 };
