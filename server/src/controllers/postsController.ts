@@ -4,26 +4,59 @@
 
 import { RequestHandler } from 'express';
 import { createClient } from '@supabase/supabase-js';
+import Joi from 'joi';
 
 // Initialize Supabase client
 const supabase = createClient(process.env.SUPABASE_URL!, process.env.SUPABASE_KEY!);
 
+// Schema for creating a post
+export const createPostSchema = Joi.object({
+    user_id: Joi.string().uuid().required(),
+    text: Joi.string().min(1).max(500).required(),
+});
+
+// Schema for updating a post
+export const updatePostSchema = Joi.object({
+    id: Joi.string().required(),
+    text: Joi.string().min(1).max(500).required(),
+});
+
+// Schema for deleting a post
+export const deletePostSchema = Joi.object({
+    id: Joi.string().required(),
+    user_id: Joi.string().uuid().required(),
+});
+
+// Schema for getting posts
+export const getPostsSchema = Joi.object({
+    user_id: Joi.string().uuid().required(),
+});
+
 export const createPost: RequestHandler = async (req, res) => {
     try {
-        const { user_id, text } = req.body;
+        // Define the validation schema
+        const schema = Joi.object({
+            user_id: Joi.string().uuid().required(),
+            text: Joi.string().min(1).max(500).required(),
+        });
 
-        if (!user_id || !text) {
-            res.status(400).json({ error: 'user_id and text are required' });
+        // Validate the request body
+        const { error } = schema.validate(req.body);
+        if (error) {
+            res.status(400).json({ error: `Validation Error: ${error.message}` });
             return;
         }
 
-        const { data, error } = await supabase
+        const { user_id, text } = req.body;
+
+        // Insert the post into the database
+        const { data, error: dbError } = await supabase
             .from('posts')
             .insert([{ user_id, text }])
             .select();
 
-        if (error) {
-            res.status(400).json({ error: error.message });
+        if (dbError) {
+            res.status(400).json({ error: dbError.message });
             return;
         }
 
@@ -35,21 +68,30 @@ export const createPost: RequestHandler = async (req, res) => {
 
 export const updatePost: RequestHandler = async (req, res) => {
     try {
-        const { id } = req.params; // Extract `id` from the URL path
-        const { text } = req.body; // Extract `text` from the request body
+        // Define the validation schema
+        const schema = Joi.object({
+            id: Joi.string().required(),
+            text: Joi.string().min(1).max(500).required(),
+        });
 
-        if (!id || !text) {
-            res.status(400).json({ error: 'id and text are required' });
+        // Validate the request body
+        const { error } = schema.validate({ ...req.body, id: req.params.id });
+        if (error) {
+            res.status(400).json({ error: `Validation Error: ${error.message}` });
             return;
         }
 
-        const { error } = await supabase
+        const { id } = req.params;
+        const { text } = req.body;
+
+        // Update the post in the database
+        const { error: dbError } = await supabase
             .from('posts')
             .update({ text })
             .eq('id', id);
 
-        if (error) {
-            res.status(400).json({ error: error.message });
+        if (dbError) {
+            res.status(400).json({ error: dbError.message });
             return;
         }
 
@@ -61,23 +103,30 @@ export const updatePost: RequestHandler = async (req, res) => {
 
 export const deletePost: RequestHandler = async (req, res) => {
     try {
-        const { id } = req.params; // Extract `id` from the URL path
-        const { user_id } = req.body; // Extract `user_id` from the request body
+        // Define the validation schema
+        const schema = Joi.object({
+            id: Joi.string().required(),
+            user_id: Joi.string().uuid().required(),
+        });
 
-        // Ensure both `id` and `user_id` are provided
-        if (!id || !user_id) {
-            res.status(400).json({ error: 'id and user_id are required' });
+        // Validate the request body and params
+        const { error } = schema.validate({ ...req.body, id: req.params.id });
+        if (error) {
+            res.status(400).json({ error: `Validation Error: ${error.message}` });
             return;
         }
 
-        // Delete the post where `id` matches and `user_id` matches
-        const { error } = await supabase
+        const { id } = req.params;
+        const { user_id } = req.body;
+
+        // Delete the post from the database
+        const { error: dbError } = await supabase
             .from('posts')
             .delete()
             .match({ id, user_id });
 
-        if (error) {
-            res.status(400).json({ error: error.message });
+        if (dbError) {
+            res.status(400).json({ error: dbError.message });
             return;
         }
 
@@ -89,7 +138,7 @@ export const deletePost: RequestHandler = async (req, res) => {
 
 export const getPost: RequestHandler = async (req, res) => {
     try {
-        const { id } = req.query;
+        const { id } = req.params; // Extract `id` from the URL path
 
         if (!id) {
             res.status(400).json({ error: 'id is required' });
@@ -115,22 +164,28 @@ export const getPost: RequestHandler = async (req, res) => {
 
 export const getPosts: RequestHandler = async (req, res) => {
     try {
-        const { user_id } = req.query;
+        // Define the validation schema
+        const schema = Joi.object({
+            user_id: Joi.string().uuid().required(),
+        });
 
-        // Ensure `user_id` is provided
-        if (!user_id) {
-            res.status(400).json({ error: 'user_id is required' });
+        // Validate the query parameters
+        const { error } = schema.validate(req.query);
+        if (error) {
+            res.status(400).json({ error: `Validation Error: ${error.message}` });
             return;
         }
 
-        // Query posts for the specific user
-        const { data, error } = await supabase
+        const { user_id } = req.query;
+
+        // Fetch posts for the user
+        const { data, error: dbError } = await supabase
             .from('posts')
             .select('*')
             .eq('user_id', user_id);
 
-        if (error) {
-            res.status(400).json({ error: error.message });
+        if (dbError) {
+            res.status(400).json({ error: dbError.message });
             return;
         }
 
