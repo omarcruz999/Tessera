@@ -189,3 +189,134 @@ Deletes a post by its `id` and `user_id`.
 - The `user_id` is required for creating, fetching (all posts), and deleting posts to ensure proper ownership validation.
 - The `GET /:id` endpoint does not currently require `user_id` but will enforce ownership validation once authentication is implemented.
 - The `text` field for posts is limited to 1-500 characters.
+
+---
+
+## Connections API Documentation
+
+**Base URL**  
+`http://localhost:4000/api/connections`
+
+---
+
+### 1. Create a Connection
+
+**Description:**  
+Creates a new connection between two users.
+
+**Method:**  
+`POST`
+
+**Endpoint:**  
+`/`
+
+**Request Body:**
+- `user_1` (string, required): The ID of the first user in the connection.
+- `user_2` (string, required): The ID of the second user in the connection.
+
+**Response:**
+- `201 Created`: Connection created successfully.
+- `400 Bad Request`: Missing or invalid input.
+- `500 Internal Server Error`: Unexpected server error.
+
+---
+
+### 2. Get a Connection
+
+**Description:**  
+Fetches a specific connection between two users.
+
+**Method:**  
+`GET`
+
+**Endpoint:**  
+`/`
+
+**Query Parameters:**
+- `user_1` (string, required): The ID of the first user in the connection.
+- `user_2` (string, required): The ID of the second user in the connection.
+
+**Response:**
+- `200 OK`: Returns the connection details.
+- `400 Bad Request`: Missing or invalid input.
+- `404 Not Found`: No connection found for the given users.
+- `500 Internal Server Error`: Unexpected server error.
+
+---
+
+### 3. Get Connections for a User
+
+**Description:**  
+Fetches all connections for a specific user.
+
+**Method:**  
+`GET`
+
+**Endpoint:**  
+`/all`
+
+**Query Parameters:**
+- `user_id` (string, required): The ID of the user whose connections are being fetched.
+
+**Response:**
+- `200 OK`: Returns a list of connections for the user.
+- `400 Bad Request`: Missing or invalid `user_id`.
+- `500 Internal Server Error`: Unexpected server error.
+
+---
+
+### 4. Update a Connection
+
+**Description:**  
+Updates the status of an existing connection.
+
+**Method:**  
+`PUT`
+
+**Endpoint:**  
+`/`
+
+**Request Body:**
+- `user_1` (string, required): The ID of the first user in the connection.
+- `user_2` (string, required): The ID of the second user in the connection.
+- `status` (string, required): The new status of the connection. Must be one of:
+  - `pending`
+  - `accepted`
+  - `rejected`
+
+**Response:**
+- `200 OK`: Connection updated successfully.
+- `400 Bad Request`: Missing or invalid input.
+- `404 Not Found`: No connection found for the given users.
+- `500 Internal Server Error`: Unexpected server error.
+
+---
+
+### 5. Delete a Connection
+
+**Description:**  
+Deletes a connection between two users.
+
+**Method:**  
+`DELETE`
+
+**Endpoint:**  
+`/`
+
+**Request Body:**
+- `user_1` (string, required): The ID of the first user in the connection.
+- `user_2` (string, required): The ID of the second user in the connection.
+
+**Response:**
+- `200 OK`: Connection deleted successfully.
+- `400 Bad Request`: Missing or invalid input.
+- `404 Not Found`: No connection found for the given users.
+- `500 Internal Server Error`: Unexpected server error.
+
+---
+
+### Notes
+
+- The `user_1` and `user_2` fields are required for all endpoints to identify the connection.
+- The `status` field is required for updating a connection and must be one of the predefined values (`pending`, `accepted`, `rejected`).
+- The `GET /all` endpoint fetches all connections for a specific user, regardless of their role in the connection (i.e., whether they are `user_1` or `user_2`).
