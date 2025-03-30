@@ -11,7 +11,7 @@ import morgan from 'morgan';
 // Import route groups
 // import authRoutes from './routes/authRoutes';
 import  userRoutes  from './routes/userRoutes';
-import { connectionRoutes } from './routes/connectionRoutes';
+import connectionRoutes from './routes/connectionRoutes';
 import { postRoutes } from './routes/postsRoutes';
 import { postMediaRoutes } from './routes/postMediaRoutes';
 
