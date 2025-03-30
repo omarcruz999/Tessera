@@ -4,25 +4,54 @@
 
 import { RequestHandler } from 'express';
 import { createClient } from '@supabase/supabase-js';
+import Joi from 'joi';
 
 const supabase = createClient(process.env.SUPABASE_URL || '', process.env.SUPABASE_KEY || '');
 
+// Joi Schemas
+const createConnectionSchema = Joi.object({
+    user_1: Joi.string().uuid().required(),
+    user_2: Joi.string().uuid().required(),
+});
+
+const deleteConnectionSchema = Joi.object({
+    user_1: Joi.string().uuid().required(),
+    user_2: Joi.string().uuid().required(),
+});
+
+const updateConnectionSchema = Joi.object({
+    user_1: Joi.string().uuid().required(),
+    user_2: Joi.string().uuid().required(),
+    status: Joi.string().valid('pending', 'accepted', 'rejected').required(),
+});
+
+const getConnectionSchema = Joi.object({
+    user_1: Joi.string().uuid().required(),
+    user_2: Joi.string().uuid().required(),
+});
+
+const getConnectionsSchema = Joi.object({
+    user_id: Joi.string().uuid().required(),
+});
+
+// Controllers
 export const createConnection: RequestHandler = async (req, res) => {
     try {
-        const { user_1, user_2 } = req.body;
-
-        if (!user_1 || !user_2) {
-            res.status(400).json({ error: 'user_1 and user_2 are required' });
+        const { error } = createConnectionSchema.validate(req.body);
+        if (error) {
+            res.status(400).json({ error: `Validation Error: ${error.message}` });
             return;
         }
 
-        const { data, error } = await supabase
+        const { user_1, user_2 } = req.body;
+
+        const { data, error: dbError } = await supabase
             .from('connections')
             .insert([{ user_1, user_2, status: 'pending' }])
             .select();
 
-        if (error) {
-            res.status(400).json({ error: error.message });
+        if (dbError) {
+            res.status(400).json({ error: dbError.message });
             return;
         }
 
@@ -34,20 +63,21 @@ export const createConnection: RequestHandler = async (req, res) => {
 
 export const deleteConnection: RequestHandler = async (req, res) => {
     try {
-        const { user_1, user_2 } = req.body;
-
-        if (!user_1 || !user_2) {
-            res.status(400).json({ error: 'user_1 and user_2 are required' });
+        const { error } = deleteConnectionSchema.validate(req.body);
+        if (error) {
+            res.status(400).json({ error: `Validation Error: ${error.message}` });
             return;
         }
 
-        const { error } = await supabase
+        const { user_1, user_2 } = req.body;
+
+        const { error: dbError } = await supabase
             .from('connections')
             .delete()
             .or(`user_1.eq.${user_1},user_2.eq.${user_2}`);
 
-        if (error) {
-            res.status(400).json({ error: error.message });
+        if (dbError) {
+            res.status(400).json({ error: dbError.message });
             return;
         }
 
@@ -59,20 +89,21 @@ export const deleteConnection: RequestHandler = async (req, res) => {
 
 export const updateConnection: RequestHandler = async (req, res) => {
     try {
-        const { user_1, user_2, status } = req.body;
-
-        if (!user_1 || !user_2 || !status) {
-            res.status(400).json({ error: 'user_1, user_2, and status are required' });
+        const { error } = updateConnectionSchema.validate(req.body);
+        if (error) {
+            res.status(400).json({ error: `Validation Error: ${error.message}` });
             return;
         }
 
-        const { error } = await supabase
+        const { user_1, user_2, status } = req.body;
+
+        const { error: dbError } = await supabase
             .from('connections')
             .update({ status })
             .or(`user_1.eq.${user_1},user_2.eq.${user_2}`);
 
-        if (error) {
-            res.status(400).json({ error: error.message });
+        if (dbError) {
+            res.status(400).json({ error: dbError.message });
             return;
         }
 
@@ -84,21 +115,22 @@ export const updateConnection: RequestHandler = async (req, res) => {
 
 export const getConnection: RequestHandler = async (req, res) => {
     try {
-        const { user_1, user_2 } = req.query;
-
-        if (!user_1 || !user_2) {
-            res.status(400).json({ error: 'user_1 and user_2 are required' });
+        const { error } = getConnectionSchema.validate(req.query);
+        if (error) {
+            res.status(400).json({ error: `Validation Error: ${error.message}` });
             return;
         }
 
-        const { data, error } = await supabase
+        const { user_1, user_2 } = req.query;
+
+        const { data, error: dbError } = await supabase
             .from('connections')
             .select('*')
-            .or(`(user_1.eq.${user_1},user_2.eq.${user_2})`)
+            .or(`user_1.eq.${user_1},user_2.eq.${user_2}`)
             .single();
 
-        if (error || !data) {
-            res.status(404).json({ error: error?.message || 'Connection not found' });
+        if (dbError || !data) {
+            res.status(404).json({ error: dbError?.message || 'Connection not found' });
             return;
         }
 
@@ -110,20 +142,21 @@ export const getConnection: RequestHandler = async (req, res) => {
 
 export const getConnections: RequestHandler = async (req, res) => {
     try {
-        const { user_id } = req.query;
-
-        if (!user_id) {
-            res.status(400).json({ error: 'user_id is required' });
+        const { error } = getConnectionsSchema.validate(req.query);
+        if (error) {
+            res.status(400).json({ error: `Validation Error: ${error.message}` });
             return;
         }
 
-        const { data, error } = await supabase
+        const { user_id } = req.query;
+
+        const { data, error: dbError } = await supabase
             .from('connections')
             .select('*')
             .or(`user_1.eq.${user_id},user_2.eq.${user_id}`);
 
-        if (error) {
-            res.status(400).json({ error: error.message });
+        if (dbError) {
+            res.status(400).json({ error: dbError.message });
             return;
         }
 
