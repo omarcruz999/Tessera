@@ -17,7 +17,7 @@ export const getUserProfile: RequestHandler = async (req: Request, res: Response
         // Query the 'profiles' table for the user's profile
         const { data: profile, error } = await supabase
             .from('profiles')
-            .select('*')
+            .select('id, full_name, avatar_url, is_active') // Select only necessary fields
             .eq('id', userId)
             .single();
 
