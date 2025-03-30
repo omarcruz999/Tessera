@@ -1,28 +1,35 @@
 import { Request, Response, RequestHandler } from 'express';
 import { supabase } from '../services/supabase'; // Import Supabase client
-
+import Joi from 'joi';
 
 /**
  * Get the user profile by user ID.
  */
 export const getUserProfile: RequestHandler = async (req: Request, res: Response): Promise<void> => {
     try {
-        const userId = req.query.user_id as string; // Get the user ID from query parameters
+        // Define the validation schema
+        const schema = Joi.object({
+            user_id: Joi.string().uuid().required(), // Validate that user_id is a valid UUID
+        });
 
-        if (!userId) {
-            res.status(400).json({ error: 'Bad Request: user_id is required' });
+        // Validate the query parameters
+        const { error } = schema.validate(req.query);
+        if (error) {
+            res.status(400).json({ error: `Validation Error: ${error.message}` });
             return;
         }
 
+        const userId = req.query.user_id as string;
+
         // Query the 'profiles' table for the user's profile
-        const { data: profile, error } = await supabase
+        const { data: profile, error: dbError } = await supabase
             .from('profiles')
             .select('id, full_name, avatar_url, is_active') // Select only necessary fields
             .eq('id', userId)
             .single();
 
-        if (error || !profile) {
-            res.status(404).json({ error: error?.message || 'Profile not found' });
+        if (dbError || !profile) {
+            res.status(404).json({ error: dbError?.message || 'Profile not found' });
             return;
         }
 
@@ -37,32 +44,31 @@ export const getUserProfile: RequestHandler = async (req: Request, res: Response
  */
 export const updateUserProfile: RequestHandler = async (req: Request, res: Response): Promise<void> => {
     try {
-        const userId = req.body.user_id; // Get the user ID from the request body
+        // Define the validation schema
+        const schema = Joi.object({
+            user_id: Joi.string().uuid().required(), // Validate that user_id is a valid UUID
+            full_name: Joi.string().optional(), // Optional string for full_name
+            avatar_url: Joi.string().uri().optional(), // Optional valid URL for avatar_url
+            website: Joi.string().uri().optional(), // Optional valid URL for website
+        });
 
-        if (!userId) {
-            res.status(400).json({ error: 'Bad Request: user_id is required' });
+        // Validate the request body
+        const { error } = schema.validate(req.body);
+        if (error) {
+            res.status(400).json({ error: `Validation Error: ${error.message}` });
             return;
         }
 
-        const updateData = req.body; // Get the update data from the request body
-
-        // Validate the update data (optional, but recommended)
-        if (!updateData || typeof updateData !== 'object') {
-            res.status(400).json({ error: 'Invalid update data' });
-            return;
-        }
-
-        // Remove user_id from the update data to avoid overwriting it
-        delete updateData.user_id;
+        const { user_id: userId, ...updateData } = req.body;
 
         // Update the user's profile in the 'profiles' table
-        const { error } = await supabase
+        const { error: dbError } = await supabase
             .from('profiles')
             .update(updateData)
             .eq('id', userId);
 
-        if (error) {
-            res.status(400).json({ error: error.message });
+        if (dbError) {
+            res.status(400).json({ error: dbError.message });
             return;
         }
 
