@@ -78,7 +78,7 @@ const PostForm: React.FC<PostFromProps> = ({ onClose }) => {
 
                 {/* Close Button */}
                 <div id="closeButton" className="flex justify-end p-3">
-                    <button type="button" onClick={onClose} className="!w-10 !h-10 !bg-[#FDF7F4] !rounded-full !p-0 !focus:outline-none">
+                    <button type="button" onClick={onClose} style={{ outline: "none" }} className="!w-10 !h-10 !bg-[#FDF7F4] !rounded-full !p-0 !focus:outline-none !border-none !button-focus: none">
                         <svg viewBox="0 0 24 24" className="w-full h-full">
                             <path fill="#000" d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z" />
                         </svg>
@@ -141,7 +141,8 @@ const PostForm: React.FC<PostFromProps> = ({ onClose }) => {
                         id="uploadImageButton"
                         type="button"
                         onClick={triggerImageUpload}
-                        className="w-10 h-10 !p-0 !bg-[#FDF7F4] focus:outline-none hover:bg-gray-200 !rounded-full transition-colors"
+                        style={{ outline: "none" }}
+                        className="w-10 h-10 !p-0 !bg-[#FDF7F4] focus:outline-none hover:bg-gray-200 !rounded-full transition-colors !border-none !button-focus: none"
                     >
                         <div className="flex items-center justify-center w-full h-full">
                             <img src={imageIcon} alt="Image Icon" className="w-10 h-10"/>
