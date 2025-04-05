@@ -38,7 +38,7 @@ function PostCard() {
             </div>
 
            
-            <div id="postImageDiv" className='w-full h-auto my-4 flex items-center justify-center'>
+            <div id="postImageDiv" className='w-1/2 mx-auto h-auto my-4 flex items-center justify-center'>
                     <img 
                         src={testImage}
                     />
