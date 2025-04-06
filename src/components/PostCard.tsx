@@ -2,8 +2,10 @@ import { useState } from 'react';
 import johnPork from "/JohnPork.png"
 import testImage from "../assets/bigImageTest.jpg"
 import commentIcon from "../assets/postIcons/commentIcon.svg"
-import saveIcon from "../assets/postIcons/unfilledSaveIcon.svg"
+import saveIcon from "../assets/postIcons/saveIcon.svg"
+import savedIcon from "../assets/postIcons/savedIcon.svg"
 import repostIcon from "../assets/postIcons/repostIcon.svg"
+import repostedIcon from "../assets/postIcons/repostedIcon.svg"
 import shareIcon from "../assets/postIcons/shareIcon.svg"
 import likeIcon from "../assets/postIcons/likeIcon.svg"
 import likedIcon from "../assets/postIcons/likedIcon.svg"
@@ -19,6 +21,7 @@ function PostCard() {
 
     const [uploadedImage, setUserUploadedImage] = useState<string | null>(null)
     const [postContent, setPostContent] = useState("")
+    const [postResposted, setPostResposted] = useState(false)
     const [postLiked, setPostLiked] = useState(false)
     const [postSaved, setPostSaved] = useState(false)
 
@@ -58,7 +61,7 @@ function PostCard() {
                         className="w-7 h-7 !p-0 !bg-[#FDF7F4] focus:outline-none hover:bg-gray-200 !rounded-full transition-colors !border-none !button-focus: none"
                     >
                         <div className="flex items-center justify-center w-full h-full">
-                            <img src={commentIcon} alt="Image Icon" className="w-10 h-10" />
+                            <img src={commentIcon} alt="Comment Icon" className="w-10 h-10" />
                         </div>
                     </button>
 
@@ -67,23 +70,27 @@ function PostCard() {
                         id="repostButton"
                         type="button"
                         style={{ outline: "none" }}
+                        onClick={() => setPostResposted((prev) => !prev)}
                         className="w-9 h-9 !p-0 !bg-[#FDF7F4] focus:outline-none hover:bg-gray-200 !rounded-full transition-colors !border-none !button-focus: none">
                         <div className="flex items-center justify-center w-full h-full">
-                            <img src={repostIcon} alt="Image Icon" className="w-10 h-10" />
+                            <img 
+                                src={postResposted ? repostedIcon : repostIcon} 
+                                alt="Repost Icon" 
+                                className="w-10 h-10"/>
                         </div>
                     </button>
 
                     {/* Like Button */}
                     <button
                         id="likeButton"
-                        type="button"
+                        type="button"   
                         style={{ outline: "none" }}
                         onClick={() => setPostLiked((prev => !prev))}
                         className="w-9 h-9 !p-0 !bg-[#FDF7F4] focus:outline-none hover:bg-gray-200 !rounded-full transition-colors !border-none !button-focus: none">
                         <div className="flex items-center justify-center w-full h-full">
                             <img 
                                 src={postLiked ? likedIcon: likeIcon} 
-                                alt="Image Icon" 
+                                alt="Like Icon" 
                                 className="w-10 h-10" 
                                 />
                         </div>
@@ -96,9 +103,13 @@ function PostCard() {
                         id="saveButton"
                         type="button"
                         style={{ outline: "none" }}
+                        onClick={() => setPostSaved((prev) => !prev)}
                         className="w-10 h-10 !p-0 !bg-[#FDF7F4] focus:outline-none hover:bg-gray-200 !rounded-full transition-colors !border-none !button-focus: none">
                         <div className="flex items-center justify-center w-full h-full">
-                            <img src={saveIcon} alt="Image Icon" className="w-full h-full object-contain" />
+                            <img 
+                                src={postSaved ? savedIcon : saveIcon} 
+                                alt="Save Icon" 
+                                className="w-full h-full object-contain" />
                         </div>
                     </button>
 
@@ -109,7 +120,7 @@ function PostCard() {
                         style={{ outline: "none" }}
                         className="w-7 h-7 !p-0 !bg-[#FDF7F4] focus:outline-none hover:bg-gray-200 !rounded-full transition-colors !border-none !button-focus: none">
                         <div className="flex items-center justify-center w-full h-full">
-                            <img src={shareIcon} alt="Image Icon" className="w-10 h-10" />
+                            <img src={shareIcon} alt="Share Icon" className="w-10 h-10" />
                         </div>
                     </button>
                 </div>
