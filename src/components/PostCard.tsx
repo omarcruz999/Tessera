@@ -1,14 +1,15 @@
 import { useState } from 'react';
 import johnPork from "/JohnPork.png"
-import commentIcon from "../assets/postComment.svg"
-import repostIcon from "../assets/postRepost.svg"
-import likeIcon from "../assets/postLike.svg"
-import saveIcon from "../assets/postSave.svg"
-import shareIcon from "../assets/postShare.svg"
 import testImage from "../assets/bigImageTest.jpg"
+import commentIcon from "../assets/postIcons/commentIcon.svg"
+import saveIcon from "../assets/postIcons/unfilledSaveIcon.svg"
+import repostIcon from "../assets/postIcons/repostIcon.svg"
+import shareIcon from "../assets/postIcons/shareIcon.svg"
+import likeIcon from "../assets/postIcons/likeIcon.svg"
+import likedIcon from "../assets/postIcons/likedIcon.svg"
+
 
 function PostCard() {
-
 
     const user = {
         name: "John Pork",
@@ -78,9 +79,13 @@ function PostCard() {
                         type="button"
                         style={{ outline: "none" }}
                         onClick={() => setPostLiked((prev => !prev))}
-                        className="w-7 h-7 !p-0 !bg-[#FDF7F4] focus:outline-none hover:bg-gray-200 !rounded-full transition-colors !border-none !button-focus: none">
+                        className="w-9 h-9 !p-0 !bg-[#FDF7F4] focus:outline-none hover:bg-gray-200 !rounded-full transition-colors !border-none !button-focus: none">
                         <div className="flex items-center justify-center w-full h-full">
-                            <img src={likeIcon} alt="Image Icon" className="w-10 h-10" />
+                            <img 
+                                src={postLiked ? likedIcon: likeIcon} 
+                                alt="Image Icon" 
+                                className="w-10 h-10" 
+                                />
                         </div>
                     </button>
                 </div>
