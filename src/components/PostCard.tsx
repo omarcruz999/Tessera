@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import johnPork from "/JohnPork.png"
-import testImage from "../assets/bigImageTest.jpg"
+import testImage from "../assets/catTestImage.jpg"
 import commentIcon from "../assets/postIcons/commentIcon.svg"
 import saveIcon from "../assets/postIcons/saveIcon.svg"
 import savedIcon from "../assets/postIcons/savedIcon.svg"
@@ -9,6 +9,9 @@ import repostedIcon from "../assets/postIcons/repostedIcon.svg"
 import shareIcon from "../assets/postIcons/shareIcon.svg"
 import likeIcon from "../assets/postIcons/likeIcon.svg"
 import likedIcon from "../assets/postIcons/likedIcon.svg"
+import PostComment from './PostComment';
+import NewComment from './NewComment';
+import NewReply from './NewReply';
 
 
 function PostCard() {
@@ -24,6 +27,8 @@ function PostCard() {
     const [postResposted, setPostResposted] = useState(false)
     const [postLiked, setPostLiked] = useState(false)
     const [postSaved, setPostSaved] = useState(false)
+    const [openComments, setOpenComments] = useState(false)
+    const [openReply, setOpenReply] = useState(false)
 
 
     return (
@@ -58,6 +63,7 @@ function PostCard() {
                         id="commentButton"
                         type="button"
                         style={{ outline: "none" }}
+                        onClick={() => setOpenComments((prev) => !prev)}
                         className="w-7 h-7 !p-0 !bg-[#FDF7F4] focus:outline-none hover:bg-gray-200 !rounded-full transition-colors !border-none !button-focus: none"
                     >
                         <div className="flex items-center justify-center w-full h-full">
@@ -126,6 +132,18 @@ function PostCard() {
                 </div>
                 
             </div> {/* Post Buttons Div End */}
+
+            {openComments && (
+                // Comments Div
+                <div id='commentsDiv' className='w-full h-auto my-4'>
+                    <PostComment openReply={openReply} setOpenReply={setOpenReply}/>
+
+                    {/* Only show NewComment when reply box is NOT open */}
+                    {!openReply && <NewComment />}
+                </div>
+            )}
+
+
         </div> //Post Div End
     )
 }
