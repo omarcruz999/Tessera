@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react';
 import PeerCard from '../components/PeerCard.tsx';
 import GroupCard from './GroupCard.tsx';
+import PostForm from '../components/PostForm.tsx';
+
 
 // Mock function to fetch data from the database
 const fetchData = async () => {
@@ -22,6 +24,8 @@ const fetchData = async () => {
 
 function HomeView() {
   const [data, setData] = useState<{ type: string; id: number; name: string; profilePicture?: string; description?: string }[]>([]);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  
 
   useEffect(() => {
     const loadData = async () => {
@@ -51,6 +55,15 @@ function HomeView() {
           return null;
         })}
       </div>
+      <button
+        onClick={() => setIsModalOpen(true)}
+        className="mb-4 px-6 py-2 bg-[#8EB486] text-white rounded-lg"
+      >
+        New Post
+      </button>
+
+      {isModalOpen && <PostForm onClose={() => setIsModalOpen(false)} />}
+
     </div>
   );
 }
