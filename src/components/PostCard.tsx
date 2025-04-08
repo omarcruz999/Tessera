@@ -11,7 +11,6 @@ import likeIcon from "../assets/postIcons/likeIcon.svg"
 import likedIcon from "../assets/postIcons/likedIcon.svg"
 import PostComment from './PostComment';
 import NewComment from './NewComment';
-import NewReply from './NewReply';
 
 
 function PostCard() {
@@ -142,7 +141,6 @@ function PostCard() {
                     {!openReply && <NewComment />}
                 </div>
             )}
-
 
         </div> //Post Div End
     )
