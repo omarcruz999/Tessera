@@ -21,8 +21,6 @@ function PostCard() {
         postContent: "Hey guys! Check out my awsome cool cat. Found her in the dumpster lmao",
     }
 
-    const [uploadedImage, setUserUploadedImage] = useState<string | null>(null)
-    const [postContent, setPostContent] = useState("")
     const [postResposted, setPostResposted] = useState(false)
     const [postLiked, setPostLiked] = useState(false)
     const [postSaved, setPostSaved] = useState(false)
