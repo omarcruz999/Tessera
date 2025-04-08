@@ -1,4 +1,3 @@
-import { useState } from 'react';
 import johnPork from "/JohnPork.png"
 import NewReply from './NewReply';
 
