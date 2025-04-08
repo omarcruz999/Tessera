@@ -1,5 +1,6 @@
 import { useContext, useState } from 'react';
 import { UserContext } from '../UserContext';
+import PostCard from './PostCard';
 
 function ProfileView() {
   const userContext = useContext(UserContext);
@@ -34,7 +35,7 @@ function ProfileView() {
           <h2 className={activeTab === 'bookmarks' ? "active-tab" : ""} onClick={() => setActiveTab('bookmarks')}>Bookmarks</h2>
         </div>
         <div className="profile-posts">
-          {activeTab === 'posts' && <p>Placeholder for posts...</p>}
+          {activeTab === 'posts' && <div> <PostCard /> <PostCard/> <PostCard/> </div>} 
           {activeTab === 'replies' && <p>Placeholder for replies...</p>}
           {activeTab === 'bookmarks' && <p>Placeholder for bookmarks...</p>}
         </div>
