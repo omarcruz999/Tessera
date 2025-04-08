@@ -18,6 +18,9 @@ Fetches the profile of a user by their `user_id`.
 **Endpoint:**  
 `/profile`
 
+**Example:**  
+`http://localhost:4000/api/users/profile?user_id=<user_id>`
+
 **Query Parameters:**
 - `user_id` (string, required): The ID of the user whose profile is being fetched.
 
@@ -39,6 +42,17 @@ Updates the profile of a user by their `user_id`.
 
 **Endpoint:**  
 `/profile`
+
+**Example:**  
+`http://localhost:4000/api/users/profile`
+```json
+{
+  "user_id": "<user_id>",
+  "full_name": "Jane Doe",
+  "avatar_url": "https://example.com/avatar.jpg",
+  "website": "https://janedoe.com"
+}
+```
 
 **Request Body:**
 - `user_id` (string, required): The ID of the user whose profile is being updated.
@@ -80,6 +94,15 @@ Creates a new post for a user.
 **Endpoint:**  
 `/`
 
+**Example:**  
+`http://localhost:4000/api/posts/`
+```json
+{
+  "user_id": "<user_id>",
+  "text": "This is an example post content"
+}
+```
+
 **Request Body:**
 - `user_id` (string, required): The ID of the user creating the post.
 - `text` (string, required): The content of the post (1-500 characters).
@@ -101,6 +124,9 @@ Fetches a single post by its `id`.
 
 **Endpoint:**  
 `/:id`
+
+**Example:**  
+`http://localhost:4000/api/posts/<post_id>`
 
 **Path Parameters:**
 - `id` (string, required): The ID of the post to fetch.
@@ -124,6 +150,9 @@ Fetches all posts created by a specific user.
 **Endpoint:**  
 `/`
 
+**Example:**  
+`http://localhost:4000/api/posts?user_id=<user_id>`
+
 **Query Parameters:**
 - `user_id` (string, required): The ID of the user whose posts are being fetched.
 
@@ -144,6 +173,14 @@ Updates the content of an existing post.
 
 **Endpoint:**  
 `/:id`
+
+**Example:**  
+`http://localhost:4000/api/posts/<post_id>`
+```json
+{
+  "text": "Updated post content"
+}
+```
 
 **Path Parameters:**
 - `id` (string, required): The ID of the post to update.
@@ -169,6 +206,14 @@ Deletes a post by its `id` and `user_id`.
 
 **Endpoint:**  
 `/:id`
+
+**Example:**  
+`http://localhost:4000/api/posts/<post_id>`
+```json
+{
+  "user_id": "<user_id>"
+}
+```
 
 **Path Parameters:**
 - `id` (string, required): The ID of the post to delete.
@@ -210,6 +255,15 @@ Creates a new connection between two users.
 **Endpoint:**  
 `/`
 
+**Example:**  
+`http://localhost:4000/api/connections/`
+```json
+{
+  "user_1": "<user_id_1>",
+  "user_2": "<user_id_2>"
+}
+```
+
 **Request Body:**
 - `user_1` (string, required): The ID of the first user in the connection.
 - `user_2` (string, required): The ID of the second user in the connection.
@@ -231,6 +285,9 @@ Fetches a specific connection between two users.
 
 **Endpoint:**  
 `/`
+
+**Example:**  
+`http://localhost:4000/api/connections?user_1=<user_id_1>&user_2=<user_id_2>`
 
 **Query Parameters:**
 - `user_1` (string, required): The ID of the first user in the connection.
@@ -255,6 +312,9 @@ Fetches all connections for a specific user.
 **Endpoint:**  
 `/all`
 
+**Example:**  
+`http://localhost:4000/api/connections/all?user_id=<user_id>`
+
 **Query Parameters:**
 - `user_id` (string, required): The ID of the user whose connections are being fetched.
 
@@ -275,6 +335,16 @@ Updates the status of an existing connection.
 
 **Endpoint:**  
 `/`
+
+**Example:**  
+`http://localhost:4000/api/connections/`
+```json
+{
+  "user_1": "<user_id_1>",
+  "user_2": "<user_id_2>",
+  "status": "accepted"
+}
+```
 
 **Request Body:**
 - `user_1` (string, required): The ID of the first user in the connection.
@@ -302,6 +372,15 @@ Deletes a connection between two users.
 
 **Endpoint:**  
 `/`
+
+**Example:**  
+`http://localhost:4000/api/connections/`
+```json
+{
+  "user_1": "<user_id_1>",
+  "user_2": "<user_id_2>"
+}
+```
 
 **Request Body:**
 - `user_1` (string, required): The ID of the first user in the connection.
