@@ -3,13 +3,12 @@ import { UserContext } from '../UserContext';
 import PostCard from './PostCard';
 
 function ProfileView() {
+  const [activeTab, setActiveTab] = useState('posts');
   const userContext = useContext(UserContext);
   if (!userContext) {
     return <div>Error: UserContext is not provided</div>;
   }
   const { user } = userContext;
-
-  const [activeTab, setActiveTab] = useState('posts');
 
   if (!user) {
     return <div>Error: User is not available</div>;
@@ -20,7 +19,7 @@ function ProfileView() {
       {/* Profile Section (Left Panel) */}
       <div className="profile-sidebar">
         <img src="/src/assets/defaultProfilePicture.png" alt="Profile" className="profile-image" />
-        <h2 className="profile-name">{user.name}</h2>
+        <h2 className="profile-name">{user.full_name}</h2>
         <h3 className="profile-bio">Just a regular old guy!</h3>
         <p className="profile-location">Pomona, CA | Joined 20XX</p>
         <button className="edit-btn">Edit Profile</button>
