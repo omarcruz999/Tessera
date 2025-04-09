@@ -3,13 +3,12 @@ import { UserContext } from '../UserContext';
 import PostCard from './PostCard';
 
 function ProfileView() {
+  const [activeTab, setActiveTab] = useState('posts');
   const userContext = useContext(UserContext);
   if (!userContext) {
     return <div>Error: UserContext is not provided</div>;
   }
   const { user } = userContext;
-
-  const [activeTab, setActiveTab] = useState('posts');
 
   if (!user) {
     return <div>Error: User is not available</div>;
