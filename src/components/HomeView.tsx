@@ -99,6 +99,11 @@ function HomeView() {
 
       {isLoading ? (
         <div className="text-center py-8">Loading connections...</div>
+      ) : error ? (
+        <div className="text-center py-8">
+          <p className="text-red-500 mb-2">{error}</p>
+          <p className="text-gray-500 text-sm">Showing mock data instead</p>
+        </div>
       ) : (
         <div className="w-[812px] mx-auto grid grid-cols-4 gap-x-6 gap-y-4">
           {peers.length === 0 ? (
