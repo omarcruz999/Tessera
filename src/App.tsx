@@ -8,6 +8,7 @@ import DirectMessages from "./pages/DirectMessages";
 import Landing from "./pages/Landing";
 import { UserContext } from "./UserContext";
 import ProfileWrapper from "./pages/ProfileWrapper";
+import ErrorPage from "./pages/ErrorPage";
 
 function App() {
   const userContext = useContext(UserContext);
@@ -45,6 +46,9 @@ function App() {
 
             {/* Dynamic profile route for other users */}
             <Route path="/:username" element={<ProfileWrapper />} />
+
+            {/* Dynamic profile route for other users */}
+            <Route path="/error" element={<ErrorPage />} />
 
             <Route path="/direct-messages" element={<DirectMessages />} />
             {/* Redirect to home if user tries to access landing page while logged in */}
