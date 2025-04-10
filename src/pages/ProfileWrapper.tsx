@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, Navigate } from "react-router-dom";
 import ProfileView from "../components/ProfileView";
 import supabaseClient from "../services/supabaseClient";
 
@@ -52,6 +52,8 @@ function ProfileWrapper() {
         if (loading) {
             return <div>Loading Profile...</div>;
         }
+
+        if (!loading && !profileUser) return <Navigate to="/error" replace />;
 
         return(
             <div className="profile-container">
