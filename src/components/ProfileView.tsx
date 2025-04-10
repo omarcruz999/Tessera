@@ -42,7 +42,7 @@ function ProfileView({profileUser }: ProfileViewProps) {
       <div className="profile-sidebar">
         <img 
           src={ displayedUser.avatar_url || defaultProfilePicture} 
-          alt="Profile Picture" 
+          alt="Profile" 
           className="profile-image" />
         <h2 className="profile-name">{displayedUser.full_name}</h2>
         <h3 className="profile-bio">Just a regular old guy!</h3>
