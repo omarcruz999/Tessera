@@ -11,8 +11,9 @@ import ProfileWrapper from "./pages/ProfileWrapper";
 
 function App() {
   const userContext = useContext(UserContext);
-  if (!userContext) {
-    return <div>Error: UserContext is not provided</div>;
+
+  if (!userContext || userContext.isLoading) {
+    return <div>Loading user info...</div>;
   }
   
   // Check if user is logged in
