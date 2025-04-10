@@ -53,7 +53,10 @@ function ProfileWrapper() {
             return <div>Loading Profile...</div>;
         }
 
-        return <ProfileView profileUser={profileUser || undefined} />;
+        return(
+            <div className="profile-container">
+                <ProfileView profileUser={profileUser || undefined} />
+            </div>);
     }
 
     export default ProfileWrapper;
