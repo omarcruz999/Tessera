@@ -44,7 +44,7 @@ function App() {
             <Route path="/profile" element={<Profile />} />
 
             {/* Dynamic profile route for other users */}
-            <Route path="/profile/:username" element={<ProfileWrapper />} />
+            <Route path="/:username" element={<ProfileWrapper />} />
 
             <Route path="/direct-messages" element={<DirectMessages />} />
             {/* Redirect to home if user tries to access landing page while logged in */}
