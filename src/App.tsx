@@ -47,7 +47,7 @@ function App() {
             {/* Dynamic profile route for other users */}
             <Route path="/:username" element={<ProfileWrapper />} />
 
-            {/* Dynamic profile route for other users */}
+            {/* Error page route */}
             <Route path="/error" element={<ErrorPage />} />
 
             <Route path="/direct-messages" element={<DirectMessages />} />
