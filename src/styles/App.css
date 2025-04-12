@@ -154,6 +154,7 @@
   height: 100vh;
   gap: 0px; /* Adjust spacing between elements */
   overflow: hidden; /* Prevents unwanted scroll issues */
+  align-items: stretch; /* Ensures all elements stretch to fill the height */
 }
 
 
