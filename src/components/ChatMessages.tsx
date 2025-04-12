@@ -50,7 +50,7 @@ const ChatMessages = ({ selectedUserId, selectedUser, setSelectedUserId }: ChatM
   
     if (selectedUserId) {
       chatContainer.style.display = 'flex';
-      //fetchMessages(); // Fetch messages when a user is selected
+      fetchMessages(); // Fetch messages when a user is selected
       setTimeout(() => {
         chatContainer.style.opacity = '1';
       }, 10);
