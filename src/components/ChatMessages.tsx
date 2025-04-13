@@ -10,6 +10,7 @@ interface ChatMessagesProps {
     avatar_url: string;
   } | null;
   setSelectedUserId: (id: string | null) => void;
+  setConversations: React.Dispatch<React.SetStateAction<any[]>>;
 }
 
 interface Message {
@@ -20,37 +21,41 @@ interface Message {
   created_at: string;
 }
 
-const ChatMessages = ({ selectedUserId, selectedUser, setSelectedUserId }: ChatMessagesProps) => {
+const ChatMessages = ({
+  selectedUserId,
+  selectedUser,
+  setSelectedUserId,
+  setConversations,
+}: ChatMessagesProps) => {
   const { user } = useContext(UserContext) || {};
   const [messages, setMessages] = useState<Message[]>([]);
   const [newMessage, setNewMessage] = useState('');
   const bottomRef = useRef<HTMLDivElement | null>(null);
 
-    // Fetch Messages separated so it can be called from anywhere
-    const fetchMessages = async () => {
-      if (!user || !selectedUserId) return;
-  
-      const { data, error } = await supabaseClient
-        .from('messages')
-        .select('*')
-        .or(`and(sender_id.eq.${user.user_id},receiver_id.eq.${selectedUserId}),and(sender_id.eq.${selectedUserId},receiver_id.eq.${user.user_id})`)
-        .order('created_at', { ascending: true });
-  
-      if (error) {
-        console.error(error);
-        return;
-      }
-  
-      setMessages(data || []);
-    };
+  const fetchMessages = async () => {
+    if (!user || !selectedUserId) return;
+
+    const { data, error } = await supabaseClient
+      .from('messages')
+      .select('*')
+      .or(`and(sender_id.eq.${user.user_id},receiver_id.eq.${selectedUserId}),and(sender_id.eq.${selectedUserId},receiver_id.eq.${user.user_id})`)
+      .order('created_at', { ascending: true });
+
+    if (error) {
+      console.error(error);
+      return;
+    }
+
+    setMessages(data || []);
+  };
 
   useEffect(() => {
     const chatContainer = document.querySelector('.chat-container') as HTMLElement;
     if (!chatContainer) return;
-  
+
     if (selectedUserId) {
       chatContainer.style.display = 'flex';
-      fetchMessages(); // Fetch messages when a user is selected
+      fetchMessages();
       setTimeout(() => {
         chatContainer.style.opacity = '1';
       }, 10);
@@ -58,10 +63,9 @@ const ChatMessages = ({ selectedUserId, selectedUser, setSelectedUserId }: ChatM
       chatContainer.style.opacity = '0';
       setTimeout(() => {
         chatContainer.style.display = 'none';
-      }, 300); // match your transition duration
+      }, 300);
     }
   }, [selectedUserId]);
-  
 
   useRealtimeMessages((newMsg) => {
     if (!selectedUserId || !user) return;
@@ -92,7 +96,18 @@ const ChatMessages = ({ selectedUserId, selectedUser, setSelectedUserId }: ChatM
       created_at: new Date().toISOString(),
     };
 
+    // Update Chat Container
     setMessages((prev) => [...prev, tempMessage]);
+
+    // Update Last Message in Preview
+    setConversations((prev) =>
+      prev.map((conv) =>
+        conv.other_user_id === selectedUserId
+          ? { ...conv, last_message: content }
+          : conv
+      )
+    );
+
     setNewMessage('');
 
     const { error } = await supabaseClient.from('messages').insert([
@@ -105,7 +120,6 @@ const ChatMessages = ({ selectedUserId, selectedUser, setSelectedUserId }: ChatM
 
     if (error) {
       console.error('Error sending message:', error);
-      return;
     }
   };
 
@@ -131,53 +145,55 @@ const ChatMessages = ({ selectedUserId, selectedUser, setSelectedUserId }: ChatM
 
   return (
     <div className="chat-container flex flex-col justify-between h-full">
-
       {!selectedUserId ? (
         <div className="flex flex-1 items-center justify-center text-gray-500">
           Select a chat to start messaging
         </div>
       ) : (
         <>
-          {/* Header */}
           <div className="border-b py-2 border-gray-300 flex items-center justify-between">
             <div className="flex items-center">
-              <img 
-                src={selectedUser?.avatar_url || "/src/assets/defaultProfilePicture.png"} 
-                alt="Profile" 
-                className="inline-block w-12 h-12 mx-2 rounded-full" 
+              <img
+                src={selectedUser?.avatar_url || "/src/assets/defaultProfilePicture.png"}
+                alt="Profile"
+                className="inline-block w-12 h-12 mx-2 rounded-full"
               />
               <h2 className="ml-2 text-xl font-bold">
                 {selectedUser?.full_name || "Chat"}
               </h2>
             </div>
-
-            <img 
-              src="/src/assets/ExitIcon.png" 
-              alt="Close" 
-              className="inline-block w-8 h-8 mx-4 cursor-pointer" 
-              onClick={handleClose} 
+            <img
+              src="/src/assets/ExitIcon.png"
+              alt="Close"
+              className="inline-block w-8 h-8 mx-4 cursor-pointer"
+              onClick={handleClose}
             />
           </div>
 
-          {/* Messages */}
           <div className="overflow-y-auto p-4 flex-grow">
             {messages.length === 0 ? (
-              <p className="text-gray-500 text-center">Say hi and start the conversation!</p>
+              <p className="text-gray-500 text-center">
+                Say hi and start the conversation!
+              </p>
             ) : (
               messages.map((m) => (
                 <div key={m.id} className="mb-2">
-                  <span className="font-bold">{m.sender_id === user?.user_id ? 'You' : 'Them'}: </span>
+                  <span className="font-bold">
+                    {m.sender_id === user?.user_id ? "You" : "Them"}:{" "}
+                  </span>
                   {m.content}
                 </div>
               ))
             )}
-
             <div ref={bottomRef}></div>
           </div>
 
-          {/* Send Message */}
           <div className="send-container border-t pb-3 pt-1 border-gray-300 mt-2 flex items-center justify-between w-full">
-            <img src="/src/assets/PicIcon.png" alt="Camera" className="send-picture w-6 h-6 ml-4 mt-2" />
+            <img
+              src="/src/assets/PicIcon.png"
+              alt="Camera"
+              className="send-picture w-6 h-6 ml-4 mt-2"
+            />
             <div className="bg-gray-200 px-4 py-2 rounded-xl text-left flex-grow mt-2 mr-4 ml-4">
               <textarea
                 placeholder="Send Message..."
@@ -185,19 +201,18 @@ const ChatMessages = ({ selectedUserId, selectedUser, setSelectedUserId }: ChatM
                 rows={1}
                 value={newMessage}
                 onChange={(e) => setNewMessage(e.target.value)}
-                style={{ maxHeight: '150px' }}
+                style={{ maxHeight: "150px" }}
               />
             </div>
-            <img 
-              src="/src/assets/SendIcon.png" 
-              alt="Send" 
-              className="send-msg w-6 h-6 mr-4 mt-2 cursor-pointer" 
-              onClick={handleSendMessage} 
+            <img
+              src="/src/assets/SendIcon.png"
+              alt="Send"
+              className="send-msg w-6 h-6 mr-4 mt-2 cursor-pointer"
+              onClick={handleSendMessage}
             />
           </div>
         </>
       )}
-
     </div>
   );
 };

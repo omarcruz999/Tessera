@@ -61,10 +61,12 @@ const Messages = () => {
           </div>
         </div>
       </div>
-      <ChatMessages 
+
+      <ChatMessages
         selectedUserId={selectedUserId}
         selectedUser={selectedUser}
         setSelectedUserId={setSelectedUserId}
+        setConversations={setConversations}
       />
     </div>
   );
