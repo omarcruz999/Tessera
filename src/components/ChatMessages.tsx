@@ -1,7 +1,7 @@
-import { useContext, useEffect, useState, useRef } from 'react';
-import supabaseClient from '../services/supabaseClient';
-import { UserContext } from '../UserContext';
-import { useRealtimeMessages } from '../services/messages';
+import { useContext, useEffect, useState, useRef } from "react";
+import supabaseClient from "../services/supabaseClient";
+import { UserContext } from "../UserContext";
+import { useRealtimeMessages } from "../services/messages";
 
 interface ChatMessagesProps {
   selectedUserId: string | null;
@@ -29,17 +29,19 @@ const ChatMessages = ({
 }: ChatMessagesProps) => {
   const { user } = useContext(UserContext) || {};
   const [messages, setMessages] = useState<Message[]>([]);
-  const [newMessage, setNewMessage] = useState('');
+  const [newMessage, setNewMessage] = useState("");
   const bottomRef = useRef<HTMLDivElement | null>(null);
 
   const fetchMessages = async () => {
     if (!user || !selectedUserId) return;
 
     const { data, error } = await supabaseClient
-      .from('messages')
-      .select('*')
-      .or(`and(sender_id.eq.${user.user_id},receiver_id.eq.${selectedUserId}),and(sender_id.eq.${selectedUserId},receiver_id.eq.${user.user_id})`)
-      .order('created_at', { ascending: true });
+      .from("messages")
+      .select("*")
+      .or(
+        `and(sender_id.eq.${user.user_id},receiver_id.eq.${selectedUserId}),and(sender_id.eq.${selectedUserId},receiver_id.eq.${user.user_id})`
+      )
+      .order("created_at", { ascending: true });
 
     if (error) {
       console.error(error);
@@ -49,38 +51,54 @@ const ChatMessages = ({
     setMessages(data || []);
   };
 
+  // Initial Fetch on User Select
   useEffect(() => {
-    const chatContainer = document.querySelector('.chat-container') as HTMLElement;
+    const chatContainer = document.querySelector(
+      ".chat-container"
+    ) as HTMLElement;
     if (!chatContainer) return;
 
     if (selectedUserId) {
-      chatContainer.style.display = 'flex';
+      chatContainer.style.display = "flex";
       fetchMessages();
       setTimeout(() => {
-        chatContainer.style.opacity = '1';
+        chatContainer.style.opacity = "1";
       }, 10);
     } else {
-      chatContainer.style.opacity = '0';
+      chatContainer.style.opacity = "0";
       setTimeout(() => {
-        chatContainer.style.display = 'none';
+        chatContainer.style.display = "none";
       }, 300);
     }
   }, [selectedUserId]);
 
+  // Real-time Append New Msg
   useRealtimeMessages((newMsg) => {
     if (!selectedUserId || !user) return;
 
     const isRelevant =
-      (newMsg.sender_id === user.user_id && newMsg.receiver_id === selectedUserId) ||
-      (newMsg.sender_id === selectedUserId && newMsg.receiver_id === user.user_id);
+      (newMsg.sender_id === user.user_id &&
+        newMsg.receiver_id === selectedUserId) ||
+      (newMsg.sender_id === selectedUserId &&
+        newMsg.receiver_id === user.user_id);
 
     if (isRelevant) {
+      // Realtime Update Chat Bubble
       setMessages((prev) => [...prev, newMsg]);
+
+      // Realtime Update Preview
+      setConversations((prev) =>
+        prev.map((conv) =>
+          conv.other_user_id === selectedUserId
+            ? { ...conv, last_message: newMsg.content }
+            : conv
+        )
+      );
     }
   });
 
   useEffect(() => {
-    bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
+    bottomRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
   const handleSendMessage = async () => {
@@ -88,18 +106,7 @@ const ChatMessages = ({
 
     const content = newMessage.trim();
 
-    const tempMessage: Message = {
-      id: Date.now().toString(),
-      sender_id: user.user_id,
-      receiver_id: selectedUserId,
-      content,
-      created_at: new Date().toISOString(),
-    };
-
-    // Update Chat Container
-    setMessages((prev) => [...prev, tempMessage]);
-
-    // Update Last Message in Preview
+    // Only update last message in sidebar immediately
     setConversations((prev) =>
       prev.map((conv) =>
         conv.other_user_id === selectedUserId
@@ -108,9 +115,9 @@ const ChatMessages = ({
       )
     );
 
-    setNewMessage('');
+    setNewMessage("");
 
-    const { error } = await supabaseClient.from('messages').insert([
+    const { error } = await supabaseClient.from("messages").insert([
       {
         sender_id: user.user_id,
         receiver_id: selectedUserId,
@@ -119,25 +126,29 @@ const ChatMessages = ({
     ]);
 
     if (error) {
-      console.error('Error sending message:', error);
+      console.error("Error sending message:", error);
     }
   };
 
   const handleClose = () => {
-    const chatContainer = document.querySelector('.chat-container') as HTMLElement;
-    const messageContainer = document.querySelector('.messages-container') as HTMLElement;
-    const messagePreviews = document.querySelectorAll('.message-preview');
+    const chatContainer = document.querySelector(
+      ".chat-container"
+    ) as HTMLElement;
+    const messageContainer = document.querySelector(
+      ".messages-container"
+    ) as HTMLElement;
+    const messagePreviews = document.querySelectorAll(".message-preview");
 
-    messagePreviews.forEach(preview => preview.classList.remove('active'));
+    messagePreviews.forEach((preview) => preview.classList.remove("active"));
 
     if (chatContainer) {
-      chatContainer.style.opacity = '0';
+      chatContainer.style.opacity = "0";
       setTimeout(() => {
-        chatContainer.style.display = 'none';
+        chatContainer.style.display = "none";
       }, 300);
     }
     if (messageContainer) {
-      messageContainer.classList.remove('shrink');
+      messageContainer.classList.remove("shrink");
     }
 
     setSelectedUserId(null);
@@ -151,10 +162,14 @@ const ChatMessages = ({
         </div>
       ) : (
         <>
+          {/* Header */}
           <div className="border-b py-2 border-gray-300 flex items-center justify-between">
             <div className="flex items-center">
               <img
-                src={selectedUser?.avatar_url || "/src/assets/defaultProfilePicture.png"}
+                src={
+                  selectedUser?.avatar_url ||
+                  "/src/assets/defaultProfilePicture.png"
+                }
                 alt="Profile"
                 className="inline-block w-12 h-12 mx-2 rounded-full"
               />
@@ -170,6 +185,7 @@ const ChatMessages = ({
             />
           </div>
 
+          {/* Messages */}
           <div className="overflow-y-auto p-4 flex-grow">
             {messages.length === 0 ? (
               <p className="text-gray-500 text-center">
@@ -177,17 +193,34 @@ const ChatMessages = ({
               </p>
             ) : (
               messages.map((m) => (
-                <div key={m.id} className="mb-2">
-                  <span className="font-bold">
-                    {m.sender_id === user?.user_id ? "You" : "Them"}:{" "}
-                  </span>
-                  {m.content}
+                <div
+                  key={m.id}
+                  className={`flex mb-2 ${
+                    m.sender_id === user?.user_id
+                      ? "justify-end"
+                      : "justify-start"
+                  }`}
+                >
+                  <div
+                    className={`max-w-[80%] px-5 py-3 rounded-2xl text-base ${
+                      m.sender_id === user?.user_id
+                        ? "text-black"
+                        : "text-black"
+                    }`}
+                    style={{
+                      backgroundColor:
+                        m.sender_id === user?.user_id ? "#8EB486" : "#E5E7EB", // Your green vs gray
+                    }}
+                  >
+                    {m.content}
+                  </div>
                 </div>
               ))
             )}
             <div ref={bottomRef}></div>
           </div>
 
+          {/* Send */}
           <div className="send-container border-t pb-3 pt-1 border-gray-300 mt-2 flex items-center justify-between w-full">
             <img
               src="/src/assets/PicIcon.png"
@@ -201,6 +234,12 @@ const ChatMessages = ({
                 rows={1}
                 value={newMessage}
                 onChange={(e) => setNewMessage(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" && !e.shiftKey) {
+                    e.preventDefault(); // prevents newline
+                    handleSendMessage(); // triggers send
+                  }
+                }}
                 style={{ maxHeight: "150px" }}
               />
             </div>
