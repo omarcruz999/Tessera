@@ -28,9 +28,18 @@ export const useRealtimeMessages = (onNewMessage: (message: any) => void) => {
   useEffect(() => {
     const channel = supabaseClient
       .channel('messages-realtime')
-      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'messages' }, (payload) => {
-        onNewMessage(payload.new);
-      })
+      .on(
+        'postgres_changes',
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'messages',
+        },
+        (payload) => {
+          console.log('Received Realtime Payload:', payload);  // super important
+          onNewMessage(payload.new);
+        }
+      )
       .subscribe();
 
     return () => {
