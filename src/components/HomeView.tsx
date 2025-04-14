@@ -1,7 +1,9 @@
 import { useEffect, useState, useContext } from 'react';
 import axios from 'axios';
-import PeerCard from '../components/PeerCard.tsx';
-import PostForm from '../components/PostForm.tsx';
+import PeerCard from '../components/Cards/PeerCard.tsx';
+import PostForm from './Post Components/PostForm.tsx';
+import PostCard from './Post Components/PostCard.tsx';
+import PostModal from "../components/Post Components/PostModal.tsx"
 import { UserContext } from '../UserContext';
 
 // Define interfaces for API data
@@ -26,6 +28,7 @@ function HomeView() {
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isPostModalOpen, setIsPostModalOpen] = useState(false);
 
   useEffect(() => {
     const loadConnections = async () => {
@@ -87,6 +90,15 @@ function HomeView() {
     ];
   };
 
+  const handlePeerClick = () => {
+    setIsPostModalOpen(true);
+  }
+
+  const handleGroupClick = () => {
+    setIsPostModalOpen(true);
+  }
+
+
   return (
     <div id="HomeViewGrid" className="max-w-7xl mx-auto p-4">
       {/* Current user indicator */}
@@ -113,7 +125,7 @@ function HomeView() {
           ) : (
             peers.map((peer) => (
               <div key={peer.user_id} className="col-span-1">
-                <PeerCard name={peer.full_name} profilePicture={peer.avatar_url} />
+                <PeerCard name={peer.full_name} profilePicture={peer.avatar_url} onClick={handlePeerClick} />
               </div>
             ))
           )}
@@ -128,6 +140,12 @@ function HomeView() {
       </button>
 
       {isModalOpen && <PostForm onClose={() => setIsModalOpen(false)} />}
+
+        <PostModal isOpen={isPostModalOpen} onClose={() => setIsPostModalOpen(false)}>
+          <div >
+            <PostCard />
+          </div>
+        </PostModal>
     </div>
   );
 }
