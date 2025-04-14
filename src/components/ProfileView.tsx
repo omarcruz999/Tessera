@@ -1,7 +1,7 @@
 import { useContext, useState } from 'react';
 import { UserContext } from '../UserContext';
 import defaultProfilePicture from '../assets/defaultProfilePicture.png';
-import PostCard from './PostCard';
+import PostCard from '../components/Post Components/PostCard.tsx';
 
 interface ProfileViewProps {
   // If profileUser is provided then display that user's profile
