@@ -1,5 +1,4 @@
 import { useEffect, useRef } from 'react';
-import cancelImage from "../../assets/cancelPost.svg"
 
 interface ModalProps {
     isOpen: boolean;
