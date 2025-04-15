@@ -94,11 +94,6 @@ function HomeView() {
     setIsPostModalOpen(true);
   }
 
-  const handleGroupClick = () => {
-    setIsPostModalOpen(true);
-  }
-
-
   return (
     <div id="HomeViewGrid" className="max-w-7xl mx-auto p-4">
       {/* Current user indicator */}
