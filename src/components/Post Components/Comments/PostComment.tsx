@@ -1,5 +1,5 @@
 import johnPork from "/JohnPork.png"
-import NewReply from './NewReply';
+import NewReply from './NewReply.tsx';
 
 interface PostCommentProps {
     openReply: boolean
@@ -12,7 +12,7 @@ function PostComment({openReply, setOpenReply}: PostCommentProps) {
     const user = {
         name: "John Doe",
         profilePicture: johnPork,
-        postContent: "Wow John Pork would love this!."
+        postContent: "Wow John Pork would love this!"
     };
 
     return (
@@ -25,8 +25,8 @@ function PostComment({openReply, setOpenReply}: PostCommentProps) {
                 <div id="Comment Content" className='w-full h-full grid grid-rows-[1fr_1fr] text-left'>
 
                     <div className='flex items-center '>
-                        <p className='text-[18px] font-bold'>{user.name}</p>
-                        <p className='ml-2 text-[18px]'>{user.postContent}</p>
+                        <p className='text-[18px] font-bold text-black'>{user.name}</p>
+                        <p className='ml-2 text-[18px] text-black'>{user.postContent}</p>
                     </div>
 
                     <div className=''>

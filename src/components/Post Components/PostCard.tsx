@@ -1,16 +1,16 @@
 import { useState } from 'react';
 import johnPork from "/JohnPork.png"
-import testImage from "../assets/catTestImage.jpg"
-import commentIcon from "../assets/postIcons/commentIcon.svg"
-import saveIcon from "../assets/postIcons/saveIcon.svg"
-import savedIcon from "../assets/postIcons/savedIcon.svg"
-import repostIcon from "../assets/postIcons/repostIcon.svg"
-import repostedIcon from "../assets/postIcons/repostedIcon.svg"
-import shareIcon from "../assets/postIcons/shareIcon.svg"
-import likeIcon from "../assets/postIcons/likeIcon.svg"
-import likedIcon from "../assets/postIcons/likedIcon.svg"
-import PostComment from './PostComment';
-import NewComment from './NewComment';
+import testImage from "../../assets/catTestImage.jpg"
+import commentIcon from "../../assets/postIcons/commentIcon.svg"
+import saveIcon from "../../assets/postIcons/saveIcon.svg"
+import savedIcon from "../../assets/postIcons/savedIcon.svg"
+import repostIcon from "../../assets/postIcons/repostIcon.svg"
+import repostedIcon from "../../assets/postIcons/repostedIcon.svg"
+import shareIcon from "../../assets/postIcons/shareIcon.svg"
+import likeIcon from "../../assets/postIcons/likeIcon.svg"
+import likedIcon from "../../assets/postIcons/likedIcon.svg"
+import PostComment from './Comments/PostComment.tsx';
+import NewComment from './Comments/NewComment.tsx';
 
 
 function PostCard() {
@@ -37,9 +37,9 @@ function PostCard() {
                     <img src={user.profilePicture} alt="Profile Picture" className="w-[80px] h-[80px] rounded-full object-cover" />
                 </div>
 
-                <div id="Post Conent" className='w-full h-full grid grid-rows-[1fr_1fr] text-left'>
-                    <p className='text-[18px] text-[#424242] font-bold'>{user.name}</p>
-                    <p>{user.postContent}</p>
+                <div id="Post Content" className='w-full h-full grid grid-rows-[1fr_1fr] text-left'>
+                    <p className='text-[18px] text-black font-bold '>{user.name}</p>
+                    <p className='text-[#424242]'>{user.postContent}</p>
                 </div>
             </div>
 
