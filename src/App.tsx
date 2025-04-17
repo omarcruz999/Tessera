@@ -9,6 +9,7 @@ import Landing from "./pages/Landing";
 import { UserContext } from "./UserContext";
 import ProfileWrapper from "./pages/ProfileWrapper";
 import ErrorPage from "./pages/ErrorPage";
+import Login from "./pages/Login";
 
 function App() {
   const userContext = useContext(UserContext);
@@ -61,6 +62,7 @@ function App() {
           <Route path="/landing" element={<Landing/>} />
           {/* Redirect to landing page for all other routes when not logged in */}
           <Route path="*" element={<Navigate to="/landing" replace />} />
+          <Route path="/login" element={<Login  />} />
         </Routes>
       )}
     </Router>
