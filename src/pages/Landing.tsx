@@ -11,24 +11,24 @@ const Landing: React.FC = () => {
   }
 
   // Bob Brown's user info from the API
-  const bobBrownUser = {
-    user_id: '34f622cb-81e7-4e80-b769-3a655d1df57e',
-    full_name: 'Bob Brown',
-    avatar_url: 'https://placekitten.com/201/201',
-    is_active: true
-  };
+  // const bobBrownUser = {
+  //   user_id: '34f622cb-81e7-4e80-b769-3a655d1df57e',
+  //   full_name: 'Bob Brown',
+  //   avatar_url: 'https://placekitten.com/201/201',
+  //   is_active: true
+  // };
   
   const handleLogin = () => {
     // Login with Bob Brown (our test user)
-    userContext.login(bobBrownUser);
+    
     
     // Navigate to home page
-    navigate('/');
+    navigate('/Login');
   };
   
   const handleRegister = () => {
     // Use the same test user for register too
-    userContext.login(bobBrownUser);
+    // userContext.login(bobBrownUser);
     
     // Navigate to home page
     navigate('/');

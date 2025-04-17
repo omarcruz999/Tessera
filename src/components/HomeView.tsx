@@ -41,14 +41,14 @@ function HomeView() {
       try {
         // Fetch user's connections
         const connectionsResponse = await axios.get(
-          `http://localhost:4000/api/connections/all?user_id=${userContext.user.user_id}`
+          `http://localhost:4000/api/connections/all?user_id=${userContext.user.id}`
         );
         const connections: Connection[] = connectionsResponse.data;
 
         // Get IDs of connected users
         const connectedUserIds = connections
-          .map(conn => conn.user_1 === userContext.user!.user_id ? conn.user_2 : conn.user_1)
-          .filter(id => id !== userContext.user!.user_id);
+          .map(conn => conn.user_1 === userContext.user!.id ? conn.user_2 : conn.user_1)
+          .filter(id => id !== userContext.user!.id);
 
         // Fetch profile for each connected user
         const userProfiles: User[] = [];
@@ -99,8 +99,8 @@ function HomeView() {
       {/* Current user indicator */}
       {userContext?.user && (
         <div className="mb-4 p-3 bg-gray-100 rounded text-sm">
-          <p className="font-medium">Logged in as: {userContext.user.full_name}</p>
-          <p className="text-xs text-gray-500">ID: {userContext.user.user_id}</p>
+          <p className="font-medium text-black">Logged in as: {userContext.user.full_name}</p>
+          <p className="text-xs text-gray-500">ID: {userContext.user.id}</p>
         </div>
       )}
 
