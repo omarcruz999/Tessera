@@ -1,5 +1,5 @@
 import { useContext, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import logo from "../assets/Tessera.svg";
 import logoimage from "../assets/tesseraLogo.svg";
 import profile from "../assets/Avatar.svg";
@@ -10,8 +10,14 @@ import { UserContext } from "../UserContext";
 
 const NavBar = () => {
   const userContext = useContext(UserContext);
-  const { user, login, logout } = userContext || {};
+  const { user, loginWithGoogle, logout } = userContext || { 
+    user: null, 
+    loginWithGoogle: undefined, 
+    logout: undefined 
+  };
+  
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const navigate = useNavigate();
 
   const handleMouseEnter = () => {
     setIsDropdownOpen(true);
@@ -19,6 +25,35 @@ const NavBar = () => {
 
   const handleMouseLeave = () => {
     setIsDropdownOpen(false);
+  };
+
+  const handleGoogleLogin = async () => {
+    try {
+      if (loginWithGoogle) {
+        await loginWithGoogle();
+        // Redirects to Google
+      } else {
+        console.error('Google login function not available');
+      }
+    } catch (error: unknown) {
+      console.error('Google login failed:', error);
+    }
+  };
+
+  const navigateToLogin = () => {
+    setIsDropdownOpen(false);
+    navigate('/login');
+  };
+  
+  const handleLogout = async () => {
+    try {
+      if (logout) {
+        await logout();
+        navigate('/landing');
+      }
+    } catch (error: unknown) {
+      console.error('Logout failed:', error);
+    }
   };
 
   return (
@@ -33,34 +68,46 @@ const NavBar = () => {
           </Link>
         </div>
 
-        <ul className="flex text-align-center items-center space-x-10 mr-30">
-          <li>
-            <Link to="/">
-              <img src={acc} alt="Profile" className="h-15" />
-            </Link>
-          </li>
-          <li>
-            <Link to="/">
-              <img src={home} alt="Home" className="h-15" />
-            </Link>
-          </li>
-          <li>
-            <Link to="/direct-messages">
-              <img src={dm} alt="Direct Messages" className="h-15" />
-            </Link>
-          </li>
-        </ul>
+        {user && (
+          <ul className="flex text-align-center items-center space-x-10 mr-30">
+            <li>
+              <Link to="/profile">
+                <img src={acc} alt="Profile" className="h-15" />
+              </Link>
+            </li>
+            <li>
+              <Link to="/">
+                <img src={home} alt="Home" className="h-15" />
+              </Link>
+            </li>
+            <li>
+              <Link to="/direct-messages">
+                <img src={dm} alt="Direct Messages" className="h-15" />
+              </Link>
+            </li>
+          </ul>
+        )}
+        
         <div
           className="relative flex items-center"
           onMouseEnter={handleMouseEnter}
           onMouseLeave={handleMouseLeave}
         >
-          <img src={profile} alt="Avatar" className="h-15 cursor-pointer" />
+          <img 
+            src={user?.avatar_url || profile} 
+            alt="Avatar" 
+            className="h-10 w-10 rounded-full object-cover cursor-pointer" 
+          />
           {isDropdownOpen && (
             <div className="absolute right-0 top-full w-48 bg-white border rounded shadow-lg">
               <ul className="py-1">
                 {user ? (
                   <>
+                    <li>
+                      <span className="block px-4 py-2 text-black font-medium border-b border-gray-100">
+                        {user.full_name || 'Your Account'}
+                      </span>
+                    </li>
                     <li>
                       <Link
                         to="/profile"
@@ -74,7 +121,7 @@ const NavBar = () => {
                     </li>
                     <li>
                       <span
-                        onClick={logout}
+                        onClick={handleLogout}
                         className="block px-4 py-2 text-black hover:bg-gray-200 cursor-pointer"
                       >
                         Logout
@@ -84,22 +131,19 @@ const NavBar = () => {
                 ) : (
                   <>
                     <li>
-                      <Link
-                        to="/profile"
-                        className="block px-4 py-2 text-black hover:bg-gray-200"
+                      <span
+                        onClick={navigateToLogin}
+                        className="block px-4 py-2 text-black hover:bg-gray-200 cursor-pointer"
                       >
-                        Profile
-                      </Link>
-                    </li>
-                    <li>
-                      <hr className="my-1 border-gray-300" />
+                        Login with Email
+                      </span>
                     </li>
                     <li>
                       <span
-                        onClick={() => login && login()}
+                        onClick={handleGoogleLogin}
                         className="block px-4 py-2 text-black hover:bg-gray-200 cursor-pointer"
                       >
-                        Login
+                        Login with Google
                       </span>
                     </li>
                   </>
