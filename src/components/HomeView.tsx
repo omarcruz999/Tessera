@@ -1,7 +1,9 @@
 import { useEffect, useState, useContext } from 'react';
 import axios from 'axios';
-import PeerCard from '../components/PeerCard.tsx';
-import PostForm from '../components/PostForm.tsx';
+import PeerCard from '../components/Cards/PeerCard.tsx';
+import PostForm from './Post Components/PostForm.tsx';
+import PostCard from './Post Components/PostCard.tsx';
+import PostModal from "../components/Post Components/PostModal.tsx"
 import { UserContext } from '../UserContext';
 
 // Define interfaces for API data
@@ -26,6 +28,7 @@ function HomeView() {
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isPostModalOpen, setIsPostModalOpen] = useState(false);
 
   useEffect(() => {
     const loadConnections = async () => {
@@ -38,14 +41,14 @@ function HomeView() {
       try {
         // Fetch user's connections
         const connectionsResponse = await axios.get(
-          `http://localhost:4000/api/connections/all?user_id=${userContext.user.user_id}`
+          `http://localhost:4000/api/connections/all?user_id=${userContext.user.id}`
         );
         const connections: Connection[] = connectionsResponse.data;
 
         // Get IDs of connected users
         const connectedUserIds = connections
-          .map(conn => conn.user_1 === userContext.user!.user_id ? conn.user_2 : conn.user_1)
-          .filter(id => id !== userContext.user!.user_id);
+          .map(conn => conn.user_1 === userContext.user!.id ? conn.user_2 : conn.user_1)
+          .filter(id => id !== userContext.user!.id);
 
         // Fetch profile for each connected user
         const userProfiles: User[] = [];
@@ -87,13 +90,17 @@ function HomeView() {
     ];
   };
 
+  const handlePeerClick = () => {
+    setIsPostModalOpen(true);
+  }
+
   return (
     <div id="HomeViewGrid" className="max-w-7xl mx-auto p-4">
       {/* Current user indicator */}
       {userContext?.user && (
         <div className="mb-4 p-3 bg-gray-100 rounded text-sm">
-          <p className="font-medium">Logged in as: {userContext.user.full_name}</p>
-          <p className="text-xs text-gray-500">ID: {userContext.user.user_id}</p>
+          <p className="font-medium text-black">Logged in as: {userContext.user.full_name}</p>
+          <p className="text-xs text-gray-500">ID: {userContext.user.id}</p>
         </div>
       )}
 
@@ -113,7 +120,7 @@ function HomeView() {
           ) : (
             peers.map((peer) => (
               <div key={peer.user_id} className="col-span-1">
-                <PeerCard name={peer.full_name} profilePicture={peer.avatar_url} />
+                <PeerCard name={peer.full_name} profilePicture={peer.avatar_url} onClick={handlePeerClick} />
               </div>
             ))
           )}
@@ -128,6 +135,12 @@ function HomeView() {
       </button>
 
       {isModalOpen && <PostForm onClose={() => setIsModalOpen(false)} />}
+
+        <PostModal isOpen={isPostModalOpen} onClose={() => setIsPostModalOpen(false)}>
+          <div >
+            <PostCard />
+          </div>
+        </PostModal>
     </div>
   );
 }
