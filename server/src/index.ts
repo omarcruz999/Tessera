@@ -1,21 +1,26 @@
 /*
-    Thisis the main entry point of the Express server.
-    It configures middleware, routses, and starts the server.
+    This is the main entry point of the Express server.
+    It configures middleware, routes, and starts the server.
 */
 
+import dotenv from 'dotenv';
+import path from 'path';
+
+// Load environment variables FIRST, before any other imports
+dotenv.config({ path: path.resolve(__dirname, '../.env') });
+
+// Now import everything else
 import express, { Application } from 'express';
 import cors from 'cors';
-import dotenv from 'dotenv';
 import morgan from 'morgan';
+import { authenticate } from './middleware/auth';
 
 // Import route groups
 // import authRoutes from './routes/authRoutes';
-import  userRoutes  from './routes/userRoutes';
+import userRoutes from './routes/userRoutes';
 import connectionRoutes from './routes/connectionRoutes';
 import { postRoutes } from './routes/postsRoutes';
 import { postMediaRoutes } from './routes/postMediaRoutes';
-
-dotenv.config();
 
 const app: Application = express();
 const PORT = process.env.PORT || 4000;
@@ -26,11 +31,14 @@ app.use(express.json());    // Parse incoming JSON data
 app.use(morgan('dev'));     // Log incoming requests
 
 // Routes Setup
+// Public routes (if any)
 // app.use('/api/auth', authRoutes);
-app.use('/api/users', userRoutes);
-app.use('/api/connections', connectionRoutes);
-app.use('/api/posts', postRoutes);
-app.use('/api/post-media', postMediaRoutes);
+
+// Protected routes with auth middleware
+app.use('/api/users', authenticate, userRoutes);
+app.use('/api/connections', authenticate, connectionRoutes);
+app.use('/api/posts', authenticate, postRoutes);
+app.use('/api/post-media', authenticate, postMediaRoutes);
 
 // Handle undefined routes
 app.use((req, res) => {

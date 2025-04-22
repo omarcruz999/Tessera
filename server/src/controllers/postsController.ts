@@ -3,11 +3,9 @@
 */
 
 import { RequestHandler } from 'express';
-import { createClient } from '@supabase/supabase-js';
 import Joi from 'joi';
+import supabaseAdmin from '../services/supabaseAdmin';
 
-// Initialize Supabase client
-const supabase = createClient(process.env.SUPABASE_URL!, process.env.SUPABASE_KEY!);
 
 // Schema for creating a post
 export const createPostSchema = Joi.object({
@@ -50,7 +48,7 @@ export const createPost: RequestHandler = async (req, res) => {
         const { user_id, text } = req.body;
 
         // Insert the post into the database
-        const { data, error: dbError } = await supabase
+        const { data, error: dbError } = await supabaseAdmin
             .from('posts')
             .insert([{ user_id, text }])
             .select();
@@ -85,7 +83,7 @@ export const updatePost: RequestHandler = async (req, res) => {
         const { text } = req.body;
 
         // Update the post in the database
-        const { error: dbError } = await supabase
+        const { error: dbError } = await supabaseAdmin
             .from('posts')
             .update({ text })
             .eq('id', id);
@@ -120,7 +118,7 @@ export const deletePost: RequestHandler = async (req, res) => {
         const { user_id } = req.body;
 
         // Delete the post from the database
-        const { error: dbError } = await supabase
+        const { error: dbError } = await supabaseAdmin
             .from('posts')
             .delete()
             .match({ id, user_id });
@@ -145,7 +143,7 @@ export const getPost: RequestHandler = async (req, res) => {
             return;
         }
 
-        const { data, error } = await supabase
+        const { data, error } = await supabaseAdmin
             .from('posts')
             .select('*')
             .eq('id', id)
@@ -179,7 +177,7 @@ export const getPosts: RequestHandler = async (req, res) => {
         const { user_id } = req.query;
 
         // Fetch posts for the user
-        const { data, error: dbError } = await supabase
+        const { data, error: dbError } = await supabaseAdmin
             .from('posts')
             .select('*')
             .eq('user_id', user_id);

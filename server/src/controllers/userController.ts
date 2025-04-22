@@ -1,5 +1,5 @@
 import { Request, Response, RequestHandler } from 'express';
-import { supabase } from '../services/supabase'; // Import Supabase client
+import supabaseAdmin from '../services/supabaseAdmin'; // Import Supabase client
 import Joi from 'joi';
 
 /**
@@ -22,7 +22,7 @@ export const getUserProfile: RequestHandler = async (req: Request, res: Response
         const userId = req.query.user_id as string;
 
         // Query the 'profiles' table for the user's profile
-        const { data: profile, error: dbError } = await supabase
+        const { data: profile, error: dbError } = await supabaseAdmin
             .from('profiles')
             .select('id, full_name, avatar_url, is_active') // Select only necessary fields
             .eq('id', userId)
@@ -62,7 +62,7 @@ export const updateUserProfile: RequestHandler = async (req: Request, res: Respo
         const { user_id: userId, ...updateData } = req.body;
 
         // Update the user's profile in the 'profiles' table
-        const { error: dbError } = await supabase
+        const { error: dbError } = await supabaseAdmin
             .from('profiles')
             .update(updateData)
             .eq('id', userId);

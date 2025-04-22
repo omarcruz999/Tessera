@@ -3,10 +3,8 @@
 */
 
 import { RequestHandler } from 'express';
-import { createClient } from '@supabase/supabase-js';
+import supabaseAdmin from '../services/supabaseAdmin'; // Import the centralized Supabase client
 import Joi from 'joi';
-
-const supabase = createClient(process.env.SUPABASE_URL || '', process.env.SUPABASE_KEY || '');
 
 // Joi Schemas
 const createConnectionSchema = Joi.object({
@@ -45,7 +43,7 @@ export const createConnection: RequestHandler = async (req, res) => {
 
         const { user_1, user_2 } = req.body;
 
-        const { data, error: dbError } = await supabase
+        const { data, error: dbError } = await supabaseAdmin
             .from('connections')
             .insert([{ user_1, user_2, status: 'pending' }])
             .select();
@@ -71,7 +69,7 @@ export const deleteConnection: RequestHandler = async (req, res) => {
 
         const { user_1, user_2 } = req.body;
 
-        const { error: dbError } = await supabase
+        const { error: dbError } = await supabaseAdmin
             .from('connections')
             .delete()
             .or(`user_1.eq.${user_1},user_2.eq.${user_2}`);
@@ -97,7 +95,7 @@ export const updateConnection: RequestHandler = async (req, res) => {
 
         const { user_1, user_2, status } = req.body;
 
-        const { error: dbError } = await supabase
+        const { error: dbError } = await supabaseAdmin
             .from('connections')
             .update({ status })
             .or(`user_1.eq.${user_1},user_2.eq.${user_2}`);
@@ -123,7 +121,7 @@ export const getConnection: RequestHandler = async (req, res) => {
 
         const { user_1, user_2 } = req.query;
 
-        const { data, error: dbError } = await supabase
+        const { data, error: dbError } = await supabaseAdmin
             .from('connections')
             .select('*')
             .or(`user_1.eq.${user_1},user_2.eq.${user_2}`)
@@ -150,7 +148,7 @@ export const getConnections: RequestHandler = async (req, res) => {
 
         const { user_id } = req.query;
 
-        const { data, error: dbError } = await supabase
+        const { data, error: dbError } = await supabaseAdmin
             .from('connections')
             .select('*')
             .or(`user_1.eq.${user_id},user_2.eq.${user_id}`);
