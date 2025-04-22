@@ -23,8 +23,17 @@ export const sendMessage = async (sender_id: string, receiver_id: string, conten
   return data;
 };
 
+// Define the Message interface
+export interface Message {
+  id: string;
+  sender_id: string;
+  receiver_id: string;
+  content: string;
+  created_at: string;
+}
+
 // Realtime listener for new messages
-export const useRealtimeMessages = (onNewMessage: (message: any) => void) => {
+export const useRealtimeMessages = (onNewMessage: (message: Message) => void) => {
   useEffect(() => {
     const channel = supabaseClient
       .channel('messages-realtime')
@@ -37,7 +46,7 @@ export const useRealtimeMessages = (onNewMessage: (message: any) => void) => {
         },
         (payload) => {
           console.log('Received Realtime Payload:', payload);  // super important
-          onNewMessage(payload.new);
+          onNewMessage(payload.new as Message);
         }
       )
       .subscribe();
