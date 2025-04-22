@@ -17,8 +17,10 @@ interface ProfileViewProps {
 }
 
 function ProfileView({profileUser }: ProfileViewProps) {
-
   const userContext = useContext(UserContext);
+  const [activeTab, setActiveTab] = useState('posts');
+  const navigate = useNavigate();
+
   if (!userContext) {
     return <div>Error: UserContext is not provided</div>;
   }
@@ -35,9 +37,6 @@ function ProfileView({profileUser }: ProfileViewProps) {
 
   // Determine if we are viewing our own profile or someone else's
   const isOwnProfile = loggedInUser && displayedUser.user_id === loggedInUser?.user_id;
-
-  const [activeTab, setActiveTab] = useState('posts');
-  const navigate = useNavigate();
 
 
   const handleMessageClick = () => {
