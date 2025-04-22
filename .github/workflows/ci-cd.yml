@@ -22,7 +22,7 @@ jobs:
         run: npm test
         env:
           VITE_SUPABASE_URL: "https://example.supabase.co"
-          VITE_SUPABASE_ANON_KEY: "dummy-key-for-testing"
+          VITE_SUPABASE_KEY: "dummy-key-for-testing"
 
   build:
     needs: test
