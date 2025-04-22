@@ -1,14 +1,19 @@
 import { useState } from 'react';
 import johnPork from "/JohnPork.png"
-import commentIcon from "../assets/postComment.svg"
-import repostIcon from "../assets/postRepost.svg"
-import likeIcon from "../assets/postLike.svg"
-import saveIcon from "../assets/postSave.svg"
-import shareIcon from "../assets/postShare.svg"
-import testImage from "../assets/bigImageTest.jpg"
+import testImage from "../assets/catTestImage.jpg"
+import commentIcon from "../assets/postIcons/commentIcon.svg"
+import saveIcon from "../assets/postIcons/saveIcon.svg"
+import savedIcon from "../assets/postIcons/savedIcon.svg"
+import repostIcon from "../assets/postIcons/repostIcon.svg"
+import repostedIcon from "../assets/postIcons/repostedIcon.svg"
+import shareIcon from "../assets/postIcons/shareIcon.svg"
+import likeIcon from "../assets/postIcons/likeIcon.svg"
+import likedIcon from "../assets/postIcons/likedIcon.svg"
+import PostComment from './PostComment';
+import NewComment from './NewComment';
+
 
 function PostCard() {
-
 
     const user = {
         name: "John Pork",
@@ -16,10 +21,11 @@ function PostCard() {
         postContent: "Hey guys! Check out my awsome cool cat. Found her in the dumpster lmao",
     }
 
-    const [uploadedImage, setUserUploadedImage] = useState<string | null>(null)
-    const [postContent, setPostContent] = useState("")
+    const [postResposted, setPostResposted] = useState(false)
     const [postLiked, setPostLiked] = useState(false)
     const [postSaved, setPostSaved] = useState(false)
+    const [openComments, setOpenComments] = useState(false)
+    const [openReply, setOpenReply] = useState(false)
 
 
     return (
@@ -38,7 +44,7 @@ function PostCard() {
             </div>
 
            
-            <div id="postImageDiv" className='w-full h-auto my-4 flex items-center justify-center'>
+            <div id="postImageDiv" className='w-1/2 mx-auto h-auto my-4 flex items-center justify-center'>
                     <img 
                         src={testImage}
                     />
@@ -54,10 +60,11 @@ function PostCard() {
                         id="commentButton"
                         type="button"
                         style={{ outline: "none" }}
+                        onClick={() => setOpenComments((prev) => !prev)}
                         className="w-7 h-7 !p-0 !bg-[#FDF7F4] focus:outline-none hover:bg-gray-200 !rounded-full transition-colors !border-none !button-focus: none"
                     >
                         <div className="flex items-center justify-center w-full h-full">
-                            <img src={commentIcon} alt="Image Icon" className="w-10 h-10" />
+                            <img src={commentIcon} alt="Comment Icon" className="w-10 h-10" />
                         </div>
                     </button>
 
@@ -66,21 +73,29 @@ function PostCard() {
                         id="repostButton"
                         type="button"
                         style={{ outline: "none" }}
+                        onClick={() => setPostResposted((prev) => !prev)}
                         className="w-9 h-9 !p-0 !bg-[#FDF7F4] focus:outline-none hover:bg-gray-200 !rounded-full transition-colors !border-none !button-focus: none">
                         <div className="flex items-center justify-center w-full h-full">
-                            <img src={repostIcon} alt="Image Icon" className="w-10 h-10" />
+                            <img 
+                                src={postResposted ? repostedIcon : repostIcon} 
+                                alt="Repost Icon" 
+                                className="w-10 h-10"/>
                         </div>
                     </button>
 
                     {/* Like Button */}
                     <button
                         id="likeButton"
-                        type="button"
+                        type="button"   
                         style={{ outline: "none" }}
                         onClick={() => setPostLiked((prev => !prev))}
-                        className="w-7 h-7 !p-0 !bg-[#FDF7F4] focus:outline-none hover:bg-gray-200 !rounded-full transition-colors !border-none !button-focus: none">
+                        className="w-9 h-9 !p-0 !bg-[#FDF7F4] focus:outline-none hover:bg-gray-200 !rounded-full transition-colors !border-none !button-focus: none">
                         <div className="flex items-center justify-center w-full h-full">
-                            <img src={likeIcon} alt="Image Icon" className="w-10 h-10" />
+                            <img 
+                                src={postLiked ? likedIcon: likeIcon} 
+                                alt="Like Icon" 
+                                className="w-10 h-10" 
+                                />
                         </div>
                     </button>
                 </div>
@@ -91,9 +106,13 @@ function PostCard() {
                         id="saveButton"
                         type="button"
                         style={{ outline: "none" }}
+                        onClick={() => setPostSaved((prev) => !prev)}
                         className="w-10 h-10 !p-0 !bg-[#FDF7F4] focus:outline-none hover:bg-gray-200 !rounded-full transition-colors !border-none !button-focus: none">
                         <div className="flex items-center justify-center w-full h-full">
-                            <img src={saveIcon} alt="Image Icon" className="w-full h-full object-contain" />
+                            <img 
+                                src={postSaved ? savedIcon : saveIcon} 
+                                alt="Save Icon" 
+                                className="w-full h-full object-contain" />
                         </div>
                     </button>
 
@@ -104,12 +123,23 @@ function PostCard() {
                         style={{ outline: "none" }}
                         className="w-7 h-7 !p-0 !bg-[#FDF7F4] focus:outline-none hover:bg-gray-200 !rounded-full transition-colors !border-none !button-focus: none">
                         <div className="flex items-center justify-center w-full h-full">
-                            <img src={shareIcon} alt="Image Icon" className="w-10 h-10" />
+                            <img src={shareIcon} alt="Share Icon" className="w-10 h-10" />
                         </div>
                     </button>
                 </div>
                 
             </div> {/* Post Buttons Div End */}
+
+            {openComments && (
+                // Comments Div
+                <div id='commentsDiv' className='w-full h-auto my-4'>
+                    <PostComment openReply={openReply} setOpenReply={setOpenReply}/>
+
+                    {/* Only show NewComment when reply box is NOT open */}
+                    {!openReply && <NewComment />}
+                </div>
+            )}
+
         </div> //Post Div End
     )
 }
