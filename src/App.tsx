@@ -1,5 +1,5 @@
-import { useContext } from "react";
-import { BrowserRouter as Router, Route, Routes, Link, Navigate } from "react-router-dom";
+import { BrowserRouter as Router, Route, Routes, Navigate } from "react-router-dom";
+import { useContext, useEffect } from "react";
 import NavBar from "./components/Navbar";
 import Home from "./pages/Home";
 import About from "./pages/About";
@@ -10,59 +10,56 @@ import { UserContext } from "./UserContext";
 import ProfileWrapper from "./pages/ProfileWrapper";
 import ErrorPage from "./pages/ErrorPage";
 import Login from "./pages/Login";
+import Register from "./pages/Register";
+import Onboarding from "./pages/Onboarding";
 
 function App() {
   const userContext = useContext(UserContext);
 
+  useEffect(() => {
+    console.log("App rendering, auth state:", 
+      userContext?.isLoading ? "loading" : userContext?.user ? "authenticated" : "not authenticated");
+  }, [userContext]);
+
   if (!userContext || userContext.isLoading) {
-    return <div>Loading user info...</div>;
+    return <div className="flex items-center justify-center h-screen">Loading user info...</div>;
   }
   
   // Check if user is logged in
   const isLoggedIn = !!userContext.user;
+  console.log("Is user logged in:", isLoggedIn);
 
   return (
     <Router>
       {isLoggedIn ? (
-        // Show the main app when user is logged in
         <div>
           <NavBar />
-          <nav>
-            <ul>
-              <li>
-                <Link to="/">Home</Link>
-              </li>
-              <li>
-                <Link to="/about">About</Link>
-              </li>
-            </ul>
-          </nav>
-
-          <Routes>
-            <Route path="/" element={<Home />} />
-            <Route path="/about" element={<About />} />
-            
-            {/* Default route for the logged in user*/}
-            <Route path="/profile" element={<Profile />} />
-
-            {/* Dynamic profile route for other users */}
-            <Route path="/:username" element={<ProfileWrapper />} />
-
-            {/* Error page route */}
-            <Route path="/error" element={<ErrorPage />} />
-
-            <Route path="/direct-messages" element={<DirectMessages />} />
-            {/* Redirect to home if user tries to access landing page while logged in */}
-            <Route path="/landing" element={<Navigate to="/" replace />} />
-          </Routes>
+          <div className="pt-16"> {/* Add padding for the fixed navbar */}
+            <Routes>
+              <Route path="/" element={<Home />} />
+              <Route path="/about" element={<About />} />
+              <Route path="/profile" element={<Profile />} />
+              <Route path="/error" element={<ErrorPage />} />
+              <Route path="/direct-messages" element={<DirectMessages />} />
+              <Route path="/onboarding" element={<Onboarding />} />
+              <Route path="/landing" element={<Navigate to="/" replace />} />
+              <Route path="/login" element={<Navigate to="/" replace />} />
+              
+              {/* Put parameterized routes after specific routes */}
+              <Route path="/:username" element={<ProfileWrapper />} />
+              
+              {/* Catch-all must be last */}
+              <Route path="*" element={<Navigate to="/" replace />} />
+            </Routes>
+          </div>
         </div>
       ) : (
-        // Show landing page when user is not logged in
         <Routes>
-          <Route path="/landing" element={<Landing/>} />
-          {/* Redirect to landing page for all other routes when not logged in */}
+          <Route path="/login" element={<Login />} />
+          <Route path="/register" element={<Register />} />
+          <Route path="/onboarding" element={<Onboarding />} />
+          <Route path="/landing" element={<Landing />} />
           <Route path="*" element={<Navigate to="/landing" replace />} />
-          <Route path="/login" element={<Login  />} />
         </Routes>
       )}
     </Router>
