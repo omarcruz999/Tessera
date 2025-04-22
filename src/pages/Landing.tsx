@@ -17,10 +17,13 @@ const Landing: React.FC = () => {
   //   avatar_url: 'https://placekitten.com/201/201',
   //   is_active: true
   // };
+
+  
   
   const handleLogin = () => {
     // Login with Bob Brown (our test user)
-    
+
+
     
     // Navigate to home page
     navigate('/Login');
@@ -28,7 +31,9 @@ const Landing: React.FC = () => {
   
   const handleRegister = () => {
     // Use the same test user for register too
+
     // userContext.login(bobBrownUser);
+
     
     // Navigate to home page
     navigate('/');
@@ -48,7 +53,7 @@ const Landing: React.FC = () => {
             className="bg-[#E7A691] hover:bg-[#D8957F] text-[#424242] text-lg font-medium py-3 px-8 rounded-lg shadow-md transition-all duration-300"
             onClick={handleLogin}
           >
-            Log In (Test User: Bob Brown)
+            Log In (Test User: Jonathan Rodriguez)
           </button>
           <button 
             className="bg-transparent hover:bg-[#FAE8E0] text-[#424242] border-2 border-[#E7A691] text-lg font-medium py-3 px-8 rounded-lg shadow-md transition-all duration-300"

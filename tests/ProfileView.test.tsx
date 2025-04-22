@@ -3,6 +3,7 @@ import { describe, it, expect, vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import { UserContext } from '../src/UserContext';
 import ProfileView from '../src/components/ProfileView';
+import { MemoryRouter } from 'react-router-dom';
 
 describe('ProfileView component', () => {
   it('renders the profile view with user information', () => {
@@ -14,24 +15,47 @@ describe('ProfileView component', () => {
     };
 
     render(
-      <UserContext.Provider value={{ user: mockUser, login: vi.fn(), logout: vi.fn(), isLoading: false }}>
-        <ProfileView />
-      </UserContext.Provider>
+      <MemoryRouter>
+        <UserContext.Provider value={{ user: mockUser }}>
+          <ProfileView />
+        </UserContext.Provider>
+      </MemoryRouter>
     );
 
-    // Check for the user's name using native Vitest assertions
     const nameElement = screen.getByText('John Doe');
     expect(nameElement).toBeTruthy();
 
-    // Profile image check with native Vitest assertions
+    const bioElement = screen.getByText('Just a regular old guy!');
+    expect(bioElement).toBeInTheDocument();
+
+    const locationElement = screen.getByText('Pomona, CA | Joined 20XX');
+    expect(locationElement).toBeInTheDocument();
+
     const imageElement = screen.getByAltText('Profile');
     expect(imageElement).toBeTruthy();
   });
 
   it('renders error message when user context is not provided', () => {
-    render(<ProfileView />);
-    
+    render(
+      <MemoryRouter>
+        <ProfileView />
+      </MemoryRouter>
+    );
+
     const errorElement = screen.getByText('Error: UserContext is not provided');
-    expect(errorElement).toBeTruthy();
+    expect(errorElement).toBeInTheDocument();
+  });
+
+  it('renders error message when user is not available', () => {
+    render(
+      <MemoryRouter>
+        <UserContext.Provider value={{ user: null }}>
+          <ProfileView />
+        </UserContext.Provider>
+      </MemoryRouter>
+    );
+
+    const errorElement = screen.getByText('Error: User is not available');
+    expect(errorElement).toBeInTheDocument();
   });
 });
