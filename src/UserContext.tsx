@@ -2,16 +2,17 @@ import { createContext, useState, useEffect, ReactNode } from 'react';
 
 // Define the User interface to match DB schema
 interface User {
-  user_id: string;
-  full_name: string;
-  avatar_url: string;
-  is_active: boolean;
+  id: string; // Unique user ID
+  email: string; // User's email address
+  user_metadata?: Record<string, any>; // Optional metadata
+  full_name: string; // User's full name
+  created_at?: string; // Timestamp of user creation
 }
 
 // Define what's available in the context
 interface UserContextType {
   user: User | null;
-  login: (userData?: User) => void;
+  login: (userData: User) => void;
   logout: () => void;
   isLoading: boolean;
 }
@@ -33,32 +34,22 @@ const UserProvider = ({ children }: { children: ReactNode }) => {
     setIsLoading(false);
   }, []);
 
-  // Placeholder login function
-  const login = (userData?: User) => {
-    // If userData is provided, use it; otherwise use default mock data
-    const mockUser: User = userData || {
-      user_id: 'mock-user-123',
-      full_name: 'Demo User',
-      avatar_url: 'https://via.placeholder.com/150',
-      is_active: true
-    };
-    
-    console.log('Logging in with user:', mockUser);
-    
+  const login = (userData: User) => {
+    console.log('Logging in with user:', userData);
+
     // Update state
-    setUser(mockUser);
-    
+    setUser(userData);
+
     // Store in localStorage
-    localStorage.setItem('user', JSON.stringify(mockUser));
+    localStorage.setItem('user', JSON.stringify(userData));
   };
 
-  // Placeholder logout function
   const logout = () => {
     console.log('Logging out user');
-    
+
     // Clear state
     setUser(null);
-    
+
     // Clear localStorage
     localStorage.removeItem('user');
   };
@@ -71,4 +62,4 @@ const UserProvider = ({ children }: { children: ReactNode }) => {
   );
 };
 
-export { UserContext, UserProvider };
+export { UserContext, UserProvider, type User };
