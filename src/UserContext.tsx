@@ -1,12 +1,11 @@
 import { createContext, useState, useEffect, ReactNode } from 'react';
 
 // Define the User interface to match DB schema
-interface User {
-  id: string; // Unique user ID
-  email: string; // User's email address
-  user_metadata?: Record<string, any>; // Optional metadata
+export interface User {
+  user_id: string; // Unique user ID
   full_name: string; // User's full name
-  created_at?: string; // Timestamp of user creation
+  avatar_url: string; // URL to user's avatar
+  is_active: boolean; // User's active status
 }
 
 // Define what's available in the context
@@ -62,4 +61,4 @@ const UserProvider = ({ children }: { children: ReactNode }) => {
   );
 };
 
-export { UserContext, UserProvider, type User };
+export { UserContext, UserProvider };
