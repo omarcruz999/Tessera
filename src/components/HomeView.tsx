@@ -4,7 +4,7 @@ import PeerCard from '../components/Cards/PeerCard.tsx';
 import PostForm from './Post Components/PostForm.tsx';
 import PostCard from './Post Components/PostCard.tsx';
 import PostModal from "../components/Post Components/PostModal.tsx"
-import { UserContext } from '../UserContext';
+import { UserContext, User} from '../UserContext';
 
 // Define interfaces for API data
 interface Connection {
@@ -13,13 +13,6 @@ interface Connection {
   user_2: string;
   status: string;
   created_at: string;
-}
-
-interface User {
-  user_id: string;
-  full_name: string;
-  avatar_url: string;
-  is_active: boolean;
 }
 
 function HomeView() {
@@ -41,14 +34,14 @@ function HomeView() {
       try {
         // Fetch user's connections
         const connectionsResponse = await axios.get(
-          `http://localhost:4000/api/connections/all?user_id=${userContext.user.id}`
+          `http://localhost:4000/api/connections/all?user_id=${userContext.user.user_id}`
         );
         const connections: Connection[] = connectionsResponse.data;
 
         // Get IDs of connected users
         const connectedUserIds = connections
-          .map(conn => conn.user_1 === userContext.user!.id ? conn.user_2 : conn.user_1)
-          .filter(id => id !== userContext.user!.id);
+          .map(conn => conn.user_1 === userContext.user!.user_id ? conn.user_2 : conn.user_1)
+          .filter(id => id !== userContext.user!.user_id);
 
         // Fetch profile for each connected user
         const userProfiles: User[] = [];
@@ -100,7 +93,7 @@ function HomeView() {
       {userContext?.user && (
         <div className="mb-4 p-3 bg-gray-100 rounded text-sm">
           <p className="font-medium text-black">Logged in as: {userContext.user.full_name}</p>
-          <p className="text-xs text-gray-500">ID: {userContext.user.id}</p>
+          <p className="text-xs text-gray-500">ID: {userContext.user.user_id}</p>
         </div>
       )}
 
