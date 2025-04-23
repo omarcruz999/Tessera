@@ -170,14 +170,6 @@ function HomeView() {
 
   return (
     <div id="HomeViewGrid" className="max-w-7xl mx-auto p-4">
-      {/* Current user indicator */}
-      {userContext?.user && (
-        <div className="mb-4 p-3 bg-gray-100 rounded text-sm">
-          <p className="font-medium text-black">Logged in as: {userContext.user.full_name}</p>
-          <p className="text-xs text-gray-500">ID: {userContext.user.user_id}</p>
-        </div>
-      )}
-
       {isLoading ? (
         <div className="text-center py-8">Loading connections...</div>
       ) : error ? (
