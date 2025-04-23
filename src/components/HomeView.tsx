@@ -1,4 +1,4 @@
-import { useEffect, useState, useContext } from 'react';
+import { useEffect, useState, useContext, useRef } from 'react';
 import axios from 'axios';
 import PeerCard from '../components/Cards/PeerCard.tsx';
 import PostForm from './Post Components/PostForm.tsx';
@@ -51,6 +51,9 @@ function HomeView() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isPostModalOpen, setIsPostModalOpen] = useState(false);
 
+  // Track last cache timestamp for auto-refresh
+  const lastCacheTimestamp = useRef<number | null>(null);
+
   // Fallback mock data function
   const loadMockData = async (): Promise<User[]> => {
     return [
@@ -63,17 +66,7 @@ function HomeView() {
     ];
   };
 
-  // Add a refresh function to manually clear cache and reload
-  const refreshConnections = () => {
-    if (userContext?.user) {
-      localStorage.removeItem(`${CACHE_KEY_PREFIX}_${userContext.user.user_id}`);
-      setIsLoading(true);
-      setError(null);
-      loadConnections();
-    }
-  };
-
-  // Extracted for reuse in refresh
+  // Extracted for reuse in refresh and auto-refresh
   const loadConnections = async () => {
     if (!userContext?.user) {
       setError('No user logged in');
@@ -82,11 +75,20 @@ function HomeView() {
     }
 
     // Try cache first
-    const cached = getCachedConnections(userContext.user.user_id);
-    if (cached) {
-      setPeers(cached);
-      setIsLoading(false);
-      return;
+    const cacheKey = `${CACHE_KEY_PREFIX}_${userContext.user.user_id}`;
+    const cachedRaw = localStorage.getItem(cacheKey);
+    if (cachedRaw) {
+      try {
+        const { data, timestamp } = JSON.parse(cachedRaw);
+        lastCacheTimestamp.current = timestamp;
+        if (Date.now() - timestamp < CACHE_TTL) {
+          setPeers(data);
+          setIsLoading(false);
+          return;
+        }
+      } catch {
+        // Ignore parse errors, fall through to fetch
+      }
     }
 
     try {
@@ -133,6 +135,7 @@ function HomeView() {
 
       setPeers(userProfiles);
       setCachedConnections(userContext.user.user_id, userProfiles);
+      lastCacheTimestamp.current = Date.now();
       setError(null);
     } catch (err) {
       console.error('Error fetching connections:', err);
@@ -144,8 +147,35 @@ function HomeView() {
     }
   };
 
+  // Auto-refresh: check cache age on mount and when window/tab regains focus
   useEffect(() => {
     loadConnections();
+
+    // Handler for focus event
+    const handleFocus = () => {
+      if (!userContext?.user) return;
+      const cacheKey = `${CACHE_KEY_PREFIX}_${userContext.user.user_id}`;
+      const cachedRaw = localStorage.getItem(cacheKey);
+      if (cachedRaw) {
+        try {
+          const { timestamp } = JSON.parse(cachedRaw);
+          // If cache expired, reload
+          if (Date.now() - timestamp >= CACHE_TTL) {
+            setIsLoading(true);
+            loadConnections();
+          }
+        } catch {
+          setIsLoading(true);
+          loadConnections();
+        }
+      } else {
+        setIsLoading(true);
+        loadConnections();
+      }
+    };
+
+    window.addEventListener('focus', handleFocus);
+    return () => window.removeEventListener('focus', handleFocus);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [userContext]);
 
@@ -162,13 +192,6 @@ function HomeView() {
           <p className="text-xs text-gray-500">ID: {userContext.user.user_id}</p>
         </div>
       )}
-
-      <button
-        onClick={refreshConnections}
-        className="mb-4 px-4 py-1 bg-gray-300 text-black rounded text-xs"
-      >
-        Refresh Connections
-      </button>
 
       {isLoading ? (
         <div className="text-center py-8">Loading connections...</div>
