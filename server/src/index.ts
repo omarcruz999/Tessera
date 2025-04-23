@@ -26,7 +26,12 @@ const app: Application = express();
 const PORT = process.env.PORT || 4000;
 
 // Middleware Setup
-app.use(cors());            // Allow Cross-Origin requests
+app.use(cors({
+  origin: ['http://localhost:5173'], // Your frontend URL
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
+}));            // Allow Cross-Origin requests
 app.use(express.json());    // Parse incoming JSON data
 app.use(morgan('dev'));     // Log incoming requests
 
