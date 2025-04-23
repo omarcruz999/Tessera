@@ -60,8 +60,8 @@ const NavBar = () => {
 
   // Enhanced styles for icons with tooltip behavior
   const iconClass = "text-2xl transition-colors duration-200";
-  const activeIconClass = "text-amber-500";
-  const inactiveIconClass = "text-white hover:text-amber-300";
+  const activeIconClass = "text-[#b1ba83]"; // Change active color to light olive
+  const inactiveIconClass = "text-white hover:text-amber-300"; // Keep hover as amber
   
   // Common nav item container styles
   const navItemClass = "relative group flex justify-center";
