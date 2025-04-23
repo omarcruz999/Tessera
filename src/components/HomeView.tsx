@@ -16,6 +16,33 @@ interface Connection {
   created_at: string;
 }
 
+// --- Cache helpers ---
+const CACHE_KEY_PREFIX = "connections_cache";
+const CACHE_TTL = 5 * 60 * 1000; // 5 minutes
+
+function getCachedConnections(userId: string): User[] | null {
+  const cacheKey = `${CACHE_KEY_PREFIX}_${userId}`;
+  const cached = localStorage.getItem(cacheKey);
+  if (!cached) return null;
+  try {
+    const { data, timestamp } = JSON.parse(cached);
+    if (Date.now() - timestamp < CACHE_TTL) {
+      return data;
+    }
+    return null;
+  } catch {
+    return null;
+  }
+}
+
+function setCachedConnections(userId: string, data: User[]) {
+  const cacheKey = `${CACHE_KEY_PREFIX}_${userId}`;
+  localStorage.setItem(
+    cacheKey,
+    JSON.stringify({ data, timestamp: Date.now() })
+  );
+}
+
 function HomeView() {
   const userContext = useContext(UserContext);
   const [peers, setPeers] = useState<User[]>([]);
@@ -23,71 +50,6 @@ function HomeView() {
   const [error, setError] = useState<string | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isPostModalOpen, setIsPostModalOpen] = useState(false);
-
-  useEffect(() => {
-    const loadConnections = async () => {
-      if (!userContext?.user) {
-        setError('No user logged in');
-        setIsLoading(false);
-        return;
-      }
-
-      try {
-        // Get the auth token from Supabase
-        const { data } = await supabaseClient.auth.getSession();
-        const token = data.session?.access_token;
-        
-        if (!token) {
-          setError('Not authenticated');
-          setIsLoading(false);
-          return;
-        }
-
-        // Create axios instance with auth header
-        const authenticatedAxios = axios.create({
-          headers: {
-            Authorization: `Bearer ${token}`
-          }
-        });
-
-        // Fetch user's connections with auth header
-        const connectionsResponse = await authenticatedAxios.get(
-          `http://localhost:4000/api/connections/all?user_id=${userContext.user.user_id}`
-        );
-        const connections: Connection[] = connectionsResponse.data;
-
-        // Get IDs of connected users
-        const connectedUserIds = connections
-          .map(conn => conn.user_1 === userContext.user!.user_id ? conn.user_2 : conn.user_1)
-          .filter(id => id !== userContext.user!.user_id);
-
-        // Fetch profile for each connected user
-        const userProfiles: User[] = [];
-        for (const userId of connectedUserIds) {
-          try {
-            const profileResponse = await authenticatedAxios.get(
-              `http://localhost:4000/api/users/profile?user_id=${userId}`
-            );
-            userProfiles.push(profileResponse.data);
-          } catch (profileError) {
-            console.error(`Error fetching profile for ${userId}:`, profileError);
-          }
-        }
-
-        setPeers(userProfiles);
-        setError(null);
-      } catch (err) {
-        console.error('Error fetching connections:', err);
-        setError('Failed to load connections');
-        // Load fallback data
-        setPeers(await loadMockData());
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    loadConnections();
-  }, [userContext]);
 
   // Fallback mock data function
   const loadMockData = async (): Promise<User[]> => {
@@ -100,6 +62,92 @@ function HomeView() {
       { user_id: '9', full_name: 'David Evans', avatar_url: '/JohnPork.png', is_active: true },
     ];
   };
+
+  // Add a refresh function to manually clear cache and reload
+  const refreshConnections = () => {
+    if (userContext?.user) {
+      localStorage.removeItem(`${CACHE_KEY_PREFIX}_${userContext.user.user_id}`);
+      setIsLoading(true);
+      setError(null);
+      loadConnections();
+    }
+  };
+
+  // Extracted for reuse in refresh
+  const loadConnections = async () => {
+    if (!userContext?.user) {
+      setError('No user logged in');
+      setIsLoading(false);
+      return;
+    }
+
+    // Try cache first
+    const cached = getCachedConnections(userContext.user.user_id);
+    if (cached) {
+      setPeers(cached);
+      setIsLoading(false);
+      return;
+    }
+
+    try {
+      // Get the auth token from Supabase
+      const { data } = await supabaseClient.auth.getSession();
+      const token = data.session?.access_token;
+      
+      if (!token) {
+        setError('Not authenticated');
+        setIsLoading(false);
+        return;
+      }
+
+      // Create axios instance with auth header
+      const authenticatedAxios = axios.create({
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      });
+
+      // Fetch user's connections with auth header
+      const connectionsResponse = await authenticatedAxios.get(
+        `http://localhost:4000/api/connections/all?user_id=${userContext.user.user_id}`
+      );
+      const connections: Connection[] = connectionsResponse.data;
+
+      // Get IDs of connected users
+      const connectedUserIds = connections
+        .map(conn => conn.user_1 === userContext.user!.user_id ? conn.user_2 : conn.user_1)
+        .filter(id => id !== userContext.user!.user_id);
+
+      // Fetch profile for each connected user
+      const userProfiles: User[] = [];
+      for (const userId of connectedUserIds) {
+        try {
+          const profileResponse = await authenticatedAxios.get(
+            `http://localhost:4000/api/users/profile?user_id=${userId}`
+          );
+          userProfiles.push(profileResponse.data);
+        } catch (profileError) {
+          console.error(`Error fetching profile for ${userId}:`, profileError);
+        }
+      }
+
+      setPeers(userProfiles);
+      setCachedConnections(userContext.user.user_id, userProfiles);
+      setError(null);
+    } catch (err) {
+      console.error('Error fetching connections:', err);
+      setError('Failed to load connections');
+      // Load fallback data
+      setPeers(await loadMockData());
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    loadConnections();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [userContext]);
 
   const handlePeerClick = () => {
     setIsPostModalOpen(true);
@@ -114,6 +162,13 @@ function HomeView() {
           <p className="text-xs text-gray-500">ID: {userContext.user.user_id}</p>
         </div>
       )}
+
+      <button
+        onClick={refreshConnections}
+        className="mb-4 px-4 py-1 bg-gray-300 text-black rounded text-xs"
+      >
+        Refresh Connections
+      </button>
 
       {isLoading ? (
         <div className="text-center py-8">Loading connections...</div>
@@ -147,11 +202,11 @@ function HomeView() {
 
       {isModalOpen && <PostForm onClose={() => setIsModalOpen(false)} />}
 
-        <PostModal isOpen={isPostModalOpen} onClose={() => setIsPostModalOpen(false)}>
-          <div >
-            <PostCard />
-          </div>
-        </PostModal>
+      <PostModal isOpen={isPostModalOpen} onClose={() => setIsPostModalOpen(false)}>
+        <div>
+          <PostCard />
+        </div>
+      </PostModal>
     </div>
   );
 }
