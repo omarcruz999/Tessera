@@ -16,7 +16,7 @@ const NavBar = () => {
   
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const navigate = useNavigate();
-  const location = useLocation(); // Get current location
+  const location = useLocation();
 
   const handleMouseEnter = () => {
     setIsDropdownOpen(true);
@@ -26,7 +26,6 @@ const NavBar = () => {
     setIsDropdownOpen(false);
   };
 
-  // Function to check if a route is active
   const isActive = (path: string) => {
     return location.pathname === path;
   };
@@ -59,10 +58,13 @@ const NavBar = () => {
     }
   };
 
-  // Common styles for icons
+  // Enhanced styles for icons with tooltip behavior
   const iconClass = "text-2xl transition-colors duration-200";
-  const activeIconClass = "text-amber-500"; // Highlighted color for active route
+  const activeIconClass = "text-amber-500";
   const inactiveIconClass = "text-white hover:text-amber-300";
+  
+  // Common nav item container styles
+  const navItemClass = "relative group flex justify-center";
 
   return (
     <div className="fixed top-0 left-0 w-full bg-[#3e2723] z-50">
@@ -78,35 +80,45 @@ const NavBar = () => {
 
         {user && (
           <ul className="flex text-align-center items-center space-x-10 mr-30">
-            <li>
-              <Link to="/profile" className="flex flex-col items-center">
+            <li className={navItemClass}>
+              <Link 
+                to="/profile" 
+                aria-label="Profile" 
+                className="p-2"
+              >
                 <FaUser 
-                  className={`${iconClass} ${isActive('/profile') ? activeIconClass : inactiveIconClass}`} 
-                  aria-label="Profile" 
+                  className={`${iconClass} ${isActive('/profile') ? activeIconClass : inactiveIconClass}`}
                 />
-                <span className={`text-xs mt-1 ${isActive('/profile') ? activeIconClass : inactiveIconClass}`}>
+                {/* Tooltip that appears on hover */}
+                <span className="absolute -bottom-6 left-1/2 transform -translate-x-1/2 bg-gray-800 text-white text-xs rounded py-1 px-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200 whitespace-nowrap">
                   Profile
                 </span>
               </Link>
             </li>
-            <li>
-              <Link to="/" className="flex flex-col items-center">
+            <li className={navItemClass}>
+              <Link 
+                to="/" 
+                aria-label="Connections"
+                className="p-2"
+              >
                 <FaHome 
-                  className={`${iconClass} ${isActive('/') ? activeIconClass : inactiveIconClass}`} 
-                  aria-label="Connections" 
+                  className={`${iconClass} ${isActive('/') ? activeIconClass : inactiveIconClass}`}
                 />
-                <span className={`text-xs mt-1 ${isActive('/') ? activeIconClass : inactiveIconClass}`}>
+                <span className="absolute -bottom-6 left-1/2 transform -translate-x-1/2 bg-gray-800 text-white text-xs rounded py-1 px-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200 whitespace-nowrap">
                   Connections
                 </span>
               </Link>
             </li>
-            <li>
-              <Link to="/direct-messages" className="flex flex-col items-center">
+            <li className={navItemClass}>
+              <Link 
+                to="/direct-messages" 
+                aria-label="Messages"
+                className="p-2"
+              >
                 <FaEnvelope 
-                  className={`${iconClass} ${isActive('/direct-messages') ? activeIconClass : inactiveIconClass}`} 
-                  aria-label="Messages" 
+                  className={`${iconClass} ${isActive('/direct-messages') ? activeIconClass : inactiveIconClass}`}
                 />
-                <span className={`text-xs mt-1 ${isActive('/direct-messages') ? activeIconClass : inactiveIconClass}`}>
+                <span className="absolute -bottom-6 left-1/2 transform -translate-x-1/2 bg-gray-800 text-white text-xs rounded py-1 px-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200 whitespace-nowrap">
                   Messages
                 </span>
               </Link>
