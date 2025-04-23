@@ -5,6 +5,7 @@ import PostForm from './Post Components/PostForm.tsx';
 import PostCard from './Post Components/PostCard.tsx';
 import PostModal from "../components/Post Components/PostModal.tsx"
 import { UserContext, User} from '../UserContext';
+import supabaseClient from '../services/supabaseClient';
 
 // Define interfaces for API data
 interface Connection {
@@ -32,8 +33,25 @@ function HomeView() {
       }
 
       try {
-        // Fetch user's connections
-        const connectionsResponse = await axios.get(
+        // Get the auth token from Supabase
+        const { data } = await supabaseClient.auth.getSession();
+        const token = data.session?.access_token;
+        
+        if (!token) {
+          setError('Not authenticated');
+          setIsLoading(false);
+          return;
+        }
+
+        // Create axios instance with auth header
+        const authenticatedAxios = axios.create({
+          headers: {
+            Authorization: `Bearer ${token}`
+          }
+        });
+
+        // Fetch user's connections with auth header
+        const connectionsResponse = await authenticatedAxios.get(
           `http://localhost:4000/api/connections/all?user_id=${userContext.user.user_id}`
         );
         const connections: Connection[] = connectionsResponse.data;
@@ -47,7 +65,7 @@ function HomeView() {
         const userProfiles: User[] = [];
         for (const userId of connectedUserIds) {
           try {
-            const profileResponse = await axios.get(
+            const profileResponse = await authenticatedAxios.get(
               `http://localhost:4000/api/users/profile?user_id=${userId}`
             );
             userProfiles.push(profileResponse.data);
