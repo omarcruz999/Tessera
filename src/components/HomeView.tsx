@@ -20,21 +20,6 @@ interface Connection {
 const CACHE_KEY_PREFIX = "connections_cache";
 const CACHE_TTL = 5 * 60 * 1000; // 5 minutes
 
-function getCachedConnections(userId: string): User[] | null {
-  const cacheKey = `${CACHE_KEY_PREFIX}_${userId}`;
-  const cached = localStorage.getItem(cacheKey);
-  if (!cached) return null;
-  try {
-    const { data, timestamp } = JSON.parse(cached);
-    if (Date.now() - timestamp < CACHE_TTL) {
-      return data;
-    }
-    return null;
-  } catch {
-    return null;
-  }
-}
-
 function setCachedConnections(userId: string, data: User[]) {
   const cacheKey = `${CACHE_KEY_PREFIX}_${userId}`;
   localStorage.setItem(
