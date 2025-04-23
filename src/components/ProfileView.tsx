@@ -1,8 +1,9 @@
-import { useContext, useState } from 'react';
+import { useContext, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { UserContext } from '../UserContext';
 import defaultProfilePicture from '../assets/defaultProfilePicture.png';
-import PostCard from '../components/Post Components/PostCard.tsx';
+import PostCard, { PostWithMedia } from '../components/Post Components/PostCard.tsx';
+import supabase from '../services/supabaseClient'
 
 
 interface ProfileViewProps {
@@ -17,36 +18,53 @@ interface ProfileViewProps {
 }
 
 function ProfileView({profileUser }: ProfileViewProps) {
-  const userContext = useContext(UserContext);
+  const { user: loggedInUser } = useContext(UserContext)!;
+  const displayedUser = profileUser || loggedInUser;
+  const isOwnProfile = loggedInUser?.user_id === displayedUser?.user_id;
   const [activeTab, setActiveTab] = useState('posts');
+  const [posts, setPosts] = useState<PostWithMedia[]>([]);
   const navigate = useNavigate();
 
-  if (!userContext) {
-    return <div>Error: UserContext is not provided</div>;
-  }
-
-  const { user: loggedInUser } = userContext;
-
-  // If profileUser is provided, display that; otherwise, use loggedInUser
-  const displayedUser = profileUser || loggedInUser;  
-
+  useEffect(() => {
   // If no user is available, show an error message
-  if (!displayedUser) {
-    return <div>Error: User is not available</div>;
+  if (!displayedUser) return;
+
+  const uid = displayedUser.user_id;
+
+  async function loadPosts() {
+    const { data, error } = await supabase
+      .from('posts')
+      .select(`
+        id,
+        text,
+        created_at,
+        post_media (
+          media_url,
+          type
+        )
+      `)
+      .eq('user_id', uid)
+      .order('created_at', { ascending: false });
+
+      if (error) {
+        console.error('Error loading posts:', error);
+      } else {
+        console.log('fetched post media URLs:', data.map((post) => [post.id, post.post_media.map(media => media.media_url)]));
+        setPosts(data as PostWithMedia[]);
+      }
   }
-
-  // Determine if we are viewing our own profile or someone else's
-  const isOwnProfile = loggedInUser && displayedUser.user_id === loggedInUser?.user_id;
-
+  loadPosts();
+  }, [displayedUser]);
+  
 
   const handleMessageClick = () => {
-    if (!loggedInUser || !profileUser) return;
-  
-    navigate('/direct-messages', { state: { selectedUserId: profileUser.user_id } });
+    if (profileUser) {
+      navigate('/direct-messages', { state: { selectedUserId: profileUser.user_id } });
+    }
   }
-  
-  
 
+  if (!displayedUser) return <div>Error: no user to show</div>;
+  
   return (
     <div className="profile-layout">
       {/* Profile Section (Left Panel) */}
@@ -93,7 +111,19 @@ function ProfileView({profileUser }: ProfileViewProps) {
         )}
 
         <div className="profile-posts">
-          {activeTab === 'posts' && <div> <PostCard /> <PostCard/> <PostCard/> </div>} 
+          {activeTab === 'posts' && posts.length > 0 
+            ? posts.map(post => (
+              <PostCard
+                key={post.id}
+                post={post}
+                user={{name: displayedUser.full_name, profilePicture: displayedUser.avatar_url || defaultProfilePicture}} />
+            ))
+            : activeTab === 'posts' && posts.length === 0 && (
+              <p>No posts yet.</p>
+            )}
+
+
+
           {isOwnProfile && activeTab === 'replies' && <p>Placeholder for replies...</p>}
           {isOwnProfile && activeTab === 'bookmarks' && <p>Placeholder for bookmarks...</p>}
         </div>
