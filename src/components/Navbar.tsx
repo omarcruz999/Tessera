@@ -160,7 +160,7 @@ const NavBar = () => {
                     <li>
                       <span
                         onClick={handleLogout}
-                        className="block px-4 py-2 text-black hover:bg-gray-200 cursor-pointer flex items-center"
+                        className="px-4 py-2 text-black hover:bg-gray-200 cursor-pointer flex items-center"
                       >
                         <FaSignOutAlt className="mr-2" /> Logout
                       </span>
