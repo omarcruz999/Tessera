@@ -60,10 +60,10 @@ const NavBar = () => {
 
   // Enhanced styles for icons with tooltip behavior
   const iconClass = "text-2xl transition-colors duration-200";
-  const activeIconClass = "text-[#b1ba83]"; // Change active color to light olive
-  const inactiveIconClass = "text-white hover:text-amber-300"; // Keep hover as amber
-  
-  // Common nav item container styles
+  const activeIconClass = "text-[#b1ba83]"; // Light olive for active tab
+  const inactiveIconClass = "text-white hover:text-amber-300"; 
+
+  // Common nav item container styles with delayed tooltip
   const navItemClass = "relative group flex justify-center";
 
   return (
@@ -90,7 +90,7 @@ const NavBar = () => {
                   className={`${iconClass} ${isActive('/profile') ? activeIconClass : inactiveIconClass}`}
                 />
                 {/* Tooltip that appears on hover */}
-                <span className="absolute -bottom-6 left-1/2 transform -translate-x-1/2 bg-gray-800 text-white text-xs rounded py-1 px-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200 whitespace-nowrap">
+                <span className="absolute -bottom-6 left-1/2 transform -translate-x-1/2 bg-gray-800 text-white text-xs rounded py-1 px-2 opacity-0 invisible group-hover:visible group-hover:opacity-100 transition-all duration-200 delay-500 whitespace-nowrap">
                   Profile
                 </span>
               </Link>
@@ -104,7 +104,7 @@ const NavBar = () => {
                 <FaHome 
                   className={`${iconClass} ${isActive('/') ? activeIconClass : inactiveIconClass}`}
                 />
-                <span className="absolute -bottom-6 left-1/2 transform -translate-x-1/2 bg-gray-800 text-white text-xs rounded py-1 px-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200 whitespace-nowrap">
+                <span className="absolute -bottom-6 left-1/2 transform -translate-x-1/2 bg-gray-800 text-white text-xs rounded py-1 px-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200 delay-500 whitespace-nowrap">
                   Connections
                 </span>
               </Link>
@@ -118,7 +118,7 @@ const NavBar = () => {
                 <FaEnvelope 
                   className={`${iconClass} ${isActive('/direct-messages') ? activeIconClass : inactiveIconClass}`}
                 />
-                <span className="absolute -bottom-6 left-1/2 transform -translate-x-1/2 bg-gray-800 text-white text-xs rounded py-1 px-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200 whitespace-nowrap">
+                <span className="absolute -bottom-6 left-1/2 transform -translate-x-1/2 bg-gray-800 text-white text-xs rounded py-1 px-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200 delay-500 whitespace-nowrap">
                   Messages
                 </span>
               </Link>
