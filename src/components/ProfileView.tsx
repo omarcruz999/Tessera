@@ -30,7 +30,8 @@ function ProfileView({ profileUser }: ProfileViewProps) {
     async function loadPosts() {
       const { data: postsData, error } = await supabase
         .from('posts')
-        .select(`
+        .select(
+          `
           id,
           text,
           created_at,
@@ -38,7 +39,8 @@ function ProfileView({ profileUser }: ProfileViewProps) {
             media_url,
             type
           )
-        `)
+        `
+        )
         .eq('user_id', uid)
         .order('created_at', { ascending: false });
 
@@ -49,43 +51,31 @@ function ProfileView({ profileUser }: ProfileViewProps) {
 
       const postsWithSigned: PostWithMedia[] = await Promise.all(
         (postsData || []).map(async (post) => {
-          const signedMedia = await Promise.all(
-            (post.post_media || []).map(async (m) => {
-              const url = m.media_url;
-              // If external URL (not in our storage), leave as-is
-              if (/^https?:\/\//.test(url) && !url.includes('/storage/v1/object/')) {
-                return m;
-              }
+          // Extract file paths for all media in this post
+          const filePaths = (post.post_media || []).map((m) => {
+            // Normalize stored value to bucket-relative path
+            const url = m.media_url;
+            const publicMarker = '/storage/v1/object/public/post-media/';
+            if (url.includes(publicMarker)) {
+              return url.split(publicMarker)[1];
+            }
+            const split = url.split('/post-media/');
+            return split.length > 1 ? split[1] : url;
+          });
 
-              // Determine bucket path
-              let filePath: string;
-              const publicMarker = '/storage/v1/object/public/post-media/';
-              if (url.includes(publicMarker)) {
-                filePath = url.split(publicMarker)[1];
-              } else if (/^https?:\/\//.test(url)) {
-                // URL might be signed already or other storage URL
-                // Extract path after bucket name
-                const parts = url.split(`/post-media/`);
-                filePath = parts.length > 1 ? parts[1] : url;
-              } else {
-                // Stored raw path in DB
-                filePath = url;
-              }
+          // Batch generate signed URLs
+          const { data: signedData, error: signErr } = await supabase
+            .storage
+            .from('post-media')
+            .createSignedUrls(filePaths, 60 * 60);
 
-              try {
-                const { data: urlData, error: urlErr } = await supabase
-                  .storage
-                  .from('post-media')
-                  .createSignedUrl(filePath, 60 * 60);
-                if (urlErr || !urlData?.signedUrl) throw urlErr || new Error('No signedUrl');
-                return { ...m, media_url: urlData.signedUrl };
-              } catch (e) {
-                console.error('Signed URL error for', filePath, e);
-                // Fall back to original URL
-                return m;
-              }
-            })
-          );
+          if (signErr) console.error('createSignedUrls error:', signErr);
+
+          // Map back to post_media with signed URLs
+          const signedMedia = (post.post_media || []).map((m, idx) => {
+            const signed = signedData?.[idx]?.signedUrl;
+            return { ...m, media_url: signed || m.media_url };
+          });
 
           return { ...post, post_media: signedMedia };
         })
