@@ -1,7 +1,7 @@
 import { BrowserRouter as Router, Route, Routes, Navigate } from "react-router-dom";
 import { useContext, useEffect } from "react";
 import NavBar from "./components/Navbar";
-import Home from "./pages/Home";
+import Connections from "./pages/Connections";
 import About from "./pages/About";
 import Profile from "./pages/Profile";
 import DirectMessages from "./pages/DirectMessages";
@@ -36,7 +36,7 @@ function App() {
           <NavBar />
           <div className="pt-16"> {/* Add padding for the fixed navbar */}
             <Routes>
-              <Route path="/" element={<Home />} />
+              <Route path="/" element={<Connections />} />
               <Route path="/about" element={<About />} />
               <Route path="/profile" element={<Profile />} />
               <Route path="/error" element={<ErrorPage />} />
@@ -45,7 +45,10 @@ function App() {
               <Route path="/landing" element={<Navigate to="/" replace />} />
               <Route path="/login" element={<Navigate to="/" replace />} />
               
-              {/* Put parameterized routes after specific routes */}
+              {/* Add this new route for user profiles */}
+              <Route path="/user/:userId" element={<ProfileWrapper />} />
+              
+              {/* Keep your existing username route for backward compatibility */}
               <Route path="/:username" element={<ProfileWrapper />} />
               
               {/* Catch-all must be last */}
