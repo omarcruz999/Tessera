@@ -2,7 +2,7 @@ import { createContext, useState, useEffect, ReactNode } from 'react';
 import supabase from './services/supabaseClient';
 
 export interface User {
-  user_id: string;
+  id: string;
   full_name: string;
   avatar_url: string;
   is_active: boolean;
@@ -53,7 +53,7 @@ const UserProvider = ({ children }: { children: ReactNode }) => {
           if (data) {
             console.log("Found profile data:", data);
             const userData: User = {
-              user_id: data.user_id || session.user.id,
+              id: data.user_id || session.user.id,
               full_name: data.full_name || session.user.user_metadata?.full_name || 'User',
               avatar_url: data.avatar_url || session.user.user_metadata?.avatar_url || '',
               is_active: true,
@@ -67,7 +67,7 @@ const UserProvider = ({ children }: { children: ReactNode }) => {
           else if (session.user) {
             console.log("No profile found, creating from session");
             const userData: User = {
-              user_id: session.user.id,
+              id: session.user.id,
               full_name: session.user.user_metadata?.full_name || session.user.email?.split('@')[0] || 'User',
               avatar_url: session.user.user_metadata?.avatar_url || '',
               is_active: true,
@@ -81,7 +81,7 @@ const UserProvider = ({ children }: { children: ReactNode }) => {
             try {
               await supabase.from('profiles').insert([
                 {
-                  user_id: userData.user_id,
+                  user_id: userData.id,
                   full_name: userData.full_name,
                   avatar_url: userData.avatar_url,
                   is_active: true
@@ -121,7 +121,7 @@ const UserProvider = ({ children }: { children: ReactNode }) => {
             
           if (!error && data) {
             const userData: User = {
-              user_id: data.user_id || session.user.id,
+              id: data.user_id || session.user.id,
               full_name: data.full_name || session.user.user_metadata?.full_name || 'User',
               avatar_url: data.avatar_url || session.user.user_metadata?.avatar_url || '',
               is_active: true,
@@ -134,7 +134,7 @@ const UserProvider = ({ children }: { children: ReactNode }) => {
           // If no profile found but we have session
           else if (session.user) {
             const userData: User = {
-              user_id: session.user.id,
+              id: session.user.id,
               full_name: session.user.user_metadata?.full_name || session.user.email?.split('@')[0] || 'User',
               avatar_url: session.user.user_metadata?.avatar_url || '',
               is_active: true,
@@ -148,7 +148,7 @@ const UserProvider = ({ children }: { children: ReactNode }) => {
             try {
               await supabase.from('profiles').insert([
                 {
-                  user_id: userData.user_id,
+                  user_id: userData.id,
                   full_name: userData.full_name,
                   avatar_url: userData.avatar_url,
                   is_active: true
@@ -226,7 +226,7 @@ const UserProvider = ({ children }: { children: ReactNode }) => {
         
         // If profile exists, use it; otherwise create from auth data
         const userData: User = profileData || {
-          user_id: data.user.id,
+          id: data.user.id,
           full_name: data.user.user_metadata?.full_name || data.user.email?.split('@')[0] || 'User',
           avatar_url: data.user.user_metadata?.avatar_url || '',
           is_active: true,
@@ -241,7 +241,7 @@ const UserProvider = ({ children }: { children: ReactNode }) => {
           try {
             await supabase.from('profiles').insert([
               {
-                user_id: userData.user_id,
+                user_id: userData.id,
                 full_name: userData.full_name,
                 avatar_url: userData.avatar_url,
                 is_active: true
@@ -272,7 +272,7 @@ const UserProvider = ({ children }: { children: ReactNode }) => {
       if (data.user) {
         // Create an initial user object
         const newUser: User = {
-          user_id: data.user.id,
+          id: data.user.id,
           full_name: '',
           avatar_url: '',
           is_active: true,
