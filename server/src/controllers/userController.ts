@@ -77,3 +77,62 @@ export const updateUserProfile: RequestHandler = async (req: Request, res: Respo
         res.status(500).json({ error: (error as Error).message });
     }
 };
+
+/**
+ * Create a new user profile
+ * @route POST /api/users/profile
+ * @access Private
+ */
+export const createUserProfile = async (req: Request, res: Response): Promise<void> => {
+    try {
+        const { user_id, full_name, avatar_url, is_active } = req.body;
+
+        // Validate required fields
+        if (!user_id) {
+            res.status(400).json({ error: 'User ID is required' });
+            return;
+        }
+
+        // Check if profile already exists
+        const { data: existingProfile, error: checkError } = await supabaseAdmin
+            .from('profiles')
+            .select('*')
+            .eq('user_id', user_id)
+            .single();
+
+        if (checkError && checkError.code !== 'PGRST116') { // PGRST116 is "no rows returned" error
+            res.status(500).json({ error: 'Error checking for existing profile' });
+            return;
+        }
+
+        if (existingProfile) {
+            res.status(409).json({ error: 'Profile already exists for this user' });
+            return;
+        }
+
+        // Insert the new profile
+        const { data, error } = await supabaseAdmin
+            .from('profiles')
+            .insert([
+                {
+                    user_id,
+                    full_name: full_name || 'User',
+                    avatar_url: avatar_url || '',
+                    is_active: is_active !== undefined ? is_active : true
+                }
+            ])
+            .select()
+            .single();
+
+        if (error) {
+            console.error('Error creating profile:', error);
+            res.status(500).json({ error: 'Failed to create profile' });
+            return;
+        }
+
+        res.status(201).json(data);
+    } catch (error) {
+        console.error('Server error creating profile:', error);
+        res.status(500).json({ error: 'Server error' });
+    }
+};
