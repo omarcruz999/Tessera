@@ -1,5 +1,6 @@
 import { createContext, useState, useEffect, ReactNode } from 'react';
 import supabase from './services/supabaseClient';
+import axios from 'axios';
 
 export interface User {
   id: string;
@@ -7,6 +8,7 @@ export interface User {
   avatar_url: string;
   is_active: boolean;
   email?: string;
+  profileComplete?: boolean; // Track if profile is complete
 }
 
 interface UserContextType {
@@ -16,14 +18,103 @@ interface UserContextType {
   login: (userData: User) => void; 
   logout: () => Promise<void>;
   registerWithEmail: (email: string, password: string) => Promise<User>;
+  completeUserProfile: (profileData: Partial<User>) => Promise<boolean>; // New method
   isLoading: boolean;
+  needsOnboarding: boolean; // New property to indicate onboarding needed
 }
 
 const UserContext = createContext<UserContextType | undefined>(undefined);
 
+// Helper function to create user profile via API
+const createUserProfileViaAPI = async (userData: User, token: string): Promise<boolean> => {
+  try {
+    await axios.post(
+      'http://localhost:4000/api/users/profile',
+      {
+        user_id: userData.id,
+        full_name: userData.full_name,
+        avatar_url: userData.avatar_url,
+        is_active: true
+      },
+      {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      }
+    );
+    console.log("Created user profile via API");
+    return true;
+  } catch (error) {
+    console.error("Error creating profile via API:", error);
+    return false;
+  }
+};
+
+// Helper function to fetch user profile via API
+const fetchUserProfileViaAPI = async (userId: string, token: string): Promise<User | null> => {
+  try {
+    const response = await axios.get(
+      `http://localhost:4000/api/users/profile?user_id=${userId}`,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      }
+    );
+    console.log("Fetched user profile via API");
+    return response.data;
+  } catch (error) {
+    console.error("Error fetching profile via API:", error);
+    return null;
+  }
+};
+
 const UserProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [needsOnboarding, setNeedsOnboarding] = useState<boolean>(false);
+
+  // Add a method to complete the user profile
+  const completeUserProfile = async (profileData: Partial<User>): Promise<boolean> => {
+    if (!user || !user.id) {
+      console.error("Cannot complete profile: No user logged in");
+      return false;
+    }
+    
+    try {
+      // Get current session for token
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      if (!session) {
+        console.error("Cannot complete profile: No active session");
+        return false;
+      }
+      
+      // Merge existing user data with new profile data
+      const updatedUser: User = {
+        ...user,
+        ...profileData,
+        profileComplete: true
+      };
+      
+      // Create the profile via API
+      const success = await createUserProfileViaAPI(updatedUser, session.access_token);
+      
+      if (success) {
+        // Update local state
+        setUser(updatedUser);
+        setNeedsOnboarding(false);
+        console.log("User profile completed:", updatedUser);
+        return true;
+      } else {
+        console.error("Failed to complete user profile");
+        return false;
+      }
+    } catch (error) {
+      console.error("Error completing user profile:", error);
+      return false;
+    }
+  };
 
   // Initialize by checking Supabase session
   useEffect(() => {
@@ -37,30 +128,23 @@ const UserProvider = ({ children }: { children: ReactNode }) => {
         if (session) {
           console.log("Session user ID:", session.user.id);
           
-          // Get user profile data from your database
-          const { data, error } = await supabase
-            .from('profiles')
-            .select('*')
-            .eq('user_id', session.user.id)
-            .single();
+          // Try to get profile from API first
+          const profileData = await fetchUserProfileViaAPI(session.user.id, session.access_token);
             
-          if (error && error.code !== 'PGRST116') {
-            console.error("Error fetching profile:", error);
-            throw error;
-          }
-          
           // If we found a profile, use it
-          if (data) {
-            console.log("Found profile data:", data);
+          if (profileData) {
+            console.log("Found profile data:", profileData);
             const userData: User = {
-              id: data.user_id || session.user.id,
-              full_name: data.full_name || session.user.user_metadata?.full_name || 'User',
-              avatar_url: data.avatar_url || session.user.user_metadata?.avatar_url || '',
+              id: profileData.id || session.user.id,
+              full_name: profileData.full_name || session.user.user_metadata?.full_name || 'User',
+              avatar_url: profileData.avatar_url || session.user.user_metadata?.avatar_url || '',
               is_active: true,
-              email: session.user.email
+              email: session.user.email,
+              profileComplete: true
             };
             
             setUser(userData);
+            setNeedsOnboarding(false);
             console.log("User set from profile:", userData);
           } 
           // If no profile yet but we have a session, create a default user object
@@ -71,30 +155,21 @@ const UserProvider = ({ children }: { children: ReactNode }) => {
               full_name: session.user.user_metadata?.full_name || session.user.email?.split('@')[0] || 'User',
               avatar_url: session.user.user_metadata?.avatar_url || '',
               is_active: true,
-              email: session.user.email
+              email: session.user.email,
+              profileComplete: false
             };
             
             setUser(userData);
+            setNeedsOnboarding(true);
             console.log("User set from session:", userData);
             
-            // Optionally, create a profile in the database
-            try {
-              await supabase.from('profiles').insert([
-                {
-                  user_id: userData.id,
-                  full_name: userData.full_name,
-                  avatar_url: userData.avatar_url,
-                  is_active: true
-                }
-              ]);
-              console.log("Created new profile in database");
-            } catch (insertError) {
-              console.error("Failed to create profile:", insertError);
-            }
+            // Create profile via API
+            await createUserProfileViaAPI(userData, session.access_token);
           }
         } else {
           console.log("No session found, user is not logged in");
           setUser(null);
+          setNeedsOnboarding(false);
         }
       } catch (error) {
         console.error("Error in checkUser:", error);
@@ -112,23 +187,21 @@ const UserProvider = ({ children }: { children: ReactNode }) => {
         console.log("Auth state changed:", event, session ? "session exists" : "no session");
         
         if (event === 'SIGNED_IN' && session) {
-          // User signed in, get profile data
-          const { data, error } = await supabase
-            .from('profiles')
-            .select('*')
-            .eq('user_id', session.user.id)
-            .single();
+          // User signed in, get profile data from API
+          const profileData = await fetchUserProfileViaAPI(session.user.id, session.access_token);
             
-          if (!error && data) {
+          if (profileData) {
             const userData: User = {
-              id: data.user_id || session.user.id,
-              full_name: data.full_name || session.user.user_metadata?.full_name || 'User',
-              avatar_url: data.avatar_url || session.user.user_metadata?.avatar_url || '',
+              id: profileData.id || session.user.id,
+              full_name: profileData.full_name || session.user.user_metadata?.full_name || 'User',
+              avatar_url: profileData.avatar_url || session.user.user_metadata?.avatar_url || '',
               is_active: true,
-              email: session.user.email
+              email: session.user.email,
+              profileComplete: true
             };
             
             setUser(userData);
+            setNeedsOnboarding(false);
             console.log("User set after auth change:", userData);
           } 
           // If no profile found but we have session
@@ -138,29 +211,21 @@ const UserProvider = ({ children }: { children: ReactNode }) => {
               full_name: session.user.user_metadata?.full_name || session.user.email?.split('@')[0] || 'User',
               avatar_url: session.user.user_metadata?.avatar_url || '',
               is_active: true,
-              email: session.user.email
+              email: session.user.email,
+              profileComplete: false
             };
             
             setUser(userData);
+            setNeedsOnboarding(true);
             console.log("User set from session after auth change:", userData);
             
-            // Create profile in database
-            try {
-              await supabase.from('profiles').insert([
-                {
-                  user_id: userData.id,
-                  full_name: userData.full_name,
-                  avatar_url: userData.avatar_url,
-                  is_active: true
-                }
-              ]);
-            } catch (insertError) {
-              console.error("Failed to create profile after auth change:", insertError);
-            }
+            // Create profile via API
+            await createUserProfileViaAPI(userData, session.access_token);
           }
         } else if (event === 'SIGNED_OUT') {
           // User signed out
           setUser(null);
+          setNeedsOnboarding(false);
           console.log("User signed out, cleared user state");
         }
       }
@@ -211,46 +276,41 @@ const UserProvider = ({ children }: { children: ReactNode }) => {
       
       console.log("Email login successful:", data.user ? "user exists" : "no user");
       
-      if (data.user) {
-        // Get user profile data
-        const { data: profileData, error: profileError } = await supabase
-          .from('profiles')
-          .select('*')
-          .eq('user_id', data.user.id)
-          .single();
+      if (data.user && data.session) {
+        // Get user profile data from API
+        const profileData = await fetchUserProfileViaAPI(data.user.id, data.session.access_token);
           
-        if (profileError && profileError.code !== 'PGRST116') {
-          console.error("Profile fetch error:", profileError);
-          throw profileError;
-        }
-        
         // If profile exists, use it; otherwise create from auth data
-        const userData: User = profileData || {
-          id: data.user.id,
-          full_name: data.user.user_metadata?.full_name || data.user.email?.split('@')[0] || 'User',
-          avatar_url: data.user.user_metadata?.avatar_url || '',
-          is_active: true,
-          email: data.user.email
-        };
-        
-        setUser(userData);
-        console.log("User set after email login:", userData);
-        
-        // If no profile exists, create one
-        if (!profileData) {
-          try {
-            await supabase.from('profiles').insert([
-              {
-                user_id: userData.id,
-                full_name: userData.full_name,
-                avatar_url: userData.avatar_url,
-                is_active: true
-              }
-            ]);
-            console.log("Created new profile after email login");
-          } catch (insertError) {
-            console.error("Failed to create profile after email login:", insertError);
-          }
+        if (profileData) {
+          const userData: User = {
+            id: profileData.id || data.user.id,
+            full_name: profileData.full_name || data.user.user_metadata?.full_name || 'User',
+            avatar_url: profileData.avatar_url || data.user.user_metadata?.avatar_url || '',
+            is_active: true,
+            email: data.user.email,
+            profileComplete: true
+          };
+          
+          setUser(userData);
+          setNeedsOnboarding(false);
+          console.log("User set after email login:", userData);
+        } else {
+          // If no profile exists, create one
+          const userData: User = {
+            id: data.user.id,
+            full_name: data.user.user_metadata?.full_name || data.user.email?.split('@')[0] || 'User',
+            avatar_url: data.user.user_metadata?.avatar_url || '',
+            is_active: true,
+            email: data.user.email,
+            profileComplete: false
+          };
+          
+          setUser(userData);
+          setNeedsOnboarding(true);
+          console.log("Created user data from auth after email login:", userData);
+          
+          // Create profile via API
+          await createUserProfileViaAPI(userData, data.session.access_token);
         }
       }
     } catch (error) {
@@ -262,30 +322,56 @@ const UserProvider = ({ children }: { children: ReactNode }) => {
   // Register with email
   const registerWithEmail = async (email: string, password: string): Promise<User> => {
     try {
+      console.log("Attempting to register with email:", email);
+      
+      // Set additional options to help with troubleshooting
       const { data, error } = await supabase.auth.signUp({
         email,
         password,
+        options: {
+          // Don't automatically redirect which can hide errors
+          emailRedirectTo: `${window.location.origin}/login`,
+          // Don't auto-confirm email (let Supabase handle it)
+          data: {
+            full_name: email.split('@')[0] || 'User'
+          }
+        }
       });
       
-      if (error) throw error;
+      if (error) {
+        console.error("Signup error details:", error);
+        throw error;
+      }
+      
+      console.log("Signup response:", data);
       
       if (data.user) {
-        // Create an initial user object
+        // Create a minimal user object without creating a profile yet
         const newUser: User = {
           id: data.user.id,
-          full_name: '',
+          full_name: data.user.email?.split('@')[0] || 'User',
           avatar_url: '',
           is_active: true,
-          email: data.user.email
+          email: data.user.email,
+          profileComplete: false
         };
         
-        setUser(newUser);
+        // If a session exists, use it. Otherwise, we'll need the user to confirm email
+        if (data.session) {
+          setUser(newUser);
+          setNeedsOnboarding(true);
+          console.log("User created, needs onboarding:", newUser);
+        } else {
+          console.log("User created, but email confirmation required before login");
+          // We don't set user here as they need to confirm email first
+        }
+        
         return newUser;
       } else {
         throw new Error('Registration failed: No user data');
       }
     } catch (error) {
-      console.error('Registration error:', error);
+      console.error("Registration error:", error);
       throw error;
     }
   };
@@ -307,6 +393,7 @@ const UserProvider = ({ children }: { children: ReactNode }) => {
       }
       
       setUser(null);
+      setNeedsOnboarding(false);
       console.log("Logout successful, user state cleared");
     } catch (error) {
       console.error("Error in logout:", error);
@@ -322,7 +409,9 @@ const UserProvider = ({ children }: { children: ReactNode }) => {
       login,
       logout,
       registerWithEmail,
-      isLoading 
+      completeUserProfile, // Add the new method
+      isLoading,
+      needsOnboarding // Add the new property
     }}>
       {children}
     </UserContext.Provider>

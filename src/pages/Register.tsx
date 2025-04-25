@@ -1,7 +1,6 @@
-import React, { useState, useContext } from 'react';
+import React, { useState, useContext, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { UserContext } from '../UserContext';
-import supabase from '../services/supabaseClient';
 
 // Define error interfaces
 interface SupabaseError {
@@ -19,6 +18,17 @@ const Register: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
   const userContext = useContext(UserContext);
+
+  // Check if user is already logged in and redirect accordingly
+  useEffect(() => {
+    if (userContext?.user) {
+      if (userContext.needsOnboarding) {
+        navigate('/onboarding');
+      } else {
+        navigate('/home');
+      }
+    }
+  }, [userContext?.user, userContext?.needsOnboarding, navigate]);
 
   const handleEmailRegister = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -38,31 +48,20 @@ const Register: React.FC = () => {
     setError('');
     
     try {
-      // Register with Supabase
-      const { data, error } = await supabase.auth.signUp({
-        email,
-        password,
-      });
+      if (!userContext?.registerWithEmail) {
+        throw new Error('Registration method not available');
+      }
       
-      if (error) throw error;
+      // Use the context's registerWithEmail method 
+      const newUser = await userContext.registerWithEmail(email, password);
       
-      if (data.user) {
-        // Create an initial user record
-        const newUser = {
-          user_id: data.user.id,
-          email: data.user.email,
-          full_name: '',
-          avatar_url: '',
-          is_active: true
-        };
-        
-        // Set the user in context
-        if (userContext) {
-          userContext.login(newUser);
-        }
-        
-        // Move to onboarding
+      console.log('Registration successful, user created:', newUser);
+      
+      // Check if onboarding is needed
+      if (userContext.needsOnboarding) {
         navigate('/onboarding');
+      } else {
+        navigate('/home');
       }
     } catch (error: unknown) {
       // Type guard for error handling
@@ -86,6 +85,7 @@ const Register: React.FC = () => {
         setError('');
         await userContext.loginWithGoogle();
         // Google auth will redirect and handle the flow
+        // After redirect back, UserContext will check if onboarding is needed
       }
     } catch (error: unknown) {
       // Type guard for error handling
