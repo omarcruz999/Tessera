@@ -52,7 +52,7 @@ const Register: React.FC = () => {
         throw new Error('Registration method not available');
       }
       
-      // Use the context's registerWithEmail method 
+      // Use the context's registerWithEmail method
       const newUser = await userContext.registerWithEmail(email, password);
       
       console.log('Registration successful, user created:', newUser);
