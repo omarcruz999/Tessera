@@ -119,3 +119,40 @@ PRIMARY KEY (group_id, user_id)
 - **Many-to-Many Relationships**:
   - **Users** can belong to **multiple groups**, and **groups** can have **multiple members** (tracked in `group_members`).
 
+## Structure and Context
+
+### Main Logged-In Views
+
+#### Connections (currently named "Home")
+
+Purpose: Display the user's connections/peers
+Shows peer cards for all connections
+Will eventually indicate which connections have updates
+Serves as a directory of the user's network
+Clicking a peer card routes to that peer's profile
+
+#### Profile
+
+Purpose: View and manage your own profile
+Shows your profile information and bio
+Will eventually allow editing profile details
+Displays your feed which is only visible on your profile
+
+#### DirectMessages (DM)
+
+Purpose: Instant messaging with connections
+Interface for real-time communication
+Allows private conversations between users
+
+#### Navbar (Logged-In)
+
+Provides navigation between these three main views
+Always visible when the user is authenticated
+
+### User Interaction Flow
+User logs in → Sees their Connections (Home) page
+User can:
+Click on a connection to view that peer's profile and feed
+Navigate to their own profile
+Access direct messages
+Navigate between views using the navbar

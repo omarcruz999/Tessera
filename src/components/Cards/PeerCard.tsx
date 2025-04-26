@@ -1,15 +1,25 @@
+import { useNavigate } from 'react-router-dom';
+
 interface PeerCardProps {
   name: string;
   profilePicture: string;
+  userId: string; // Add userId prop
   onClick?: () => void;
 }
 
-function PeerCard({ name, profilePicture, onClick }: PeerCardProps) {
+function PeerCard({ name, profilePicture, userId }: PeerCardProps) {
+  const navigate = useNavigate();
+  
+  const handleClick = () => {
+    // Navigate to the user's profile using their ID
+    navigate(`/user/${userId}`);
+  };
+
   return (
     <div
       id="peerCardDiv"
       className="bg-[#FDF7F4] h-[250px] w-[200px] flex items-center justify-center rounded-lg shadow-md cursor-pointer"
-      onClick={onClick}
+      onClick={handleClick}
     >
       {/* Image Div */}
       <div

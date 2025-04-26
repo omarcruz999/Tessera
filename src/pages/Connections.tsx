@@ -1,10 +1,10 @@
 import { useEffect, useState, useContext, useRef } from 'react';
 import axios from 'axios';
 import PeerCard from '../components/Cards/PeerCard.tsx';
-import PostForm from './Post Components/PostForm.tsx';
-import PostCard from './Post Components/PostCard.tsx';
-import PostModal from "../components/Post Components/PostModal.tsx"
-import { UserContext, User} from '../UserContext';
+import PostForm from '../components/Post Components/PostForm.tsx';
+import PostCard from '../components/Post Components/PostCard.tsx';
+import PostModal from "../components/Post Components/PostModal.tsx";
+import { UserContext, User } from '../UserContext';
 import supabaseClient from '../services/supabaseClient';
 
 // Define interfaces for API data
@@ -28,7 +28,7 @@ function setCachedConnections(userId: string, data: User[]) {
   );
 }
 
-function HomeView() {
+function Connections() {
   const userContext = useContext(UserContext);
   const [peers, setPeers] = useState<User[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(true);
@@ -59,8 +59,10 @@ function HomeView() {
       return;
     }
 
+    const myUserId = userContext.user.id;
+
     // Try cache first
-    const cacheKey = `${CACHE_KEY_PREFIX}_${userContext.user.user_id}`;
+    const cacheKey = `${CACHE_KEY_PREFIX}_${myUserId}`;
     const cachedRaw = localStorage.getItem(cacheKey);
     if (cachedRaw) {
       try {
@@ -96,14 +98,14 @@ function HomeView() {
 
       // Fetch user's connections with auth header
       const connectionsResponse = await authenticatedAxios.get(
-        `http://localhost:4000/api/connections/all?user_id=${userContext.user.user_id}`
+        `http://localhost:4000/api/connections/all?user_id=${myUserId}`
       );
       const connections: Connection[] = connectionsResponse.data;
 
       // Get IDs of connected users
       const connectedUserIds = connections
-        .map(conn => conn.user_1 === userContext.user!.user_id ? conn.user_2 : conn.user_1)
-        .filter(id => id !== userContext.user!.user_id);
+        .map(conn => conn.user_1 === myUserId ? conn.user_2 : conn.user_1)
+        .filter(id => id !== myUserId);
 
       // Fetch profile for each connected user
       const userProfiles: User[] = [];
@@ -119,7 +121,7 @@ function HomeView() {
       }
 
       setPeers(userProfiles);
-      setCachedConnections(userContext.user.user_id, userProfiles);
+      setCachedConnections(myUserId, userProfiles);
       lastCacheTimestamp.current = Date.now();
       setError(null);
     } catch (err) {
@@ -139,7 +141,7 @@ function HomeView() {
     // Handler for focus event
     const handleFocus = () => {
       if (!userContext?.user) return;
-      const cacheKey = `${CACHE_KEY_PREFIX}_${userContext.user.user_id}`;
+      const cacheKey = `${CACHE_KEY_PREFIX}_${userContext.user.id}`;
       const cachedRaw = localStorage.getItem(cacheKey);
       if (cachedRaw) {
         try {
@@ -164,51 +166,55 @@ function HomeView() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [userContext]);
 
-  const handlePeerClick = () => {
-    setIsPostModalOpen(true);
-  }
+  console.log("Peers data:", peers);
 
   return (
-    <div id="HomeViewGrid" className="max-w-7xl mx-auto p-4">
-      {isLoading ? (
-        <div className="text-center py-8">Loading connections...</div>
-      ) : error ? (
-        <div className="text-center py-8">
-          <p className="text-red-500 mb-2">{error}</p>
-          <p className="text-gray-500 text-sm">Showing mock data instead</p>
-        </div>
-      ) : (
-        <div className="w-[812px] mx-auto grid grid-cols-4 gap-x-6 gap-y-4">
-          {peers.length === 0 ? (
-            <div className="col-span-4 text-center py-8">
-              No connections found. Add some connections to see them here!
-            </div>
-          ) : (
-            peers.map((peer) => (
-              <div key={peer.user_id} className="col-span-1">
-                <PeerCard name={peer.full_name} profilePicture={peer.avatar_url} onClick={handlePeerClick} />
+    <div className='flex flex-col items-center justify-center'>
+      <div id="ConnectionsViewGrid" className="max-w-7xl mx-auto p-4">
+        {isLoading ? (
+          <div className="text-center py-8">Loading connections...</div>
+        ) : error ? (
+          <div className="text-center py-8">
+            <p className="text-red-500 mb-2">{error}</p>
+            <p className="text-gray-500 text-sm">Showing mock data instead</p>
+          </div>
+        ) : (
+          <div className="w-[812px] mx-auto grid grid-cols-4 gap-x-6 gap-y-4">
+            {peers.length === 0 ? (
+              <div className="col-span-4 text-center py-8">
+                No connections found. Add some connections to see them here!
               </div>
-            ))
-          )}
-        </div>
-      )}
-      
-      <button
-        onClick={() => setIsModalOpen(true)}
-        className="mb-4 px-6 py-2 bg-[#8EB486] text-white rounded-lg"
-      >
-        New Post
-      </button>
+            ) : (
+              peers.map((peer) => (
+                <div key={peer.id} className="col-span-1">
+                  <PeerCard 
+                    name={peer.full_name} 
+                    profilePicture={peer.avatar_url} 
+                    userId={peer.id}
+                  />
+                </div>
+              ))
+            )}
+          </div>
+        )}
+        
+        <button
+          onClick={() => setIsModalOpen(true)}
+          className="mb-4 px-6 py-2 bg-[#8EB486] text-white rounded-lg"
+        >
+          New Post
+        </button>
 
-      {isModalOpen && <PostForm onClose={() => setIsModalOpen(false)} />}
+        {isModalOpen && <PostForm onClose={() => setIsModalOpen(false)} />}
 
-      <PostModal isOpen={isPostModalOpen} onClose={() => setIsPostModalOpen(false)}>
-        <div>
-          <PostCard />
-        </div>
-      </PostModal>
+        <PostModal isOpen={isPostModalOpen} onClose={() => setIsPostModalOpen(false)}>
+          <div>
+            <PostCard />
+          </div>
+        </PostModal>
+      </div>
     </div>
   );
 }
 
-export default HomeView;
+export default Connections;
