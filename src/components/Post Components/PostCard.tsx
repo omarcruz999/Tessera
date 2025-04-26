@@ -1,6 +1,4 @@
 import { useState } from 'react';
-import johnPork from "/JohnPork.png"
-import testImage from "../../assets/catTestImage.jpg"
 import commentIcon from "../../assets/postIcons/commentIcon.svg"
 import saveIcon from "../../assets/postIcons/saveIcon.svg"
 import savedIcon from "../../assets/postIcons/savedIcon.svg"
