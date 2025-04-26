@@ -12,6 +12,7 @@ import ErrorPage from "./pages/ErrorPage";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
 import Onboarding from "./pages/Onboarding";
+import PublicNavbar from "./components/PublicNavbar";
 
 function App() {
   const userContext = useContext(UserContext);
@@ -57,13 +58,19 @@ function App() {
           </div>
         </div>
       ) : (
-        <Routes>
-          <Route path="/login" element={<Login />} />
-          <Route path="/register" element={<Register />} />
-          <Route path="/onboarding" element={<Onboarding />} />
-          <Route path="/landing" element={<Landing />} />
-          <Route path="*" element={<Navigate to="/landing" replace />} />
-        </Routes>
+        <div>
+          <PublicNavbar />
+          <div className="pt-16">
+            <Routes>
+              <Route path="/login" element={<Login />} />
+              <Route path="/register" element={<Register />} />
+              <Route path="/onboarding" element={<Onboarding />} />
+              <Route path="/about" element={<About />} />
+              <Route path="/landing" element={<Landing />} />
+              <Route path="*" element={<Navigate to="/landing" replace />} />
+            </Routes>
+          </div>
+        </div>
       )}
     </Router>
   );
