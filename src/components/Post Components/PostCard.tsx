@@ -1,6 +1,4 @@
 import { useState } from 'react';
-import johnPork from "/JohnPork.png"
-import testImage from "../../assets/catTestImage.jpg"
 import commentIcon from "../../assets/postIcons/commentIcon.svg"
 import saveIcon from "../../assets/postIcons/saveIcon.svg"
 import savedIcon from "../../assets/postIcons/savedIcon.svg"
@@ -13,20 +11,30 @@ import PostComment from './Comments/PostComment.tsx';
 import NewComment from './Comments/NewComment.tsx';
 
 
-function PostCard() {
+export interface PostMedia {
+    media_url: string;
+    type: 'image' | 'file';
+}
 
-    const user = {
-        name: "John Pork",
-        profilePicture: johnPork,
-        postContent: "Hey guys! Check out my awsome cool cat. Found her in the dumpster lmao",
-    }
+export interface PostWithMedia {
+    id: string;
+    text: string;
+    created_at: string;
+    post_media: PostMedia[];
+}
+
+export interface PostCardProps {
+    user: {name: string; profilePicture: string;};
+    post: PostWithMedia;
+}
+
+function PostCard({ user, post}: PostCardProps) {
 
     const [postResposted, setPostResposted] = useState(false)
     const [postLiked, setPostLiked] = useState(false)
     const [postSaved, setPostSaved] = useState(false)
     const [openComments, setOpenComments] = useState(false)
     const [openReply, setOpenReply] = useState(false)
-
 
     return (
         <div id='post' className="bg-[#FDF7F4] px-5">
@@ -39,16 +47,16 @@ function PostCard() {
 
                 <div id="Post Content" className='w-full h-full grid grid-rows-[1fr_1fr] text-left'>
                     <p className='text-[18px] text-black font-bold '>{user.name}</p>
-                    <p className='text-[#424242]'>{user.postContent}</p>
+                    <p className='text-[#424242]'>{post.text}</p>
                 </div>
             </div>
 
-           
-            <div id="postImageDiv" className='w-1/2 mx-auto h-auto my-4 flex items-center justify-center'>
-                    <img 
-                        src={testImage}
-                    />
-            </div>
+            {/* Post Media, if any */}
+            {post.post_media.map((media, index) => (
+                <div key={index} className='my-4 flex justify-center'>
+                    <img src={media.media_url} alt={`media-${index}`} className='max-h-60'/>
+                </div>
+            ))}
             
 
             {/* Post Buttons */}

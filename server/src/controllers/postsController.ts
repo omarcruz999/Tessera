@@ -161,34 +161,67 @@ export const getPost: RequestHandler = async (req, res) => {
 };
 
 export const getPosts: RequestHandler = async (req, res) => {
+    // Validate 
+    const schema = Joi.object({ user_id: Joi.string().uuid().required() })
+    const { error: valErr, value } = schema.validate(req.query);
+    if (valErr){
+        res.status(400).json({ error: `Validation Error: ${valErr.message}` });
+        return 
+    }
+
+    const userId = value.user_id as string;
+
     try {
-        // Define the validation schema
-        const schema = Joi.object({
-            user_id: Joi.string().uuid().required(),
-        });
-
-        // Validate the query parameters
-        const { error } = schema.validate(req.query);
-        if (error) {
-            res.status(400).json({ error: `Validation Error: ${error.message}` });
-            return;
-        }
-
-        const { user_id } = req.query;
-
-        // Fetch posts for the user
-        const { data, error: dbError } = await supabaseAdmin
+        // fetch posts PLUS their media rows in a single query
+        const { data: posts, error: dbError } = await supabaseAdmin
             .from('posts')
-            .select('*')
-            .eq('user_id', user_id);
+            .select(`
+                id,
+                text,
+                created_at,
+                post_media (
+                    media_url,
+                    type
+                )
+            `)
+            .eq('user_id', userId)
+            .order('created_at', { ascending: false });
+        
+        if (dbError) throw dbError  
+        
+        // turn "media_url" paths into signed URLs
+        const signedPosts = await Promise.all(
+            (posts || []).map(async (post) => {
+                // extract just the bucket-relative paths
+                const filePaths = ( post.post_media || [] ).map((m) => {
+                    const marker = '/storage/v1/object/public/post-media/';
+                    if (m.media_url.includes(marker)) {
+                        return m.media_url.split(marker)[1];
+                    }
+                    const parts = m.media_url.split('/post-media/');
+                    return parts[1] ?? parts[0];
+                })
 
-        if (dbError) {
-            res.status(400).json({ error: dbError.message });
-            return;
-        }
+                const { data: signedData, error: signErr } = await supabaseAdmin
+                    .storage
+                    .from('post-media')
+                    .createSignedUrls(filePaths, 60 * 60); // 1 hour expiration
 
-        res.status(200).json(data);
+                if (signErr) console.error('createSignedUrls error:', signErr);
+
+                // map back to post_media with signed URLs
+                const signedMedia = (post.post_media || []).map((m, idx) => ({
+                    ...m,
+                    media_url: signedData?.[idx]?.signedUrl || m.media_url   
+                }))
+
+                return { ...post, post_media: signedMedia };
+            })
+        )
+
+        res.json(signedPosts);
     } catch (error) {
+        console.error('Error fetching posts:', error);
         res.status(500).json({ error: (error as Error).message });
     }
 };
