@@ -121,7 +121,7 @@ const Register: React.FC = () => {
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="w-full p-2 border rounded focus:ring-2 focus:ring-[#E7A691] focus:outline-none"
+              className="w-full p-2 border rounded focus:ring-2 focus:ring-[#E7A691] focus:outline-none text-black"
               required
               placeholder="your@email.com"
             />
@@ -133,7 +133,7 @@ const Register: React.FC = () => {
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="w-full p-2 border rounded focus:ring-2 focus:ring-[#E7A691] focus:outline-none"
+              className="w-full p-2 border rounded focus:ring-2 focus:ring-[#E7A691] focus:outline-none text-black"
               required
               placeholder="Create a password"
             />
@@ -145,7 +145,7 @@ const Register: React.FC = () => {
               type="password"
               value={confirmPassword}
               onChange={(e) => setConfirmPassword(e.target.value)}
-              className="w-full p-2 border rounded focus:ring-2 focus:ring-[#E7A691] focus:outline-none"
+              className="w-full p-2 border rounded focus:ring-2 focus:ring-[#E7A691] focus:outline-none text-black"
               required
               placeholder="Confirm your password"
             />
