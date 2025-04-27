@@ -4,15 +4,11 @@ import PeerCard from '../src/components/Cards/PeerCard';
 import { describe, it, expect, vi } from 'vitest';
 import '@testing-library/jest-dom';
 
-
 // Mock the useNavigate hook
-vi.mock('react-router-dom', async () => {
-  const actual = await vi.importActual('react-router-dom');
-  return {
-    ...actual,
-    useNavigate: () => vi.fn()
-  };
-});
+const mockNavigate = vi.fn();
+vi.mock('react-router-dom', () => ({
+  useNavigate: () => mockNavigate
+}));
 
 describe('PeerCard component', () => {
   it('renders the peer card with a name and profile picture', () => {
