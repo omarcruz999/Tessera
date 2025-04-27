@@ -4,6 +4,8 @@ import { UserContext } from '../UserContext';
 import defaultProfilePicture from '../assets/defaultProfilePicture.png';
 import PostCard, { PostWithMedia } from '../components/Post Components/PostCard.tsx';
 import supabase from '../services/supabaseClient.ts';
+import PostForm from './Post Components/PostForm.tsx';
+import PostModal from './Post Components/PostModal.tsx';
 
 interface ProfileUser {
   user_id: string;
@@ -32,6 +34,7 @@ function ProfileView({ profileUser }: ProfileViewProps) {
   const [activeTab, setActiveTab] = useState<'posts' | 'replies' | 'bookmarks'>('posts');
   const [postsLoading, setPostsLoading] = useState(false)
   const [posts, setPosts] = useState<PostWithMedia[]>([]);
+  const [isPostModalOpen, setIsPostModalOpen] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -95,6 +98,20 @@ function ProfileView({ profileUser }: ProfileViewProps) {
           <button className="edit-btn">Edit Profile</button>
         )}
         <button className="share-btn">Share Profile</button>
+
+        {/* New Post Button + Modal */}
+        <button
+          onClick={() => setIsPostModalOpen(true)}
+          className="!mb-4 !px-6 !py-2 !bg-[#997C70] !text-white !rounded-lg w-[150px] !font-bold !border-none"
+        >
+          New Post
+        </button>
+
+        {isPostModalOpen && <PostForm onClose={() => setIsPostModalOpen(false)} />}
+
+        <PostModal isOpen={isPostModalOpen} onClose={() => setIsPostModalOpen(false)}>
+          <PostForm onClose={() => setIsPostModalOpen(false)} />
+        </PostModal>
       </div>
 
       <div className="profile-content">
