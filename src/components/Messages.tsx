@@ -5,37 +5,63 @@ import ChatMessages from './ChatMessages';
 import supabaseClient from '../services/supabaseClient';
 import { UserContext } from '../UserContext';
 
+// Define a proper interface for conversation objects
+interface Conversation {
+  other_user_id: string;
+  full_name: string;
+  avatar_url?: string;
+  last_message?: string;
+  id: string;
+}
+
+// Define a proper interface for the selected user
+interface SelectedUser {
+  other_user_id: string;
+  full_name: string;
+  avatar_url?: string;
+}
+
 const Messages = () => {
   const location = useLocation();
   const userContext = useContext(UserContext);
+  
+  // Move all useState calls to the top
+  const [conversations, setConversations] = useState<Conversation[]>([]);
+  const [selectedUserId, setSelectedUserId] = useState<string | null>(
+    location.state?.selectedUserId || null
+  );
+  const [selectedUser, setSelectedUser] = useState<SelectedUser | null>(null);
 
-  if (!userContext) {
-    console.error('UserContext is undefined');
-    return null;
-  }
-
-  const { user } = userContext;
-  const [conversations, setConversations] = useState<any[]>([]);
-  const [selectedUserId, setSelectedUserId] = useState<string | null>(location.state?.selectedUserId || null);
-  const [selectedUser, setSelectedUser] = useState<any | null>(null);
-
+  // All hooks must be called before any conditional logic
   useEffect(() => {
+    // Move the early return inside the effect
+    if (!userContext?.user?.id) return;
+    
     const fetchConversations = async () => {
-      if (!user) return;
-
+      // Add explicit check to satisfy TypeScript
+      if (!userContext || !userContext.user) return;
+      
+      const userId = userContext.user.id;
+      
       const { data, error } = await supabaseClient
-        .rpc('get_conversations', { current_user_id: user.user_id });
+        .rpc('get_conversations', { current_user_id: userId });
 
       if (error) {
         console.error(error);
         return;
       }
 
-      setConversations(data);
+      setConversations(data || []);
     };
 
     fetchConversations();
-  }, [user]);
+  }, [userContext?.user?.id]); // Use userContext?.user?.id as dependency instead
+
+  // Now you can check context and return early if needed - AFTER all hooks are called
+  if (!userContext || !userContext.user) {
+    console.error('UserContext is undefined or user not logged in');
+    return null;
+  }
 
   return (
     <div className="messages-wrapper">
@@ -50,7 +76,12 @@ const Messages = () => {
               conversations.map((c) => (
                 <MessagePreview
                   key={c.other_user_id}
-                  user={c}
+                  user={{
+                    full_name: c.full_name,
+                    avatar_url: c.avatar_url || '',
+                    last_message: c.last_message || '',
+                    other_user_id: c.other_user_id
+                  }}
                   onClick={() => {
                     setSelectedUserId(c.other_user_id);
                     setSelectedUser(c);
@@ -64,7 +95,10 @@ const Messages = () => {
 
       <ChatMessages
         selectedUserId={selectedUserId}
-        selectedUser={selectedUser}
+        selectedUser={selectedUser ? {
+          full_name: selectedUser.full_name,
+          avatar_url: selectedUser.avatar_url || ''
+        } : null}
         setSelectedUserId={setSelectedUserId}
         setConversations={setConversations}
       />
