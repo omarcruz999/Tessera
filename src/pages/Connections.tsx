@@ -30,8 +30,6 @@ function Connections() {
   const [peers, setPeers] = useState<User[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [isPostModalOpen, setIsPostModalOpen] = useState(false);
 
   // Track last cache timestamp for auto-refresh
   const lastCacheTimestamp = useRef<number | null>(null);
