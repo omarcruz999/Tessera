@@ -3,6 +3,16 @@ import supabaseClient from "../services/supabaseClient";
 import { UserContext } from "../UserContext";
 import { useRealtimeMessages } from "../services/messages";
 
+// Define a type for conversation objects
+interface Conversation {
+  other_user_id: string;
+  full_name: string;
+  avatar_url?: string;
+  last_message?: string;
+  id: string;
+  // Add any other properties your conversations might have
+}
+
 interface ChatMessagesProps {
   selectedUserId: string | null;
   selectedUser: {
@@ -10,7 +20,7 @@ interface ChatMessagesProps {
     avatar_url: string;
   } | null;
   setSelectedUserId: (id: string | null) => void;
-  setConversations: React.Dispatch<React.SetStateAction<any[]>>;
+  setConversations: React.Dispatch<React.SetStateAction<Conversation[]>>;
 }
 
 interface Message {
@@ -39,7 +49,7 @@ const ChatMessages = ({
       .from("messages")
       .select("*")
       .or(
-        `and(sender_id.eq.${user.user_id},receiver_id.eq.${selectedUserId}),and(sender_id.eq.${selectedUserId},receiver_id.eq.${user.user_id})`
+        `and(sender_id.eq.${user.id},receiver_id.eq.${selectedUserId}),and(sender_id.eq.${selectedUserId},receiver_id.eq.${user.id})`
       )
       .order("created_at", { ascending: true });
 
@@ -77,10 +87,10 @@ const ChatMessages = ({
     if (!selectedUserId || !user) return;
 
     const isRelevant =
-      (newMsg.sender_id === user.user_id &&
+      (newMsg.sender_id === user.id &&
         newMsg.receiver_id === selectedUserId) ||
       (newMsg.sender_id === selectedUserId &&
-        newMsg.receiver_id === user.user_id);
+        newMsg.receiver_id === user.id);
 
     if (isRelevant) {
       // Realtime Update Chat Bubble
@@ -119,7 +129,7 @@ const ChatMessages = ({
 
     const { error } = await supabaseClient.from("messages").insert([
       {
-        sender_id: user.user_id,
+        sender_id: user.id,
         receiver_id: selectedUserId,
         content,
       },
@@ -196,20 +206,20 @@ const ChatMessages = ({
                 <div
                   key={m.id}
                   className={`flex mb-2 ${
-                    m.sender_id === user?.user_id
+                    m.sender_id === user?.id
                       ? "justify-end"
                       : "justify-start"
                   }`}
                 >
                   <div
                     className={`max-w-[80%] px-5 py-3 rounded-2xl text-base ${
-                      m.sender_id === user?.user_id
+                      m.sender_id === user?.id
                         ? "text-black"
                         : "text-black"
                     }`}
                     style={{
                       backgroundColor:
-                        m.sender_id === user?.user_id ? "#8EB486" : "#E5E7EB", // Your green vs gray
+                        m.sender_id === user?.id ? "#8EB486" : "#E5E7EB", // Your green vs gray
                     }}
                   >
                     {m.content}
