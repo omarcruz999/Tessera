@@ -53,3 +53,24 @@ function PeerCard({ name, profilePicture, userId }: PeerCardProps) {
 }
 
 export default PeerCard;
+
+// tests/PeerCard.test.tsx
+import { screen } from '@testing-library/react';
+import { renderWithRouter } from '../src/test-utils';
+import PeerCard from '../src/components/Cards/PeerCard';
+
+describe('PeerCard component', () => {
+  it('renders the peer card with a name and profile picture', () => {
+    const peer = {
+      id: '123',
+      full_name: 'John Doe',
+      avatar_url: 'https://example.com/avatar.jpg'
+    };
+
+    // Use renderWithRouter instead of render
+    renderWithRouter(<PeerCard peer={peer} />);
+    
+    expect(screen.getByText('John Doe')).toBeInTheDocument();
+    expect(screen.getByAltText('John Doe')).toHaveAttribute('src', 'https://example.com/avatar.jpg');
+  });
+});
