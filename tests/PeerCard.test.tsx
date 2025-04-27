@@ -1,11 +1,22 @@
 import React from 'react';
 import { render, screen } from '@testing-library/react';
 import PeerCard from '../src/components/Cards/PeerCard';
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
+import '@testing-library/jest-dom';
+
+
+// Mock the useNavigate hook
+vi.mock('react-router-dom', async () => {
+  const actual = await vi.importActual('react-router-dom');
+  return {
+    ...actual,
+    useNavigate: () => vi.fn()
+  };
+});
 
 describe('PeerCard component', () => {
   it('renders the peer card with a name and profile picture', () => {
-    render(<PeerCard name="John Smith" profilePicture="/JohnPork.png" />);
+    render(<PeerCard name="John Smith" profilePicture="/JohnPork.png" userId="123" />);
     
     // Check for the peer's name
     const nameElement = screen.getByText('John Smith');
