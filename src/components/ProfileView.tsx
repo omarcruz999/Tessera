@@ -33,11 +33,11 @@ function ProfileView({ profileUser }: ProfileViewProps) {
   
   const [activeTab, setActiveTab] = useState<'posts' | 'replies' | 'bookmarks'>('posts');
   const [postsLoading, setPostsLoading] = useState(false)
-  const [posts, setPosts] = useState<PostWithMedia[]>([]);
   const [isPostModalOpen, setIsPostModalOpen] = useState(false);
   const navigate = useNavigate();
+  const [posts, setPosts] = useState<PostWithMedia[]>([]);
 
-  useEffect(() => {
+  const loadPosts = async() => {
     if (!displayedUserId) return 
 
     async function loadPosts(){
@@ -70,7 +70,9 @@ function ProfileView({ profileUser }: ProfileViewProps) {
     }
 
     loadPosts();
-  }, [displayedUserId]);
+  };
+
+  useEffect(() => { loadPosts(); }, [displayedUserId]);
 
   const handleMessageClick = () => {
     if (profileUser)
@@ -110,7 +112,14 @@ function ProfileView({ profileUser }: ProfileViewProps) {
         {isPostModalOpen && <PostForm onClose={() => setIsPostModalOpen(false)} />}
 
         <PostModal isOpen={isPostModalOpen} onClose={() => setIsPostModalOpen(false)}>
-          <PostForm onClose={() => setIsPostModalOpen(false)} />
+          <PostForm 
+            onClose={() => setIsPostModalOpen(false)} 
+            onPostCreated = {(newPost : PostWithMedia) => {
+              setPosts(prev => [newPost, ...prev]);
+              loadPosts();
+              setIsPostModalOpen(false);
+            }}
+            />
         </PostModal>
       </div>
 

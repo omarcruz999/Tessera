@@ -4,13 +4,16 @@ import supabase  from "../../services/supabaseClient"
 import { v4 as uuid } from "uuid"
 import johnPork from "/JohnPork.png"
 import imageIcon from "../../assets/imageIcon.svg"
+import type { PostWithMedia } from "./PostCard"
 
 interface PostFromProps {
     // Used to close the modal
     onClose: () => void
+    // Optional: Callback for when a post is created
+    onPostCreated?: (post: PostWithMedia) => void
 }
 
-const PostForm: React.FC<PostFromProps> = ({ onClose }) => {
+const PostForm: React.FC<PostFromProps> = ({ onClose, onPostCreated}) => {
 
     const user = {
         name: "John Pork",
@@ -117,7 +120,12 @@ const PostForm: React.FC<PostFromProps> = ({ onClose }) => {
                         type: 'image'
                     });
                 if (pmError) throw pmError;
-            }    
+            }   
+
+            if (onPostCreated && newPost) {
+                onPostCreated(newPost as PostWithMedia);
+            }
+
             // Reset form
             setPostContent("");
             setUploadedImage(null);
