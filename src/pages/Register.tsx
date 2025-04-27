@@ -121,7 +121,7 @@ const Register: React.FC = () => {
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="w-full p-2 border rounded focus:ring-2 focus:ring-[#E7A691] focus:outline-none"
+              className="w-full p-2 border rounded focus:ring-2 focus:ring-[#E7A691] focus:outline-none text-black"
               required
               placeholder="your@email.com"
             />
@@ -133,7 +133,7 @@ const Register: React.FC = () => {
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="w-full p-2 border rounded focus:ring-2 focus:ring-[#E7A691] focus:outline-none"
+              className="w-full p-2 border rounded focus:ring-2 focus:ring-[#E7A691] focus:outline-none text-black"
               required
               placeholder="Create a password"
             />
@@ -145,7 +145,7 @@ const Register: React.FC = () => {
               type="password"
               value={confirmPassword}
               onChange={(e) => setConfirmPassword(e.target.value)}
-              className="w-full p-2 border rounded focus:ring-2 focus:ring-[#E7A691] focus:outline-none"
+              className="w-full p-2 border rounded focus:ring-2 focus:ring-[#E7A691] focus:outline-none text-black"
               required
               placeholder="Confirm your password"
             />
@@ -154,7 +154,7 @@ const Register: React.FC = () => {
           <button
             type="submit"
             disabled={loading}
-            className="w-full bg-[#E7A691] hover:bg-[#D8957F] text-[#424242] py-2 rounded font-medium transition-colors"
+            className="w-full bg-[#E7A691] hover:bg-[#D8957F] text-white py-2 rounded font-medium transition-colors"
           >
             {loading ? 'Creating Account...' : 'Create Account'}
           </button>
@@ -171,7 +171,7 @@ const Register: React.FC = () => {
         
         <button
           onClick={handleGoogleRegister}
-          className="w-full flex items-center justify-center bg-white border border-gray-300 text-gray-700 py-2 rounded hover:bg-gray-50 transition-colors"
+          className="w-full flex items-center justify-center bg-white border border-gray-300 text-white py-2 rounded hover:bg-gray-50 transition-colors"
         >
           <svg className="w-5 h-5 mr-2" viewBox="0 0 24 24">
             <path
@@ -198,7 +198,7 @@ const Register: React.FC = () => {
           Already have an account?{' '}
           <button 
             onClick={() => navigate('/login')} 
-            className="text-[#E7A691] hover:underline"
+            className="text-white hover:underline"
           >
             Log in
           </button>

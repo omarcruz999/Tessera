@@ -1,5 +1,7 @@
 import type React from "react"
 import { useState, useRef } from "react"
+import supabase  from "../../services/supabaseClient"
+import { v4 as uuid } from "uuid"
 import johnPork from "/JohnPork.png"
 import imageIcon from "../../assets/imageIcon.svg"
 
@@ -66,10 +68,66 @@ const PostForm: React.FC<PostFromProps> = ({ onClose }) => {
     }
 
     // Placeholder for handling post submission 
-    const handleSubmit = () => {
-        console.log({ content: postContent, allowSharing: allowSharing, image: uploadedImage })
-        onClose()
-    }
+    const handleSubmit = async () => {
+        // There is no text in the text area
+        if (!postContent.trim()) return;
+
+        try {
+            // Fetch the current user
+            const { data: { user }, error: userError } = await supabase.auth.getUser();
+            if (userError || !user) {
+                console.error("No user logged in", userError);
+                return;
+            }
+
+            // Insert post record into the database
+            const { data: newPost, error: postError } = await supabase
+                .from("posts")
+                .insert({
+                    user_id: user.id,
+                    text: postContent,
+                    allow_sharing: allowSharing,
+                })
+                .select()
+                .single();
+            
+            if (postError) throw postError;
+
+            // If an image is uploaded, upload it to storage + post_media
+            const file = fileInputRef.current?.files?.[0];
+            if (file) {
+                const ext = file.name.split('.').pop() || 'jpg'; // Default to jpg if no extension
+                const fileName = `${uuid()}.${ext}`;
+                const filePath = `posts/${newPost.id}/${fileName}`;
+
+                const { error: uploadError } = await supabase.storage
+                    .from("post-media")
+                    .upload(filePath, file, { contentType: file.type });
+                if (uploadError) throw uploadError;
+
+                const { data: { publicUrl } } = supabase.storage
+                    .from("post-media")
+                    .getPublicUrl(filePath);
+
+                const { error: pmError } = await supabase
+                    .from("post_media")
+                    .insert({
+                        post_id: newPost.id,
+                        media_url: publicUrl,
+                        type: 'image'
+                    });
+                if (pmError) throw pmError;
+            }    
+            // Reset form
+            setPostContent("");
+            setUploadedImage(null);
+            onClose();
+        
+        } catch (error) {
+            console.error("Error creating post:", error);
+            return;
+        }
+    };
 
     return (
 

@@ -103,7 +103,7 @@ const Login: React.FC = () => {
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="w-full p-2 border rounded focus:ring-2 focus:ring-[#E7A691] focus:outline-none"
+              className="w-full p-2 border rounded focus:ring-2 focus:ring-[#E7A691] focus:outline-none text-black"
               required
               placeholder="your@email.com"
             />
@@ -115,7 +115,7 @@ const Login: React.FC = () => {
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="w-full p-2 border rounded focus:ring-2 focus:ring-[#E7A691] focus:outline-none"
+              className="w-full p-2 border rounded focus:ring-2 focus:ring-[#E7A691] focus:outline-none text-black"
               required
               placeholder="Enter your password"
             />
@@ -124,7 +124,7 @@ const Login: React.FC = () => {
           <button
             type="submit"
             disabled={loading}
-            className="w-full bg-[#E7A691] hover:bg-[#D8957F] text-[#424242] py-2 rounded font-medium transition-colors"
+            className="w-full bg-[#E7A691] hover:bg-[#D8957F] text-white py-2 rounded font-medium transition-colors"
           >
             {loading ? 'Logging in...' : 'Log In'}
           </button>
@@ -141,7 +141,7 @@ const Login: React.FC = () => {
         
         <button
           onClick={handleGoogleLogin}
-          className="w-full flex items-center justify-center bg-white border border-gray-300 text-gray-700 py-2 rounded hover:bg-gray-50 transition-colors"
+          className="w-full flex items-center justify-center bg-white border border-gray-300 text-white py-2 rounded hover:bg-gray-50 transition-colors"
         >
           <svg className="w-5 h-5 mr-2" viewBox="0 0 24 24">
             <path
@@ -168,7 +168,7 @@ const Login: React.FC = () => {
           Don't have an account?{' '}
           <button 
             onClick={() => navigate('/register')} 
-            className="text-[#E7A691] hover:underline"
+            className="!text-white hover:underline"
           >
             Sign up
           </button>
