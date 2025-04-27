@@ -33,9 +33,9 @@ function App() {
   return (
     <Router>
       {isLoggedIn ? (
-        <div>
+        <div className="flex flex-col h-screen">
           <NavBar />
-          <div className="pt-16"> {/* Add padding for the fixed navbar */}
+          <div className="flex-1 overflow-auto pt-16"> {/* Add padding for the fixed navbar */}
             <Routes>
               <Route path="/" element={<Connections />} />
               <Route path="/about" element={<About />} />
