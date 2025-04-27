@@ -42,12 +42,12 @@ function Connections() {
   // Fallback mock data function
   const loadMockData = async (): Promise<User[]> => {
     return [
-      { user_id: '1', full_name: 'Joseph Schmo', avatar_url: '/JohnPork.png', is_active: true },
-      { user_id: '2', full_name: 'Jane Doe', avatar_url: '/JohnPork.png', is_active: true },
-      { user_id: '3', full_name: 'John Smith', avatar_url: '/JohnPork.png', is_active: true },
-      { user_id: '4', full_name: 'Alice Johnson', avatar_url: '/JohnPork.png', is_active: true },
-      { user_id: '7', full_name: 'Charlie Davis', avatar_url: '/JohnPork.png', is_active: true },
-      { user_id: '9', full_name: 'David Evans', avatar_url: '/JohnPork.png', is_active: true },
+      { id: '1', full_name: 'Joseph Schmo', avatar_url: '/JohnPork.png', is_active: true },
+      { id: '2', full_name: 'Jane Doe', avatar_url: '/JohnPork.png', is_active: true },
+      { id: '3', full_name: 'John Smith', avatar_url: '/JohnPork.png', is_active: true },
+      { id: '4', full_name: 'Alice Johnson', avatar_url: '/JohnPork.png', is_active: true },
+      { id: '7', full_name: 'Charlie Davis', avatar_url: '/JohnPork.png', is_active: true },
+      { id: '9', full_name: 'David Evans', avatar_url: '/JohnPork.png', is_active: true },
     ];
   };
 
@@ -209,7 +209,13 @@ function Connections() {
 
         <PostModal isOpen={isPostModalOpen} onClose={() => setIsPostModalOpen(false)}>
           <div>
-            <PostCard />
+            <PostCard 
+              user={{
+                name: userContext?.user?.full_name || '',
+                profilePicture: userContext?.user?.avatar_url || ''
+              }}
+              post={{ id: '', text: '', created_at: '', post_media: [] }}
+            />
           </div>
         </PostModal>
       </div>
