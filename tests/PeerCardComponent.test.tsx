@@ -1,18 +1,23 @@
 import React from 'react';
 import { render, screen } from '@testing-library/react';
-import PeerCard from '../src/components/Cards/PeerCard';
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect } from 'vitest';
 import '@testing-library/jest-dom';
+import { MemoryRouter } from 'react-router-dom';
 
-// Mock the useNavigate hook
-const mockNavigate = vi.fn();
-vi.mock('react-router-dom', () => ({
-  useNavigate: () => mockNavigate
-}));
+// Import the component directly without naming conflicts
+const { default: PeerCardComponent } = await import('../src/components/Cards/PeerCard');
 
 describe('PeerCard component', () => {
   it('renders the peer card with a name and profile picture', () => {
-    render(<PeerCard name="John Smith" profilePicture="/JohnPork.png" userId="123" />);
+    render(
+      <MemoryRouter>
+        <PeerCardComponent 
+          name="John Smith" 
+          profilePicture="/JohnPork.png" 
+          userId="123" 
+        />
+      </MemoryRouter>
+    );
     
     // Check for the peer's name
     const nameElement = screen.getByText('John Smith');
