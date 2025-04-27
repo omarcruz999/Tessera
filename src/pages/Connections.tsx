@@ -1,9 +1,6 @@
 import { useEffect, useState, useContext, useRef } from 'react';
 import axios from 'axios';
 import PeerCard from '../components/Cards/PeerCard.tsx';
-import PostForm from '../components/Post Components/PostForm.tsx';
-import PostCard from '../components/Post Components/PostCard.tsx';
-import PostModal from "../components/Post Components/PostModal.tsx";
 import { UserContext, User } from '../UserContext';
 import supabaseClient from '../services/supabaseClient';
 
