@@ -197,27 +197,6 @@ function Connections() {
             )}
           </div>
         )}
-        
-        <button
-          onClick={() => setIsModalOpen(true)}
-          className="mb-4 px-6 py-2 bg-[#8EB486] text-white rounded-lg"
-        >
-          New Post
-        </button>
-
-        {isModalOpen && <PostForm onClose={() => setIsModalOpen(false)} />}
-
-        <PostModal isOpen={isPostModalOpen} onClose={() => setIsPostModalOpen(false)}>
-          <div>
-            <PostCard 
-              user={{
-                name: userContext?.user?.full_name || '',
-                profilePicture: userContext?.user?.avatar_url || ''
-              }}
-              post={{ id: '', text: '', created_at: '', post_media: [] }}
-            />
-          </div>
-        </PostModal>
       </div>
     </div>
   );
