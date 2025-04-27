@@ -22,9 +22,7 @@
 .profile-container {
   display: flex;
   flex-direction: column;
-  height: calc(100vh - 80px); /* Adjust based on navbar height (e.g., 60px) and bottom gap (e.g., 60px) */
-  margin-top: 40px; /* Adjust this to match your navbar height */
-  padding-bottom: 20px; /* Adds space at the bottom */
+  height: calc(100vh - 66px); /* Adjust based on navbar height (e.g., 60px) and bottom gap (e.g., 60px) */
   overflow: hidden;
 }
 
