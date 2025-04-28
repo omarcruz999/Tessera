@@ -33,46 +33,43 @@ function ProfileView({ profileUser }: ProfileViewProps) {
   
   const [activeTab, setActiveTab] = useState<'posts' | 'replies' | 'bookmarks'>('posts');
   const [postsLoading, setPostsLoading] = useState(false)
+  const [posts, setPosts] = useState<PostWithMedia[]>([]);
   const [isPostModalOpen, setIsPostModalOpen] = useState(false);
   const navigate = useNavigate();
-  const [posts, setPosts] = useState<PostWithMedia[]>([]);
 
-  const loadPosts = async() => {
-    if (!displayedUserId) return 
+  async function loadPosts(){
+    setPostsLoading(true);
+    try {
+      // grab the current session & token
+      const { data: {session} } = await supabase.auth.getSession()
+      const token = session?.access_token;
 
-    async function loadPosts(){
-      setPostsLoading(true);
-      try {
-        // grab the current session & token
-        const { data: {session} } = await supabase.auth.getSession()
-        const token = session?.access_token;
-
-        const resp = await fetch(
-          `http://localhost:4000/api/posts?user_id=${displayedUserId}`,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            'Content-Type': 'application/json',
-          },
-          credentials: 'include',
-        }
-      )
-
-      if (!resp.ok) throw new Error(`Failed to fetch posts: ${resp.statusText}`);
-
-      const postsData = await resp.json();
-      setPosts(postsData);
-      } catch (error) {
-        console.error('Error loading posts:', error);
-      } finally {
-        setPostsLoading(false);
+      const resp = await fetch(
+        `http://localhost:4000/api/posts?user_id=${displayedUserId}`,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include',
       }
+    )
+
+    if (!resp.ok) throw new Error(`Failed to fetch posts: ${resp.statusText}`);
+
+    const postsData = await resp.json();
+    setPosts(postsData);
+    } catch (error) {
+      console.error('Error loading posts:', error);
+    } finally {
+      setPostsLoading(false);
     }
+  }
 
+  useEffect(() => {
+    if (!displayedUserId) return;
     loadPosts();
-  };
-
-  useEffect(() => { loadPosts(); }, [displayedUserId]);
+  }, [displayedUserId]);
 
   const handleMessageClick = () => {
     if (profileUser)
@@ -112,14 +109,10 @@ function ProfileView({ profileUser }: ProfileViewProps) {
         {isPostModalOpen && <PostForm onClose={() => setIsPostModalOpen(false)} />}
 
         <PostModal isOpen={isPostModalOpen} onClose={() => setIsPostModalOpen(false)}>
-          <PostForm 
-            onClose={() => setIsPostModalOpen(false)} 
-            onPostCreated = {(newPost : PostWithMedia) => {
-              setPosts(prev => [newPost, ...prev]);
-              loadPosts();
-              setIsPostModalOpen(false);
-            }}
-            />
+          <PostForm onClose={() => {
+            setIsPostModalOpen(false);
+            loadPosts();
+            }} />
         </PostModal>
       </div>
 
