@@ -1,4 +1,6 @@
-import { useState } from 'react';
+import { useState, useContext } from 'react';
+import { UserContext } from '../../UserContext';
+import supabase from '../../services/supabaseClient';
 import {
     FaRegComment,
     FaRetweet,
@@ -27,14 +29,41 @@ export interface PostWithMedia {
 export interface PostCardProps {
     user: { name: string; profilePicture: string; };
     post: PostWithMedia;
+    onDelete?: () => void;
 }
 
-function PostCard({ user, post }: PostCardProps) {
+function PostCard({ user, post, onDelete }: PostCardProps) {
     const [postLiked, setPostLiked] = useState(false)
     const [postResposted, setPostResposted] = useState(false)
     const [postSaved, setPostSaved] = useState(false)
     const [openComments, setOpenComments] = useState(false)
     const [openReply, setOpenReply] = useState(false)
+    
+    const { user: currentUser } = useContext(UserContext)!;
+
+    const handleDelete = async () => {
+        if (!currentUser) return;
+        const { data: { session } } = await supabase.auth.getSession()
+        const token = session?.access_token;
+
+        const resp = await fetch(
+            `http://localhost:4000/api/posts/${post.id}`,
+            {
+                method: 'DELETE',
+                headers: {
+                    'Content-Type': 'application/json',
+                    Authorization: `Bearer ${token}`,
+                },
+                body: JSON.stringify({ user_id: currentUser.id }),
+            }
+        );
+        if (!resp.ok) {
+            console.error('Failed to delete post:', resp.statusText);
+            return;
+        }
+
+        onDelete?.();
+    }
 
     return (
         <div id='post' className="bg-[#FDF7F4] px-5 border border-[#ccc]">
@@ -98,7 +127,7 @@ function PostCard({ user, post }: PostCardProps) {
                     </button>
 
                     {/* Delete Button */}
-                    <button aria-label="Delete" style={{ outline: "none" }} className='!p-2 !bg-[#FDF7F4] !hover:bg-gray-200 !rounded-full !focus:outline-none !border-none text-black hover:text-red-500'>
+                    <button aria-label="Delete" onClick={handleDelete} style={{ outline: "none" }} className='!p-2 !bg-[#FDF7F4] !hover:bg-gray-200 !rounded-full !focus:outline-none !border-none text-black hover:text-red-500'>
                         <FaTrash className='text-2xl' />
                     </button>
                 </div>

@@ -162,6 +162,7 @@ function ProfileView({ profileUser }: ProfileViewProps) {
                     name: displayedUser.full_name,
                     profilePicture: displayedUser.avatar_url || defaultProfilePicture,
                   }}
+                  onDelete={() => loadPosts()} 
                 />
               ))
             ) : (
