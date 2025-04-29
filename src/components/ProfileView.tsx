@@ -21,6 +21,12 @@ interface ProfileViewProps {
 function ProfileView({ profileUser }: ProfileViewProps) {
   const { user: loggedInUser } = useContext(UserContext)!;
   const displayedUser = profileUser || loggedInUser;
+  
+  const [activeTab, setActiveTab] = useState<'posts' | 'replies' | 'bookmarks'>('posts');
+  const [postsLoading, setPostsLoading] = useState(false)
+  const [posts, setPosts] = useState<PostWithMedia[]>([]);
+  const [isPostModalOpen, setIsPostModalOpen] = useState(false);
+  const navigate = useNavigate();
 
   if (!displayedUser) {
     return <div>Error: no user to show</div>;
@@ -30,12 +36,6 @@ function ProfileView({ profileUser }: ProfileViewProps) {
   const displayedUserId =
     'user_id' in displayedUser ? displayedUser.user_id : displayedUser.id;
   const isOwnProfile = loggedInUser?.id === displayedUserId;
-  
-  const [activeTab, setActiveTab] = useState<'posts' | 'replies' | 'bookmarks'>('posts');
-  const [postsLoading, setPostsLoading] = useState(false)
-  const [posts, setPosts] = useState<PostWithMedia[]>([]);
-  const [isPostModalOpen, setIsPostModalOpen] = useState(false);
-  const navigate = useNavigate();
 
   useEffect(() => {
     if (!displayedUserId) return 
