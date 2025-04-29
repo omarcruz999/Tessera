@@ -24,3 +24,5 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+venv/
+server/src/vibe_matcher/venv/
