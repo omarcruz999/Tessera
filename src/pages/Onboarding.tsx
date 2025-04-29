@@ -236,7 +236,7 @@ function Onboarding() {
               required
               value={formData.full_name}
               onChange={handleChange}
-              className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-[#E7A691] focus:border-[#E7A691] sm:text-sm"
+              className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-[#E7A691] focus:border-[#E7A691] sm:text-sm text-black"
               placeholder="Your Name"
             />
           </div>
@@ -252,7 +252,7 @@ function Onboarding() {
               rows={3}
               value={formData.bio}
               onChange={handleChange}
-              className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-[#E7A691] focus:border-[#E7A691] sm:text-sm"
+              className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-[#E7A691] focus:border-[#E7A691] sm:text-sm text-black"
               placeholder="Tell us about yourself"
             />
             <p className="mt-1 text-sm text-gray-500 flex justify-between">
