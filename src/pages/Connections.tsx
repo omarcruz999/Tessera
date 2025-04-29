@@ -1,8 +1,13 @@
 import { useEffect, useState, useContext, useRef } from 'react';
 import axios from 'axios';
 import PeerCard from '../components/Cards/PeerCard.tsx';
+import PostForm from '../components/Post Components/PostForm.tsx';
+import PostCard from '../components/Post Components/PostCard.tsx';
+import PostModal from "../components/Post Components/PostModal.tsx";
+import VibeMatcherModal from '../components/VibeMatcherModal';
 import { UserContext, User } from '../UserContext';
 import supabaseClient from '../services/supabaseClient';
+import { IoAdd } from 'react-icons/io5';  // Make sure to install react-icons with: npm install react-icons
 
 // Define interfaces for API data
 interface Connection {
@@ -30,6 +35,9 @@ function Connections() {
   const [peers, setPeers] = useState<User[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isPostModalOpen, setIsPostModalOpen] = useState(false);
+  const [showVibeMatcher, setShowVibeMatcher] = useState<boolean>(false);
 
   // Track last cache timestamp for auto-refresh
   const lastCacheTimestamp = useRef<number | null>(null);
@@ -165,7 +173,18 @@ function Connections() {
 
   return (
     <div className='flex flex-col items-center justify-center'>
-      <div id="ConnectionsViewGrid" className="max-w-7xl mx-auto p-4">
+      <div id="ConnectionsViewGrid" className="max-w-7xl mx-auto p-4 relative">
+        {/* Vibe Matcher button - now centered */}
+        <div className="w-full flex justify-center mb-4">
+          <button 
+            onClick={() => setShowVibeMatcher(true)}
+            className="w-16 h-16 rounded-full bg-[#8EB486] shadow-lg flex items-center justify-center text-white hover:bg-[#7ca474] transition-colors duration-300"
+            aria-label="Take a vibe selfie"
+          >
+            <IoAdd size={32} />
+          </button>
+        </div>
+        
         {isLoading ? (
           <div className="text-center py-8">Loading connections...</div>
         ) : error ? (
@@ -192,6 +211,33 @@ function Connections() {
             )}
           </div>
         )}
+        
+        <button
+          onClick={() => setIsModalOpen(true)}
+          className="mt-8 mb-4 px-6 py-2 bg-[#8EB486] text-white rounded-lg"
+        >
+          New Post
+        </button>
+
+        {isModalOpen && <PostForm onClose={() => setIsModalOpen(false)} />}
+
+        <PostModal isOpen={isPostModalOpen} onClose={() => setIsPostModalOpen(false)}>
+          <div>
+            <PostCard 
+              user={{
+                name: userContext?.user?.full_name || '',
+                profilePicture: userContext?.user?.avatar_url || ''
+              }}
+              post={{ id: '', text: '', created_at: '', post_media: [] }}
+            />
+          </div>
+        </PostModal>
+
+        {/* Vibe Matcher Modal */}
+        <VibeMatcherModal 
+          isOpen={showVibeMatcher} 
+          onClose={() => setShowVibeMatcher(false)} 
+        />
       </div>
     </div>
   );
