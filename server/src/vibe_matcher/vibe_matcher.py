@@ -114,8 +114,10 @@ def cosine_similarity(vec1, vec2):
 
 @app.post("/process-selfie")
 async def process_selfie(
-    selfie: UploadFile = File(...),  # Changed to use File
-    user_id: str = Form(...)  # Changed to use Form
+    selfie: UploadFile = File(...),
+    user_id: str = Form(...),
+    latitude: Optional[float] = Form(None),  # Make latitude optional
+    longitude: Optional[float] = Form(None)  # Make longitude optional
 ):
     """Process a selfie and find potential matches."""
     if not supabase:
@@ -135,15 +137,17 @@ async def process_selfie(
         # Store the embedding in Supabase
         selfie_data = {
             "user_id": user_id,
-            "embedding": embedding_list,
+            "embedding": embedding_list,  # Changed from "features" to "embedding"
             "status": "pending"
         }
         
-        # Add optional location data
-        if 'latitude' in locals() and latitude is not None:
-            selfie_data["latitude"] = latitude
-        if 'longitude' in locals() and longitude is not None:
-            selfie_data["longitude"] = longitude
+        # Add location data if provided
+        if latitude is not None:
+            selfie_data["latitude"] = float(latitude)
+        if longitude is not None:
+            selfie_data["longitude"] = float(longitude)
+        
+        logging.info(f"Storing selfie data for user {user_id} with optional location data")
         
         # Insert the selfie data
         result = supabase.table("selfie_candidates").insert(selfie_data).execute()
@@ -151,7 +155,7 @@ async def process_selfie(
         # Find potential matches
         five_minutes_ago = (datetime.utcnow() - timedelta(minutes=5)).isoformat()
         
-        # Query recent selfie candidates from other users - using method chaining
+        # Query recent selfie candidates from other users
         response = supabase.table("selfie_candidates") \
             .select("id,user_id,embedding") \
             .neq("user_id", user_id) \
@@ -163,10 +167,14 @@ async def process_selfie(
         best_match = None
         best_score = 0.9  # Minimum threshold
         
+        logging.info(f"Found {len(candidates)} potential matches to compare against")
+        
         # Compare with other recent selfies
         for candidate in candidates:
-            candidate_embedding = torch.tensor(candidate["embedding"])
+            candidate_embedding = torch.tensor(candidate["embedding"])  # Changed from "features" to "embedding"
             similarity = cosine_similarity(embedding, candidate_embedding)
+            
+            logging.info(f"Comparing with user {candidate['user_id']}, similarity: {similarity}")
             
             if similarity > best_score:
                 best_score = similarity
@@ -174,7 +182,9 @@ async def process_selfie(
         
         # If we found a match
         if best_match:
-            # If needed, update the status (one at a time instead of using "in")
+            logging.info(f"Match found with user {best_match['user_id']}, score: {best_score}")
+            
+            # Update the status of both selfies
             supabase.table("selfie_candidates").update({"status": "matched"}) \
                 .eq("user_id", user_id) \
                 .execute()
@@ -183,7 +193,7 @@ async def process_selfie(
                 .eq("user_id", best_match["user_id"]) \
                 .execute()
             
-            # Return match info
+            # Return match info with fields that match your Node.js expectations
             return {
                 "match_found": True,
                 "matched_user_id": best_match["user_id"],
@@ -191,6 +201,7 @@ async def process_selfie(
             }
         
         # No match found
+        logging.info(f"No match found for user {user_id}")
         return {
             "match_found": False,
             "user_id": user_id,

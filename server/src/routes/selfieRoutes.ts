@@ -74,8 +74,18 @@ router.post('/upload', upload.single('selfie'), async (req: MulterRequest, res: 
     
     // If a match was found, create a connection
     if (response.data.match_found) {
+      // Extract fields with better error handling
       const matchedUserId = response.data.matched_user_id;
-      const similarityScore = response.data.similarity_score;
+      const similarityScore = response.data.similarity_score || response.data.similarity;
+      
+      if (!matchedUserId) {
+        console.error('Match found but no matched_user_id in response:', response.data);
+        res.status(500).json({
+          success: false,
+          error: 'Incomplete match data from vibe matcher service'
+        });
+        return;
+      }
       
       console.log(`Match found between ${userId} and ${matchedUserId} with score ${similarityScore}`);
       
