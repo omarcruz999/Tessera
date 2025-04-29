@@ -45,6 +45,11 @@ const upload = multer({ storage: multer.memoryStorage() });
 // Public routes (if any)
 // app.use('/api/auth', authRoutes);
 
+// Health check endpoint
+app.get('/api/health', (req, res) => {
+  res.status(200).json({ status: 'ok' });
+});
+
 // Protected routes with auth middleware
 app.use('/api/users', authenticate, userRoutes);
 app.use('/api/connections', authenticate, connectionRoutes);

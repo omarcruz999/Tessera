@@ -1,4 +1,4 @@
-import { BrowserRouter as Router, Route, Routes, Navigate } from "react-router-dom";
+import { BrowserRouter as Router, Route, Routes, Navigate, useLocation } from "react-router-dom";
 import { useContext, useEffect } from "react";
 import NavBar from "./components/Navbar";
 import Connections from "./pages/Connections";
@@ -13,14 +13,65 @@ import Login from "./pages/Login";
 import Register from "./pages/Register";
 import Onboarding from "./pages/Onboarding";
 import PublicNavbar from "./components/PublicNavbar";
+import React from "react";
 
+// Create a wrapper component that handles path-based rendering
+const AuthenticatedLayout = ({ needsOnboarding }) => {
+  // Get the current location
+  const location = useLocation();
+  
+  // Check if we're on the onboarding page
+  const isOnboardingPage = location.pathname === '/onboarding';
+  
+  // Only show navbar if not in onboarding OR if onboarding is complete
+  const showNavbar = !isOnboardingPage && !needsOnboarding;
+  
+  return (
+    <div className="flex flex-col h-screen">
+      {showNavbar && <NavBar />}
+      <div className={`flex-1 overflow-auto ${showNavbar ? 'pt-16' : 'pt-0'}`}>
+        <Routes>
+          <Route path="/" element={needsOnboarding ? <Navigate to="/onboarding" replace /> : <Connections />} />
+          <Route path="/about" element={needsOnboarding ? <Navigate to="/onboarding" replace /> : <About />} />
+          <Route path="/profile" element={needsOnboarding ? <Navigate to="/onboarding" replace /> : <Profile />} />
+          <Route path="/error" element={<ErrorPage />} />
+          <Route path="/direct-messages" element={needsOnboarding ? <Navigate to="/onboarding" replace /> : <DirectMessages />} />
+          <Route path="/onboarding" element={<Onboarding />} />
+          <Route path="/landing" element={<Navigate to="/" replace />} />
+          <Route path="/login" element={<Navigate to="/" replace />} />
+          <Route path="/user/:userId" element={needsOnboarding ? <Navigate to="/onboarding" replace /> : <ProfileWrapper />} />
+          <Route path="/:username" element={needsOnboarding ? <Navigate to="/onboarding" replace /> : <ProfileWrapper />} />
+          <Route path="*" element={<Navigate to="/" replace />} />
+        </Routes>
+      </div>
+    </div>
+  );
+};
+
+// Main App component
 function App() {
   const userContext = useContext(UserContext);
 
+  // Use React Router's navigate for redirection
+  const navigate = (path) => {
+    window.location.href = path;
+  };
+
+  // Always call all hooks in the same order every time
+  // First useEffect - logging
   useEffect(() => {
     console.log("App rendering, auth state:", 
       userContext?.isLoading ? "loading" : userContext?.user ? "authenticated" : "not authenticated");
   }, [userContext]);
+
+  // Second useEffect - onboarding check
+  // This will run only if the dependency array values are truthy
+  useEffect(() => {
+    if (userContext?.user && userContext.needsOnboarding && window.location.pathname !== '/onboarding') {
+      console.log("User needs onboarding, redirecting...");
+      navigate('/onboarding');
+    }
+  }, [userContext?.user, userContext?.needsOnboarding]);
 
   if (!userContext || userContext.isLoading) {
     return <div className="flex items-center justify-center h-screen">Loading user info...</div>;
@@ -33,30 +84,7 @@ function App() {
   return (
     <Router>
       {isLoggedIn ? (
-        <div className="flex flex-col h-screen">
-          <NavBar />
-          <div className="flex-1 overflow-auto pt-16"> {/* Add padding for the fixed navbar */}
-            <Routes>
-              <Route path="/" element={<Connections />} />
-              <Route path="/about" element={<About />} />
-              <Route path="/profile" element={<Profile />} />
-              <Route path="/error" element={<ErrorPage />} />
-              <Route path="/direct-messages" element={<DirectMessages />} />
-              <Route path="/onboarding" element={<Onboarding />} />
-              <Route path="/landing" element={<Navigate to="/" replace />} />
-              <Route path="/login" element={<Navigate to="/" replace />} />
-              
-              {/* Add this new route for user profiles */}
-              <Route path="/user/:userId" element={<ProfileWrapper />} />
-              
-              {/* Keep your existing username route for backward compatibility */}
-              <Route path="/:username" element={<ProfileWrapper />} />
-              
-              {/* Catch-all must be last */}
-              <Route path="*" element={<Navigate to="/" replace />} />
-            </Routes>
-          </div>
-        </div>
+        <AuthenticatedLayout needsOnboarding={userContext.needsOnboarding} />
       ) : (
         <div>
           <PublicNavbar />

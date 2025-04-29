@@ -213,9 +213,9 @@ export const getPosts: RequestHandler = async (req, res) => {
 
         // turn "media_url" paths into signed URLs
         const signedPosts = await Promise.all(
-            (posts || []).map(async (post) => {
+            (posts || []).map(async (post: any) => {
                 // extract just the bucket-relative paths
-                const filePaths = (post.post_media || []).map((m) => {
+                const filePaths = (post.post_media || []).map((m: any) => {
                     const marker = '/storage/v1/object/public/post-media/';
                     if (m.media_url.includes(marker)) {
                         return m.media_url.split(marker)[1];
@@ -224,7 +224,10 @@ export const getPosts: RequestHandler = async (req, res) => {
                     return parts[1] ?? parts[0];
                 })
 
-                let signedMedia = post.post_media;
+                let signedMedia = (post.post_media || []).map((media: any, index: number) => ({
+                    ...media,
+                    media_url: media.media_url // Placeholder for signed URL logic
+                }));
 
                 if (filePaths.length > 0) {
                     const { data: signedData, error: signErr } = await supabaseAdmin
@@ -235,14 +238,14 @@ export const getPosts: RequestHandler = async (req, res) => {
                     if (signErr) {
                         console.error('Error creating signed URLs:', signErr);
                     } else if (signedData) {
-                        signedMedia = (post.post_media || []).map((media, index) => ({
+                        signedMedia = (post.post_media || []).map((media: any, index: number) => ({
                             ...media,
                             media_url: signedData[index]?.signedUrl || media.media_url
                         }));
                     }
                 }
 
-                return { ...post, post_media: signedMedia}
+                return { ...post, post_media: signedMedia }
             })
         )
 

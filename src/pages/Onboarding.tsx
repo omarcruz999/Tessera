@@ -128,11 +128,20 @@ function Onboarding() {
         throw new Error('User context not available');
       }
       
+      console.log('Submitting onboarding profile for user:', userContext.user?.id);
+      console.log('Profile data:', {
+        full_name: formData.full_name,
+        avatar_url: formData.avatar_url,
+        bio: formData.bio
+      });
+      
       const success = await userContext.completeUserProfile({
         full_name: formData.full_name,
         avatar_url: formData.avatar_url,
         bio: formData.bio
       });
+      
+      console.log('Profile completion result:', success ? 'Success' : 'Failed');
       
       if (success) {
         navigate('/');
