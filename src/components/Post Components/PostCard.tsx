@@ -1,17 +1,3 @@
-<<<<<<< HEAD
-import { useState } from 'react';
-import commentIcon from "../../assets/postIcons/commentIcon.svg"
-import saveIcon from "../../assets/postIcons/saveIcon.svg"
-import savedIcon from "../../assets/postIcons/savedIcon.svg"
-import repostIcon from "../../assets/postIcons/repostIcon.svg"
-import repostedIcon from "../../assets/postIcons/repostedIcon.svg"
-import shareIcon from "../../assets/postIcons/shareIcon.svg"
-import likeIcon from "../../assets/postIcons/likeIcon.svg"
-import likedIcon from "../../assets/postIcons/likedIcon.svg"
-import PostComment from './Comments/PostComment.tsx';
-import NewComment from './Comments/NewComment.tsx';
-
-=======
 import { useState, useContext } from 'react';
 import { UserContext } from '../../UserContext';
 import supabase from '../../services/supabaseClient';
@@ -27,7 +13,6 @@ import {
 } from 'react-icons/fa';
 import PostComment from './Comments/PostComment';
 import NewComment from './Comments/NewComment';
->>>>>>> main
 
 export interface PostMedia {
     media_url: string;
@@ -42,22 +27,6 @@ export interface PostWithMedia {
 }
 
 export interface PostCardProps {
-<<<<<<< HEAD
-    user: {name: string; profilePicture: string;};
-    post: PostWithMedia;
-}
-
-function PostCard({ user, post}: PostCardProps) {
-
-    const [postResposted, setPostResposted] = useState(false)
-    const [postLiked, setPostLiked] = useState(false)
-    const [postSaved, setPostSaved] = useState(false)
-    const [openComments, setOpenComments] = useState(false)
-    const [openReply, setOpenReply] = useState(false)
-
-    return (
-        <div id='post' className="bg-[#FDF7F4] px-5">
-=======
     user: { name: string; profilePicture: string; };
     post: PostWithMedia;
     onDelete?: () => void;
@@ -99,7 +68,6 @@ function PostCard({ user, post, onDelete, isOwnProfile }: PostCardProps) {
 
     return (
         <div id='post' className="bg-[#FDF7F4] px-5 border border-[#ccc]">
->>>>>>> main
 
             {/* User Profile Picture + User Name and Post Content */}
             <div id="profilePictureAndPostContent" className="grid grid-cols-[100px_1fr] items-center py-5">
@@ -116,91 +84,6 @@ function PostCard({ user, post, onDelete, isOwnProfile }: PostCardProps) {
             {/* Post Media, if any */}
             {post.post_media.map((media, index) => (
                 <div key={index} className='my-4 flex justify-center'>
-<<<<<<< HEAD
-                    <img src={media.media_url} alt={`media-${index}`} className='max-h-60'/>
-                </div>
-            ))}
-            
-
-            {/* Post Buttons */}
-            <div id="postOptions" className='grid grid-cols-[250px_1fr] items-center justify-between'>
-                <div id='postButtonsLeftSide' className='flex items-center ml-[100px] justify-between'>
-
-                    {/* Comment Button */}
-                    <button
-                        id="commentButton"
-                        type="button"
-                        style={{ outline: "none" }}
-                        onClick={() => setOpenComments((prev) => !prev)}
-                        className="w-7 h-7 !p-0 !bg-[#FDF7F4] focus:outline-none hover:bg-gray-200 !rounded-full transition-colors !border-none !button-focus: none"
-                    >
-                        <div className="flex items-center justify-center w-full h-full">
-                            <img src={commentIcon} alt="Comment Icon" className="w-10 h-10" />
-                        </div>
-                    </button>
-
-                    {/* Repost Button */}
-                    <button
-                        id="repostButton"
-                        type="button"
-                        style={{ outline: "none" }}
-                        onClick={() => setPostResposted((prev) => !prev)}
-                        className="w-9 h-9 !p-0 !bg-[#FDF7F4] focus:outline-none hover:bg-gray-200 !rounded-full transition-colors !border-none !button-focus: none">
-                        <div className="flex items-center justify-center w-full h-full">
-                            <img 
-                                src={postResposted ? repostedIcon : repostIcon} 
-                                alt="Repost Icon" 
-                                className="w-10 h-10"/>
-                        </div>
-                    </button>
-
-                    {/* Like Button */}
-                    <button
-                        id="likeButton"
-                        type="button"   
-                        style={{ outline: "none" }}
-                        onClick={() => setPostLiked((prev => !prev))}
-                        className="w-9 h-9 !p-0 !bg-[#FDF7F4] focus:outline-none hover:bg-gray-200 !rounded-full transition-colors !border-none !button-focus: none">
-                        <div className="flex items-center justify-center w-full h-full">
-                            <img 
-                                src={postLiked ? likedIcon: likeIcon} 
-                                alt="Like Icon" 
-                                className="w-10 h-10" 
-                                />
-                        </div>
-                    </button>
-                </div>
-
-                <div id='postButtonsRightSide' className='flex items-center justify-end mr-[100px]'>
-                    {/* Save Button */}
-                    <button
-                        id="saveButton"
-                        type="button"
-                        style={{ outline: "none" }}
-                        onClick={() => setPostSaved((prev) => !prev)}
-                        className="w-10 h-10 !p-0 !bg-[#FDF7F4] focus:outline-none hover:bg-gray-200 !rounded-full transition-colors !border-none !button-focus: none">
-                        <div className="flex items-center justify-center w-full h-full">
-                            <img 
-                                src={postSaved ? savedIcon : saveIcon} 
-                                alt="Save Icon" 
-                                className="w-full h-full object-contain" />
-                        </div>
-                    </button>
-
-                    {/* Share Button */}
-                    <button
-                        id="shareButton"
-                        type="button"
-                        style={{ outline: "none" }}
-                        className="w-7 h-7 !p-0 !bg-[#FDF7F4] focus:outline-none hover:bg-gray-200 !rounded-full transition-colors !border-none !button-focus: none">
-                        <div className="flex items-center justify-center w-full h-full">
-                            <img src={shareIcon} alt="Share Icon" className="w-10 h-10" />
-                        </div>
-                    </button>
-                </div>
-                
-            </div> {/* Post Buttons Div End */}
-=======
                     <img src={media.media_url} alt={`media-${index}`} className='max-h-60' />
                 </div>
             ))}
@@ -252,16 +135,11 @@ function PostCard({ user, post, onDelete, isOwnProfile }: PostCardProps) {
                     )}
                 </div>
             </div>
->>>>>>> main
 
             {openComments && (
                 // Comments Div
                 <div id='commentsDiv' className='w-full h-auto my-4'>
-<<<<<<< HEAD
-                    <PostComment openReply={openReply} setOpenReply={setOpenReply}/>
-=======
                     <PostComment openReply={openReply} setOpenReply={setOpenReply} />
->>>>>>> main
 
                     {/* Only show NewComment when reply box is NOT open */}
                     {!openReply && <NewComment />}

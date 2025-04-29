@@ -37,13 +37,10 @@ app.use(cors({
 app.use(express.json());    // Parse incoming JSON data
 app.use(morgan('dev'));     // Log incoming requests
 
-<<<<<<< HEAD
 // Configure multer for selfie uploads
 import multer from 'multer';
 const upload = multer({ storage: multer.memoryStorage() });
 
-=======
->>>>>>> main
 // Routes Setup
 // Public routes (if any)
 // app.use('/api/auth', authRoutes);
