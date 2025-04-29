@@ -30,9 +30,10 @@ export interface PostCardProps {
     user: { name: string; profilePicture: string; };
     post: PostWithMedia;
     onDelete?: () => void;
+    isOwnProfile?: boolean;
 }
 
-function PostCard({ user, post, onDelete }: PostCardProps) {
+function PostCard({ user, post, onDelete, isOwnProfile }: PostCardProps) {
     const [postLiked, setPostLiked] = useState(false)
     const [postResposted, setPostResposted] = useState(false)
     const [postSaved, setPostSaved] = useState(false)
@@ -125,11 +126,13 @@ function PostCard({ user, post, onDelete }: PostCardProps) {
                     <button aria-label="Share" style={{ outline: "none" }} className='!p-2 !bg-[#FDF7F4] !hover:bg-gray-200 !rounded-full !focus:outline-none !border-none'>
                         <FaShareSquare className='text-2xl' />
                     </button>
-
+                    
                     {/* Delete Button */}
-                    <button aria-label="Delete" onClick={handleDelete} style={{ outline: "none" }} className='!p-2 !bg-[#FDF7F4] !hover:bg-gray-200 !rounded-full !focus:outline-none !border-none text-black hover:text-red-500'>
-                        <FaTrash className='text-2xl' />
-                    </button>
+                    {isOwnProfile && (
+                        <button aria-label="Delete" onClick={handleDelete} style={{ outline: "none" }} className='!p-2 !bg-[#FDF7F4] !hover:bg-gray-200 !rounded-full !focus:outline-none !border-none text-black hover:text-red-500'>
+                            <FaTrash className='text-2xl' />
+                        </button>
+                    )}
                 </div>
             </div>
 

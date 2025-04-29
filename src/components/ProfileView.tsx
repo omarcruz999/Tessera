@@ -163,6 +163,7 @@ function ProfileView({ profileUser }: ProfileViewProps) {
                     profilePicture: displayedUser.avatar_url || defaultProfilePicture,
                   }}
                   onDelete={() => loadPosts()} 
+                  isOwnProfile={isOwnProfile}
                 />
               ))
             ) : (
