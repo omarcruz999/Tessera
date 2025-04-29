@@ -1,7 +1,7 @@
 import type React from "react"
-import { useState, useRef } from "react"
+import { useState, useRef, useContext } from "react"
 import supabase  from "../../services/supabaseClient"
-import johnPork from "/JohnPork.png"
+import { UserContext } from '../../UserContext';
 import imageIcon from "../../assets/imageIcon.svg"
 
 interface PostFromProps {
@@ -11,10 +11,7 @@ interface PostFromProps {
 
 const PostForm: React.FC<PostFromProps> = ({ onClose }) => {
 
-    const user = {
-        name: "John Pork",
-        profilePicture: johnPork,
-    }
+    const { user: loggedInUser } = useContext(UserContext)!;    
 
     // postContent: Holds the text inputted by the user
     const [postContent, setPostContent] = useState("")
@@ -137,7 +134,7 @@ const PostForm: React.FC<PostFromProps> = ({ onClose }) => {
 
                 {/* Profile Picture and Text Area */}
                 <div className="grid grid-cols-[100px_1fr] items-start gap-8 px-5">
-                    <img src={user.profilePicture} alt="Profile Picture" className="w-[80px] h-[80px] rounded-full object-cover" />
+                    <img src={loggedInUser?.avatar_url} alt="Profile Picture" className="w-[80px] h-[80px] rounded-full object-cover" />
 
                     <div className="w-full">
                         <textarea
