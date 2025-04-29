@@ -1,6 +1,7 @@
 import { useEffect, useState, useContext, useRef } from 'react';
 import axios from 'axios';
 import PeerCard from '../components/Cards/PeerCard.tsx';
+<<<<<<< HEAD
 import PostForm from '../components/Post Components/PostForm.tsx';
 import PostCard from '../components/Post Components/PostCard.tsx';
 import PostModal from "../components/Post Components/PostModal.tsx";
@@ -8,6 +9,10 @@ import VibeMatcherModal from '../components/VibeMatcherModal';
 import { UserContext, User } from '../UserContext';
 import supabaseClient from '../services/supabaseClient';
 import { IoAdd } from 'react-icons/io5';  // Make sure to install react-icons with: npm install react-icons
+=======
+import { UserContext, User } from '../UserContext';
+import supabaseClient from '../services/supabaseClient';
+>>>>>>> main
 
 // Define interfaces for API data
 interface Connection {
