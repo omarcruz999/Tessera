@@ -1,8 +1,7 @@
 import type React from "react"
-import { useState, useRef } from "react"
+import { useState, useRef, useContext } from "react"
 import supabase  from "../../services/supabaseClient"
-import { v4 as uuid } from "uuid"
-import johnPork from "/JohnPork.png"
+import { UserContext } from '../../UserContext';
 import imageIcon from "../../assets/imageIcon.svg"
 
 interface PostFromProps {
@@ -12,10 +11,7 @@ interface PostFromProps {
 
 const PostForm: React.FC<PostFromProps> = ({ onClose }) => {
 
-    const user = {
-        name: "John Pork",
-        profilePicture: johnPork,
-    }
+    const { user: loggedInUser } = useContext(UserContext)!;    
 
     // postContent: Holds the text inputted by the user
     const [postContent, setPostContent] = useState("")
@@ -69,63 +65,56 @@ const PostForm: React.FC<PostFromProps> = ({ onClose }) => {
 
     // Placeholder for handling post submission 
     const handleSubmit = async () => {
-        // There is no text in the text area
         if (!postContent.trim()) return;
 
         try {
-            // Fetch the current user
+            // Fetch the current user 
             const { data: { user }, error: userError } = await supabase.auth.getUser();
             if (userError || !user) {
-                console.error("No user logged in", userError);
+                console.error("Error fetching user:", userError);
                 return;
             }
 
-            // Insert post record into the database
-            const { data: newPost, error: postError } = await supabase
-                .from("posts")
-                .insert({
-                    user_id: user.id,
-                    text: postContent,
-                    allow_sharing: allowSharing,
-                })
-                .select()
-                .single();
-            
-            if (postError) throw postError;
+            const { data: sessionData, error: sessionError  } = await supabase.auth.getSession();
+            if ( sessionError || !sessionData?.session?.access_token){
+                console.error("Error fetching session:", sessionError);
+                return;
+            }
 
-            // If an image is uploaded, upload it to storage + post_media
+            const token = sessionData.session.access_token;
+
+            // Prepare form data to send to your server endpoint
+            const formData = new FormData();
+            formData.append('user_id', user.id);
+            formData.append('text', postContent);
+            formData.append('allow_sharing', String(allowSharing));
+
+            // if a file is uploaded, append it under the key 'file'
             const file = fileInputRef.current?.files?.[0];
             if (file) {
-                const ext = file.name.split('.').pop() || 'jpg'; // Default to jpg if no extension
-                const fileName = `${uuid()}.${ext}`;
-                const filePath = `posts/${newPost.id}/${fileName}`;
+                formData.append('file', file);
+            }
 
-                const { error: uploadError } = await supabase.storage
-                    .from("post-media")
-                    .upload(filePath, file, { contentType: file.type });
-                if (uploadError) throw uploadError;
+            // Make a POST request to the server endpoint
+            const response = await fetch('http://localhost:4000/api/posts', {
+                method: 'POST',
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                },
+                body: formData,
+            });
 
-                const { data: { publicUrl } } = supabase.storage
-                    .from("post-media")
-                    .getPublicUrl(filePath);
+            if (!response.ok){
+                throw new Error(`Failed to create post: ${response.statusText}`);
+            }
 
-                const { error: pmError } = await supabase
-                    .from("post_media")
-                    .insert({
-                        post_id: newPost.id,
-                        media_url: publicUrl,
-                        type: 'image'
-                    });
-                if (pmError) throw pmError;
-            }    
-            // Reset form
+            // Reset the form after successful submission
             setPostContent("");
             setUploadedImage(null);
             onClose();
-        
+            setAllowSharing(false);
         } catch (error) {
             console.error("Error creating post:", error);
-            return;
         }
     };
 
@@ -145,7 +134,7 @@ const PostForm: React.FC<PostFromProps> = ({ onClose }) => {
 
                 {/* Profile Picture and Text Area */}
                 <div className="grid grid-cols-[100px_1fr] items-start gap-8 px-5">
-                    <img src={user.profilePicture} alt="Profile Picture" className="w-[80px] h-[80px] rounded-full object-cover" />
+                    <img src={loggedInUser?.avatar_url} alt="Profile Picture" className="w-[80px] h-[80px] rounded-full object-cover" />
 
                     <div className="w-full">
                         <textarea

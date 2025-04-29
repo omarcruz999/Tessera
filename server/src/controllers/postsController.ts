@@ -11,6 +11,7 @@ import supabaseAdmin from '../services/supabaseAdmin';
 export const createPostSchema = Joi.object({
     user_id: Joi.string().uuid().required(),
     text: Joi.string().min(1).max(500).required(),
+    allow_sharing: Joi.boolean().required()
 });
 
 // Schema for updating a post
@@ -32,35 +33,56 @@ export const getPostsSchema = Joi.object({
 
 export const createPost: RequestHandler = async (req, res) => {
     try {
-        // Define the validation schema
-        const schema = Joi.object({
-            user_id: Joi.string().uuid().required(),
-            text: Joi.string().min(1).max(500).required(),
-        });
-
         // Validate the request body
-        const { error } = schema.validate(req.body);
+        const { error, value } = createPostSchema.validate(req.body)
         if (error) {
-            res.status(400).json({ error: `Validation Error: ${error.message}` });
+            res.status(400).json({ error: error.details[0].message })
             return;
         }
 
-        const { user_id, text } = req.body;
-
-        // Insert the post into the database
-        const { data, error: dbError } = await supabaseAdmin
+        // Insert the post record into the database
+        const { data: newPost, error: postError } = await supabaseAdmin
             .from('posts')
-            .insert([{ user_id, text }])
-            .select();
+            .insert({
+                user_id: value.user_id,
+                text: value.text,
+                allow_sharing: value.allow_sharing,
+            })
+            .select()
+            .single();
 
-        if (dbError) {
-            res.status(400).json({ error: dbError.message });
-            return;
+        if (postError) throw postError;
+
+        // If a file is uploaded (handled by multer middleware), process it
+        if (req.file) {
+            const file = req.file;
+            const ext = file.originalname.split('.').pop() || 'jpg';
+            const fileName = `${newPost.id}.${ext}`;
+            const filePath = `posts/${newPost.id}/${fileName}`;
+
+            const { error: uploadError } = await supabaseAdmin.storage
+                .from('post-media')
+                .upload(filePath, file.buffer, { contentType: file.mimetype })
+            if (uploadError) throw uploadError;
+
+            const { data: { publicUrl } } = supabaseAdmin.storage
+                .from('post-media')
+                .getPublicUrl(filePath);
+
+            const { error: pmError } = await supabaseAdmin
+                .from('post_media')
+                .insert({
+                    post_id: newPost.id,
+                    media_url: publicUrl,
+                    type: 'image',
+                });
+            if (pmError) throw pmError;
         }
-
-        res.status(201).json({ message: 'Post created successfully', post: data });
+        res.status(201).json(newPost);
     } catch (error) {
+        console.error(`Error creating post:`, error);
         res.status(500).json({ error: (error as Error).message });
+        return;
     }
 };
 
@@ -164,9 +186,9 @@ export const getPosts: RequestHandler = async (req, res) => {
     // Validate 
     const schema = Joi.object({ user_id: Joi.string().uuid().required() })
     const { error: valErr, value } = schema.validate(req.query);
-    if (valErr){
+    if (valErr) {
         res.status(400).json({ error: `Validation Error: ${valErr.message}` });
-        return 
+        return
     }
 
     const userId = value.user_id as string;
@@ -186,14 +208,14 @@ export const getPosts: RequestHandler = async (req, res) => {
             `)
             .eq('user_id', userId)
             .order('created_at', { ascending: false });
-        
-        if (dbError) throw dbError  
-        
+
+        if (dbError) throw dbError
+
         // turn "media_url" paths into signed URLs
         const signedPosts = await Promise.all(
             (posts || []).map(async (post) => {
                 // extract just the bucket-relative paths
-                const filePaths = ( post.post_media || [] ).map((m) => {
+                const filePaths = (post.post_media || []).map((m) => {
                     const marker = '/storage/v1/object/public/post-media/';
                     if (m.media_url.includes(marker)) {
                         return m.media_url.split(marker)[1];
@@ -202,20 +224,25 @@ export const getPosts: RequestHandler = async (req, res) => {
                     return parts[1] ?? parts[0];
                 })
 
-                const { data: signedData, error: signErr } = await supabaseAdmin
-                    .storage
-                    .from('post-media')
-                    .createSignedUrls(filePaths, 60 * 60); // 1 hour expiration
+                let signedMedia = post.post_media;
 
-                if (signErr) console.error('createSignedUrls error:', signErr);
+                if (filePaths.length > 0) {
+                    const { data: signedData, error: signErr } = await supabaseAdmin
+                        .storage
+                        .from('post-media')
+                        .createSignedUrls(filePaths, 60 * 60); // 1 hour expiration
 
-                // map back to post_media with signed URLs
-                const signedMedia = (post.post_media || []).map((m, idx) => ({
-                    ...m,
-                    media_url: signedData?.[idx]?.signedUrl || m.media_url   
-                }))
+                    if (signErr) {
+                        console.error('Error creating signed URLs:', signErr);
+                    } else if (signedData) {
+                        signedMedia = (post.post_media || []).map((media, index) => ({
+                            ...media,
+                            media_url: signedData[index]?.signedUrl || media.media_url
+                        }));
+                    }
+                }
 
-                return { ...post, post_media: signedMedia };
+                return { ...post, post_media: signedMedia}
             })
         )
 

@@ -3,12 +3,15 @@
 */
 
 import { Router } from 'express';
+import multer from 'multer';
 import { createPost, updatePost, deletePost, getPost, getPosts } from '../controllers/postsController';
 
+
+const upload = multer()
 export const postRoutes = Router();
 
-// Create a new post
-postRoutes.post('/', createPost);
+// Create a new post with file upload support
+postRoutes.post('/', upload.single('file'), createPost);
 
 // Update a post by ID
 postRoutes.put('/:id', updatePost);

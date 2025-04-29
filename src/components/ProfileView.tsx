@@ -25,30 +25,27 @@ function ProfileView({ profileUser }: ProfileViewProps) {
   if (!displayedUser) {
     return <div>Error: no user to show</div>;
   }
-  
+
   // Determine the correct ID property for displayedUser
   const displayedUserId =
     'user_id' in displayedUser ? displayedUser.user_id : displayedUser.id;
   const isOwnProfile = loggedInUser?.id === displayedUserId;
-  
+
   const [activeTab, setActiveTab] = useState<'posts' | 'replies' | 'bookmarks'>('posts');
   const [postsLoading, setPostsLoading] = useState(false)
   const [posts, setPosts] = useState<PostWithMedia[]>([]);
   const [isPostModalOpen, setIsPostModalOpen] = useState(false);
   const navigate = useNavigate();
 
-  useEffect(() => {
-    if (!displayedUserId) return 
+  async function loadPosts() {
+    setPostsLoading(true);
+    try {
+      // grab the current session & token
+      const { data: { session } } = await supabase.auth.getSession()
+      const token = session?.access_token;
 
-    async function loadPosts(){
-      setPostsLoading(true);
-      try {
-        // grab the current session & token
-        const { data: {session} } = await supabase.auth.getSession()
-        const token = session?.access_token;
-
-        const resp = await fetch(
-          `http://localhost:4000/api/posts?user_id=${displayedUserId}`,
+      const resp = await fetch(
+        `http://localhost:4000/api/posts?user_id=${displayedUserId}`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -62,13 +59,15 @@ function ProfileView({ profileUser }: ProfileViewProps) {
 
       const postsData = await resp.json();
       setPosts(postsData);
-      } catch (error) {
-        console.error('Error loading posts:', error);
-      } finally {
-        setPostsLoading(false);
-      }
+    } catch (error) {
+      console.error('Error loading posts:', error);
+    } finally {
+      setPostsLoading(false);
     }
+  }
 
+  useEffect(() => {
+    if (!displayedUserId) return;
     loadPosts();
   }, [displayedUserId]);
 
@@ -100,18 +99,28 @@ function ProfileView({ profileUser }: ProfileViewProps) {
         <button className="share-btn">Share Profile</button>
 
         {/* New Post Button + Modal */}
-        <button
-          onClick={() => setIsPostModalOpen(true)}
-          className="!mb-4 !px-6 !py-2 !bg-[#997C70] !text-white !rounded-lg w-[150px] !font-bold !border-none"
-        >
-          New Post
-        </button>
+        {isOwnProfile && (
+          <>
+            <button
+              onClick={() => setIsPostModalOpen(true)}
+              className="mb-4 px-6 py-2 !bg-[#997C70] !text-white !rounded-lg !w-[150px] !font-bold !border-none"
+            >
+              New Post
+            </button>
 
-        {isPostModalOpen && <PostForm onClose={() => setIsPostModalOpen(false)} />}
+            {isPostModalOpen && <PostForm onClose={() => setIsPostModalOpen(false)} />}
 
-        <PostModal isOpen={isPostModalOpen} onClose={() => setIsPostModalOpen(false)}>
-          <PostForm onClose={() => setIsPostModalOpen(false)} />
-        </PostModal>
+            <PostModal isOpen={isPostModalOpen} onClose={() => setIsPostModalOpen(false)}>
+              <PostForm
+                onClose={() => {
+                  setIsPostModalOpen(false);
+                  loadPosts();
+                }}
+              />
+            </PostModal>
+          </>
+        )}
+
       </div>
 
       <div className="profile-content">
@@ -144,20 +153,22 @@ function ProfileView({ profileUser }: ProfileViewProps) {
           {activeTab === 'posts' && (
             postsLoading ? (
               <p>Loading posts...</p>
-          ) : posts.length > 0 ? (
-            posts.map((post) => (
-              <PostCard
-                key={post.id}
-                post={post}
-                user={{
-                  name: displayedUser.full_name,
-                  profilePicture: displayedUser.avatar_url || defaultProfilePicture,
-                }}
-              />
-            ))
-          ) : (
-            <p>No posts yet.</p>
-          ))}
+            ) : posts.length > 0 ? (
+              posts.map((post) => (
+                <PostCard
+                  key={post.id}
+                  post={post}
+                  user={{
+                    name: displayedUser.full_name,
+                    profilePicture: displayedUser.avatar_url || defaultProfilePicture,
+                  }}
+                  onDelete={() => loadPosts()} 
+                  isOwnProfile={isOwnProfile}
+                />
+              ))
+            ) : (
+              <p>No posts yet.</p>
+            ))}
           {isOwnProfile && activeTab === 'replies' && <p>Placeholder for replies...</p>}
           {isOwnProfile && activeTab === 'bookmarks' && <p>Placeholder for bookmarks...</p>}
         </div>
