@@ -214,7 +214,7 @@ function Onboarding() {
                   type="button"
                   onClick={handleAvatarClick}
                   disabled={isUploading}
-                  className={`px-4 py-2 bg-gray-100 border border-gray-300 rounded hover:bg-gray-200 transition-colors ${isUploading ? 'opacity-50 cursor-not-allowed' : ''}`}
+                  className={`px-4 py-2 bg-gray-100 border border-gray-300 rounded hover:bg-gray-200 transition-colors text-gray-800 ${isUploading ? 'opacity-50 cursor-not-allowed' : ''}`}
                 >
                   {isUploading ? 'Uploading...' : fileSelected ? 'Change Photo' : 'Upload Photo'}
                 </button>
@@ -275,7 +275,7 @@ function Onboarding() {
             <button
               type="submit"
               disabled={isSubmitting || isUploading}
-              className={`w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-[#E7A691] hover:bg-[#D8957F] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#E7A691] ${(isSubmitting || isUploading) ? 'opacity-70 cursor-not-allowed' : ''}`}
+              className={`w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-gray bg-[#E7A691] hover:bg-[#D8957F] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#E7A691] ${(isSubmitting || isUploading) ? 'opacity-70 cursor-not-allowed' : ''}`}
             >
               {isSubmitting ? 'Saving...' : 'Complete Profile'}
             </button>
