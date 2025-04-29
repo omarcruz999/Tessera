@@ -28,40 +28,37 @@ function ProfileView({ profileUser }: ProfileViewProps) {
   const [isPostModalOpen, setIsPostModalOpen] = useState(false);
   const navigate = useNavigate();
 
-  if (!displayedUser) {
-    return <div>Error: no user to show</div>;
-  }
-  
-  // Determine the correct ID property for displayedUser
-  const displayedUserId =
-    'user_id' in displayedUser ? displayedUser.user_id : displayedUser.id;
+  // Move all calculations and hooks before any conditional returns
+  const displayedUserId = displayedUser ? 
+    ('user_id' in displayedUser ? displayedUser.user_id : displayedUser.id) : 
+    null;
   const isOwnProfile = loggedInUser?.id === displayedUserId;
 
   useEffect(() => {
-    if (!displayedUserId) return 
+    if (!displayedUserId) return;
 
     async function loadPosts(){
       setPostsLoading(true);
       try {
         // grab the current session & token
-        const { data: {session} } = await supabase.auth.getSession()
+        const { data: {session} } = await supabase.auth.getSession();
         const token = session?.access_token;
 
         const resp = await fetch(
           `http://localhost:4000/api/posts?user_id=${displayedUserId}`,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            'Content-Type': 'application/json',
-          },
-          credentials: 'include',
-        }
-      )
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+              'Content-Type': 'application/json',
+            },
+            credentials: 'include',
+          }
+        );
 
-      if (!resp.ok) throw new Error(`Failed to fetch posts: ${resp.statusText}`);
+        if (!resp.ok) throw new Error(`Failed to fetch posts: ${resp.statusText}`);
 
-      const postsData = await resp.json();
-      setPosts(postsData);
+        const postsData = await resp.json();
+        setPosts(postsData);
       } catch (error) {
         console.error('Error loading posts:', error);
       } finally {
@@ -72,12 +69,15 @@ function ProfileView({ profileUser }: ProfileViewProps) {
     loadPosts();
   }, [displayedUserId]);
 
+  // Now you can have your conditional return
+  if (!displayedUser) {
+    return <div>Error: no user to show</div>;
+  }
+
   const handleMessageClick = () => {
     if (profileUser)
       navigate('/direct-messages', { state: { selectedUserId: profileUser.user_id } });
   };
-
-  if (!displayedUser) return <div>Error: no user to show</div>;
 
   return (
     <div className="profile-layout">

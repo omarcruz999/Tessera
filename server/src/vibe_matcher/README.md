@@ -29,7 +29,8 @@ The Vibe Matcher uses the CLIP (Contrastive Language-Image Pre-training) model t
 
 1. **Navigate to the Vibe Matcher Directory**:
    ```bash
-   cd /path/to/tessera/server/src/services/vibe_matcher
+   cd /path/to/tessera/server/src/vibe_matcher
+   ```
 
 # Create a virtual environment
 python -m venv venv
@@ -38,6 +39,9 @@ python -m venv venv
 source venv/bin/activate  # On macOS/Linux
 # OR
 venv\Scripts\activate  # On Windows
+
+# Update pip
+python -m pip install --upgrade pip
 
 # Install dependencies
 pip install -r requirements.txt
