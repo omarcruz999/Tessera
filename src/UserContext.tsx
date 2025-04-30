@@ -1,4 +1,4 @@
-import React, { createContext, useState, useEffect, ReactNode } from 'react';
+import { createContext, useState, useEffect, ReactNode } from 'react';
 import supabase from './services/supabaseClient';
 import axios from 'axios';
 
@@ -28,7 +28,7 @@ const UserContext = createContext<UserContextType | undefined>(undefined);
 
 // Fix the health check function:
 
-const checkBackendAvailability = async (token: string): Promise<boolean> => {
+const checkBackendAvailability = async (): Promise<boolean> => {
   try {
     // Use a simple endpoint like /health that doesn't require auth
     const response = await fetch('http://localhost:4000/api/health', {
@@ -47,7 +47,7 @@ const checkBackendAvailability = async (token: string): Promise<boolean> => {
 const createUserProfileViaAPI = async (userData: User, token: string): Promise<boolean> => {
   try {
     // First check if backend is available
-    const backendAvailable = await checkBackendAvailability(token);
+    const backendAvailable = await checkBackendAvailability();
     if (!backendAvailable) {
       console.error("Backend is unavailable - cannot create profile");
       return false;
@@ -75,9 +75,9 @@ const createUserProfileViaAPI = async (userData: User, token: string): Promise<b
     console.log("API response data:", response.data);
     
     return response.status === 201;
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("Error creating profile via API:", error);
-    if (error.response) {
+    if (axios.isAxiosError(error) && error.response) {
       console.error("Response status:", error.response.status);
       console.error("Response data:", error.response.data);
     }
@@ -89,7 +89,7 @@ const createUserProfileViaAPI = async (userData: User, token: string): Promise<b
 const fetchUserProfileViaAPI = async (userId: string, token: string): Promise<User | null> => {
   try {
     // Check if backend is available first
-    const backendAvailable = await checkBackendAvailability(token);
+    const backendAvailable = await checkBackendAvailability();
     if (!backendAvailable) {
       console.log("Backend appears to be unavailable, using local-only mode");
       return null; // Return null to trigger the local profile creation
