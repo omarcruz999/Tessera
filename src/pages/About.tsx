@@ -1,14 +1,14 @@
 import DeveloperCard from "../components/AboutUsPage/DeveloperCard";
 import JohnPork from "/JohnPork.png?url";
-
+import AlexAvatar from "../assets/AlexAboutAvatar.png"; // Import your avatar
 
 function About() {
   const developers = [
     {
       name: "Alex Matei",
-      role: "Frontend Developer",
-      bio: "Jane specializes in React and has been building user interfaces for 5 years. She loves creating accessible and intuitive experiences.",
-      profilePicture: JohnPork,
+      role: "Team Lead & Full Stack Developer",
+      bio: "Alex blends his diverse interests—including technology, literature, and philosophy—to build digital tools that make everyday life more thoughtful and connected. A CS undergrad at Cal Poly Pomona, graduating in Spring 2025, he works across the full stack and enjoys guiding collaborative teams to bring meaningful ideas to life.",
+      profilePicture: AlexAvatar, // Use your avatar here
     },
     {
       name: "Omar Cruz",
