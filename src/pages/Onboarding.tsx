@@ -144,6 +144,8 @@ function Onboarding() {
       console.log('Profile completion result:', success ? 'Success' : 'Failed');
       
       if (success) {
+        // Set a local storage flag to remember completion
+        localStorage.setItem(`onboarding_complete_${userContext.user?.id}`, 'true');
         navigate('/');
       } else {
         setError('Failed to save profile. Please try again.');
