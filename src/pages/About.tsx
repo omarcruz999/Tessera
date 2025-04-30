@@ -1,6 +1,8 @@
 import DeveloperCard from "../components/AboutUsPage/DeveloperCard";
 import JohnPork from "/JohnPork.png?url";
-import AlexAvatar from "../assets/AlexAboutAvatar.png"; // Import your avatar
+import AlexAvatar from "../assets/AlexAboutAvatar.png"; 
+import OmarAvatar from "../assets/OmarAboutAvatar.png";
+import JonathanAvatar from "../assets/JohnAboutAvatar.png"; // Import Jonathan's avatar
 
 function About() {
   const developers = [
@@ -8,19 +10,19 @@ function About() {
       name: "Alex Matei",
       role: "Team Lead & Full Stack Developer",
       bio: "Alex blends his diverse interests—including technology, literature, and philosophy—to build digital tools that make everyday life more thoughtful and connected. A CS undergrad at Cal Poly Pomona, graduating in Spring 2025, he works across the full stack and enjoys guiding collaborative teams to bring meaningful ideas to life.",
-      profilePicture: AlexAvatar, // Use your avatar here
+      profilePicture: AlexAvatar,
     },
     {
       name: "Omar Cruz",
       role: "Backend Developer",
-      bio: "John is our API expert with extensive experience in Node.js and database design. He ensures our application runs smoothly behind the scenes.",
-      profilePicture: JohnPork,
+      bio: "Omar is our API expert with extensive experience in Node.js and database design. He ensures our application runs smoothly behind the scenes.",
+      profilePicture: OmarAvatar,
     },
     {
       name: "Jonathan Rodriguez",
       role: "UI/UX Designer",
-      bio: "Alex brings our application to life with beautiful designs. With a background in psychology, they create interfaces that users love.",
-      profilePicture: JohnPork,
+      bio: "Jonathan brings our application to life with beautiful designs. With a background in psychology, he creates interfaces that users love.",
+      profilePicture: JonathanAvatar, // Updated to use Jonathan's avatar
     },
     {
       name: "Edgar Ortiz",
