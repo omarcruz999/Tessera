@@ -13,6 +13,7 @@ import {
 } from 'react-icons/fa';
 import PostComment from './Comments/PostComment';
 import NewComment from './Comments/NewComment';
+import { useComments } from '../../services/useComments';
 
 export interface PostMedia {
     media_url: string;
@@ -39,8 +40,14 @@ function PostCard({ user, post, onDelete, isOwnProfile }: PostCardProps) {
     const [postSaved, setPostSaved] = useState(false)
     const [openComments, setOpenComments] = useState(false)
     const [openReply, setOpenReply] = useState(false)
-    
+
     const { user: currentUser } = useContext(UserContext)!;
+
+    const {
+        comments,
+        loading,
+        create: addComment,
+    } = useComments(Number(post.id))
 
     const handleDelete = async () => {
         if (!currentUser) return;
@@ -126,7 +133,7 @@ function PostCard({ user, post, onDelete, isOwnProfile }: PostCardProps) {
                     <button aria-label="Share" style={{ outline: "none" }} className='!p-2 !bg-[#FDF7F4] !hover:bg-gray-200 !rounded-full !focus:outline-none !border-none'>
                         <FaShareSquare className='text-2xl' />
                     </button>
-                    
+
                     {/* Delete Button */}
                     {isOwnProfile && (
                         <button aria-label="Delete" onClick={handleDelete} style={{ outline: "none" }} className='!p-2 !bg-[#FDF7F4] !hover:bg-gray-200 !rounded-full !focus:outline-none !border-none text-black hover:text-red-500'>
@@ -139,13 +146,29 @@ function PostCard({ user, post, onDelete, isOwnProfile }: PostCardProps) {
             {openComments && (
                 // Comments Div
                 <div id='commentsDiv' className='w-full h-auto my-4'>
-                    <PostComment openReply={openReply} setOpenReply={setOpenReply} />
+                    {/* Comments List */}
+                    {loading ? (
+                        <p className='ml-[50px]'>Loading comments...</p>
+                    ) : (
+                        comments.map((c) => (
+                            <PostComment
+                                key={c.id}
+                                comment={c}
+                                currentUserId={currentUser!.id}
+                                onReply={(text, parentId) => {
+                                    addComment({ user_id: currentUser!.id, content: text, parent_comment_id: parentId })
+                                }}
+                            />
+                        ))
+                    )}
 
-                    {/* Only show NewComment when reply box is NOT open */}
-                    {!openReply && <NewComment />}
+
+                    {/* New top-level comment */}
+                    <NewComment
+                        onSubmit={(text) => addComment({ user_id: currentUser!.id, content: text })}
+                    />
                 </div>
             )}
-
         </div> //Post Div End
     )
 }

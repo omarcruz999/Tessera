@@ -1,32 +1,34 @@
-import johnPork from "/JohnPork.png"
+import { useState, useContext } from 'react';
+import { UserContext } from '../../../UserContext';
+import { Comment } from '../../../services/commentsApi.ts'
 import NewReply from './NewReply.tsx';
 
 interface PostCommentProps {
-    openReply: boolean
-    setOpenReply: React.Dispatch<React.SetStateAction<boolean>>
+    comment: Comment;
+    currentUserId: string;
+    onReply: (content: string, parentId: number) => void;
 }
 
 
-function PostComment({openReply, setOpenReply}: PostCommentProps) {
+function PostComment({ comment, currentUserId, onReply }: PostCommentProps) {
+    const [openReply, setOpenReply] = useState(false);
 
-    const user = {
-        name: "John Doe",
-        profilePicture: johnPork,
-        postContent: "Wow John Pork would love this!"
-    };
+    const { user: currentUser } = useContext(UserContext)!;
+    const displayName = currentUser?.full_name;
+    const avatarUrl = currentUser?.avatar_url;
 
     return (
         <div className='ml-[100px] '>
             <div id="Profile Picture and Comment Content" className="grid grid-cols-[100px_1fr] items-center py-5">
                 <div id="User Profile Picture" className='flex items-center justify-center'>
-                    <img src={user.profilePicture} alt="Profile Picture" className="w-[70px] h-[70px] rounded-full object-cover" />
+                    <img src={avatarUrl} alt="Profile Picture" className="w-[70px] h-[70px] rounded-full object-cover" />
                 </div>
 
                 <div id="Comment Content" className='w-full h-full grid grid-rows-[1fr_1fr] text-left'>
 
                     <div className='flex items-center '>
-                        <p className='text-[18px] font-bold text-black'>{user.name}</p>
-                        <p className='ml-2 text-[18px] text-black'>{user.postContent}</p>
+                        <p className='text-[18px] font-bold text-black'>{displayName}</p>
+                        <p className='ml-2 text-[18px] text-black'>{comment.content}</p>
                     </div>
 
                     <div className=''>
@@ -41,9 +43,24 @@ function PostComment({openReply, setOpenReply}: PostCommentProps) {
                     </div>
                 </div>
             </div>
+
             {openReply && (
-                        <NewReply />
-                )}
+                <NewReply onSubmit={(text) => {
+                    onReply(text, comment.id)
+                    setOpenReply(false)
+                }} />
+            )}
+
+            {/* --- children --- */}
+            {comment.replies.length > 0 &&
+                comment.replies.map((c) => (
+                    <PostComment
+                        key={c.id}
+                        comment={c}
+                        currentUserId={currentUserId}
+                        onReply={onReply}
+                    />
+                ))}
         </div>
     )
 }
