@@ -6,7 +6,7 @@ import {
   getComments,
   addComment,
   updateComment,
-  deleteComment,
+  deleteComment as apiDelete,
 } from './commentsApi';
 
 export function useComments(postId: number) {
@@ -34,8 +34,8 @@ export function useComments(postId: number) {
     await refresh();
   };
 
-  const remove = async (id: number) => {
-    await deleteComment(id);
+  const remove = async (id: number, userId: string) => {
+    await apiDelete(id, userId);
     await refresh();
   };
 

@@ -9,10 +9,11 @@ interface PostCommentProps {
     currentUserId: string;
     onReply: (content: string, parentId: number) => void;
     setReplyBoxOpen: React.Dispatch<React.SetStateAction<boolean>>;
+    onDelete: (id: number, userId: string) => void;
 }
 
 
-function PostComment({ comment, currentUserId, onReply, setReplyBoxOpen }: PostCommentProps) {
+function PostComment({ comment, currentUserId, onReply, setReplyBoxOpen, onDelete }: PostCommentProps) {
     const [openReply, setOpenReply] = useState(false);
 
     const { user: currentUser } = useContext(UserContext)!;
@@ -51,6 +52,7 @@ function PostComment({ comment, currentUserId, onReply, setReplyBoxOpen }: PostC
                         <button 
                             id="deleteComment" 
                             aria-label="Delete Comment"  
+                            onClick={() => onDelete(comment.id, currentUserId)}
                             style={{ outline: "none" }} 
                             className='!p-0 !bg-[#FDF7F4] focus:outline-none hover:text-red-500 !rounded-full transition-colors !border-none !button-focus: none'>
                                 <FaTrash className='text-lg' />
@@ -67,7 +69,8 @@ function PostComment({ comment, currentUserId, onReply, setReplyBoxOpen }: PostC
                         comment={c}
                         currentUserId={currentUserId}
                         onReply={onReply}
-                        setReplyBoxOpen={setReplyBoxOpen} />
+                        setReplyBoxOpen={setReplyBoxOpen} 
+                        onDelete={onDelete}/>
                 ))}
 
             {openReply && (

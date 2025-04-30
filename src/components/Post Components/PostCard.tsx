@@ -47,6 +47,7 @@ function PostCard({ user, post, onDelete, isOwnProfile }: PostCardProps) {
         comments,
         loading,
         create: addComment,
+        remove: deleteComment,
     } = useComments(Number(post.id))
 
     const handleDelete = async () => {
@@ -156,6 +157,7 @@ function PostCard({ user, post, onDelete, isOwnProfile }: PostCardProps) {
                                 comment={c}
                                 currentUserId={currentUser!.id}
                                 setReplyBoxOpen={setReplyBoxOpen}
+                                onDelete={deleteComment}
                                 onReply={(text, parentId) => {
                                     addComment({ user_id: currentUser!.id, content: text, parent_comment_id: parentId })
                                 }}

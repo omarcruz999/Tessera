@@ -69,10 +69,14 @@ export const updateComment = async (id: number, content: string) => {
     }).then(handle<void>);
   };
 
-  export const deleteComment = async (id: number) => {
+  export const deleteComment = async (id: number, userId: string) => {
     const token = await getToken();
     return fetch(`${BASE}/api/comments/${id}`, {
       method: 'DELETE',
-      headers: authHeaders(token),
+      headers: {
+        'Content-Type': 'application/json',
+        ...authHeaders(token), 
+      },
+      body: JSON.stringify({ user_id: userId }),
     }).then(handle<void>);
   };
