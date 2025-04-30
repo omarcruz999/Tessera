@@ -173,7 +173,7 @@ function Connections() {
         <div className="w-full flex justify-center mb-4">
           <button 
             onClick={() => setShowVibeMatcher(true)}
-            className="w-16 h-16 rounded-full bg-[#8EB486] shadow-lg flex items-center justify-center text-black hover:bg-[#7ca474] transition-colors duration-300"
+            className="w-16 h-16 rounded-full !bg-[#8EB486] shadow-lg flex items-center justify-center text-black hover:bg-[#7ca474] transition-colors duration-300"
             aria-label="Take a vibe selfie"
           >
             <IoAdd size={32} />
