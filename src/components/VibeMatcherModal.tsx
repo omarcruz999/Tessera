@@ -144,7 +144,7 @@ const VibeMatcherModal: React.FC<VibeMatcherModalProps> = ({ isOpen, onClose }) 
         {/* Header */}
         <div className="bg-[#8EB486] text-white px-4 py-3 flex justify-between items-center">
           <h2 className="text-xl font-semibold">Vibe Matcher</h2>
-          <button onClick={handleClose} className="text-white" aria-label="Close">
+          <button onClick={handleClose} className="text-black" aria-label="Close">
             <IoClose size={24} />
           </button>
         </div>
