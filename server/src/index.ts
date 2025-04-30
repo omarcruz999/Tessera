@@ -21,6 +21,7 @@ import userRoutes from './routes/userRoutes';
 import connectionRoutes from './routes/connectionRoutes';
 import { postRoutes } from './routes/postsRoutes';
 import { postMediaRoutes } from './routes/postMediaRoutes';
+import { commentRoutes } from './routes/commentsRoutes';
 
 const app: Application = express();
 const PORT = process.env.PORT || 4000;
@@ -44,6 +45,7 @@ app.use('/api/users', authenticate, userRoutes);
 app.use('/api/connections', authenticate, connectionRoutes);
 app.use('/api/posts', authenticate, postRoutes);
 app.use('/api/post-media', authenticate, postMediaRoutes);
+app.use('/api/comments', authenticate, commentRoutes);
 
 // Handle undefined routes
 app.use((req, res) => {
