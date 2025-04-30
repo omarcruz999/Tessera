@@ -39,7 +39,7 @@ function PostCard({ user, post, onDelete, isOwnProfile }: PostCardProps) {
     const [postResposted, setPostResposted] = useState(false)
     const [postSaved, setPostSaved] = useState(false)
     const [openComments, setOpenComments] = useState(false)
-    const [openReply, setOpenReply] = useState(false)
+    const [replyBoxOpen, setReplyBoxOpen] = useState(false)
 
     const { user: currentUser } = useContext(UserContext)!;
 
@@ -155,6 +155,7 @@ function PostCard({ user, post, onDelete, isOwnProfile }: PostCardProps) {
                                 key={c.id}
                                 comment={c}
                                 currentUserId={currentUser!.id}
+                                setReplyBoxOpen={setReplyBoxOpen}
                                 onReply={(text, parentId) => {
                                     addComment({ user_id: currentUser!.id, content: text, parent_comment_id: parentId })
                                 }}
@@ -164,9 +165,11 @@ function PostCard({ user, post, onDelete, isOwnProfile }: PostCardProps) {
 
 
                     {/* New top-level comment */}
-                    <NewComment
+                    {!replyBoxOpen && (
+                        <NewComment
                         onSubmit={(text) => addComment({ user_id: currentUser!.id, content: text })}
                     />
+                    )}
                 </div>
             )}
         </div> //Post Div End

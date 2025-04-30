@@ -7,10 +7,11 @@ interface PostCommentProps {
     comment: Comment;
     currentUserId: string;
     onReply: (content: string, parentId: number) => void;
+    setReplyBoxOpen: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
 
-function PostComment({ comment, currentUserId, onReply }: PostCommentProps) {
+function PostComment({ comment, currentUserId, onReply, setReplyBoxOpen }: PostCommentProps) {
     const [openReply, setOpenReply] = useState(false);
 
     const { user: currentUser } = useContext(UserContext)!;
@@ -36,20 +37,19 @@ function PostComment({ comment, currentUserId, onReply }: PostCommentProps) {
                             id="replyButton"
                             type="button"
                             style={{ outline: "none" }}
-                            onClick={() => setOpenReply((prev) => !prev)}
+                            onClick={() =>
+                                setOpenReply((prev) => {
+                                    const next = !prev;
+                                    setReplyBoxOpen(next);
+                                    return next;
+                                })
+                            }
                             className={` !p-0 !bg-[#FDF7F4] focus:outline-none hover:bg-gray-200 !rounded-full transition-colors !border-none !button-focus: none ${openReply ? 'text-red-500' : 'text-black'}`}>
                             {openReply ? 'Cancel Reply' : 'Reply'}
                         </button>
                     </div>
                 </div>
             </div>
-
-            {openReply && (
-                <NewReply onSubmit={(text) => {
-                    onReply(text, comment.id)
-                    setOpenReply(false)
-                }} />
-            )}
 
             {/* --- children --- */}
             {comment.replies.length > 0 &&
@@ -59,8 +59,15 @@ function PostComment({ comment, currentUserId, onReply }: PostCommentProps) {
                         comment={c}
                         currentUserId={currentUserId}
                         onReply={onReply}
-                    />
+                        setReplyBoxOpen={setReplyBoxOpen} />
                 ))}
+
+            {openReply && (
+                <NewReply onSubmit={(text) => {
+                    onReply(text, comment.id)
+                    setReplyBoxOpen(false)
+                }} />
+            )}
         </div>
     )
 }
