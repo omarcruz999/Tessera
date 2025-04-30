@@ -105,12 +105,7 @@ const fetchUserProfileViaAPI = async (userId: string, token: string): Promise<Us
     );
     console.log("Fetched user profile via API");
     
-    // Determine if onboarding is needed based on bio being empty
-    const profileComplete = response.data.bio && response.data.bio.trim().length > 0;
-    return {
-      ...response.data,
-      profileComplete: profileComplete
-    };
+    return response.data;
   } catch (error) {
     console.error("Error fetching profile via API:", error);
     return null;
@@ -194,22 +189,19 @@ const UserProvider = ({ children }: { children: ReactNode }) => {
           if (profileData) {
             console.log("Found profile data:", profileData);
             
-            // Check if bio is empty to determine if onboarding is needed
-            const needsOnboarding = !profileData.bio || profileData.bio.trim().length === 0;
-            
             const userData: User = {
               id: profileData.id || session.user.id,
               full_name: profileData.full_name || session.user.user_metadata?.full_name || 'User',
               avatar_url: profileData.avatar_url || session.user.user_metadata?.avatar_url || '',
               is_active: true,
               email: session.user.email,
-              profileComplete: !needsOnboarding,
+              profileComplete: true,
               bio: profileData.bio || ''
             };
             
             setUser(userData);
-            setNeedsOnboarding(needsOnboarding);
-            console.log("User set from profile, needs onboarding:", needsOnboarding);
+            setNeedsOnboarding(false);
+            console.log("User set from profile, needs onboarding:", false);
           } 
           // If no profile yet but we have a session, create a default user object
           else if (session.user) {
@@ -251,69 +243,31 @@ const UserProvider = ({ children }: { children: ReactNode }) => {
         console.log("Auth state changed:", event, session ? "session exists" : "no session");
         
         if (event === 'SIGNED_IN' && session) {
-          // Check if we've already completed onboarding for this user
+          // Check if this is a new registration
+          const isNewRegistration = localStorage.getItem('recently_registered') === 'true' && 
+                                    localStorage.getItem('recently_registered_user_id') === session.user.id;
+          
+          // Check if onboarding was completed before
           const onboardingCompleted = localStorage.getItem(`onboarding_complete_${session.user.id}`) === 'true';
           
-          if (onboardingCompleted) {
-            console.log("Onboarding already completed according to localStorage");
-            // If onboarding was completed, override the needsOnboarding flag
-            setNeedsOnboarding(false);
-            
-            // Still fetch the profile for other data
-            const profileData = await fetchUserProfileViaAPI(session.user.id, session.access_token);
-            if (profileData) {
-              const userData: User = {
-                id: profileData.id || session.user.id,
-                full_name: profileData.full_name || session.user.user_metadata?.full_name || 'User',
-                avatar_url: profileData.avatar_url || session.user.user_metadata?.avatar_url || '',
-                is_active: true,
-                email: session.user.email,
-                profileComplete: true, // Force this to true regardless of bio
-                bio: profileData.bio || ''
-              };
-              
-              setUser(userData);
-              // Important: ALWAYS set to false if localStorage says complete
-              setNeedsOnboarding(false);
-            }
+          // Set needsOnboarding based on registration status and completion
+          if (isNewRegistration && !onboardingCompleted) {
+            console.log("New registration detected, needs onboarding");
+            setNeedsOnboarding(true);
           } else {
-            // Normal flow for users who haven't completed onboarding
-            const profileData = await fetchUserProfileViaAPI(session.user.id, session.access_token);
-            if (profileData) {
-              const needsOnboarding = !profileData.bio || profileData.bio.trim().length === 0;
-              
-              const userData: User = {
-                id: profileData.id || session.user.id,
-                full_name: profileData.full_name || session.user.user_metadata?.full_name || 'User',
-                avatar_url: profileData.avatar_url || session.user.user_metadata?.avatar_url || '',
-                is_active: true,
-                email: session.user.email,
-                profileComplete: !needsOnboarding,
-                bio: profileData.bio || ''
-              };
-              
-              setUser(userData);
-              setNeedsOnboarding(needsOnboarding);
-              console.log("User set after auth change, needs onboarding:", needsOnboarding);
-            } 
-            // If no profile found but we have session
-            else if (session.user) {
-              const userData: User = {
-                id: session.user.id,
-                full_name: session.user.user_metadata?.full_name || session.user.email?.split('@')[0] || 'User',
-                avatar_url: session.user.user_metadata?.avatar_url || '',
-                is_active: true,
-                email: session.user.email,
-                profileComplete: false
-              };
-              
-              setUser(userData);
-              setNeedsOnboarding(true);
-              console.log("User set from session after auth change:", userData);
-              
-              // Create profile via API
-              await createUserProfileViaAPI(userData, session.access_token);
-            }
+            console.log("Existing user or onboarding already completed");
+            setNeedsOnboarding(false);
+          }
+          
+          // Fetch profile as usual
+          const profileData = await fetchUserProfileViaAPI(session.user.id, session.access_token);
+          if (profileData) {
+            const userData = {
+              ...profileData,
+              // Don't use bio to determine profileComplete
+              profileComplete: !isNewRegistration || onboardingCompleted
+            };
+            setUser(userData);
           }
         } else if (event === 'SIGNED_OUT') {
           // User signed out
@@ -437,6 +391,13 @@ const UserProvider = ({ children }: { children: ReactNode }) => {
       console.log("Signup response:", data);
       
       if (data.user) {
+        // Set the registration flag
+        localStorage.setItem('recently_registered', 'true');
+        localStorage.setItem('recently_registered_user_id', data.user.id);
+        
+        // Set a session flag to ensure onboarding happens
+        sessionStorage.setItem('force_onboarding', 'true');
+        
         // Create a minimal user object
         const newUser: User = {
           id: data.user.id,
@@ -453,9 +414,7 @@ const UserProvider = ({ children }: { children: ReactNode }) => {
         setNeedsOnboarding(true);
         console.log("User created, needs onboarding:", true);
         
-        // Force redirect to onboarding
-        window.location.href = '/onboarding';
-        
+        // Return the user but don't redirect yet - let the component handle it
         return newUser;
       } else {
         throw new Error('Registration failed: No user data');

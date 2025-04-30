@@ -20,27 +20,38 @@ const AuthenticatedLayout = ({ needsOnboarding }) => {
   // Get the current location
   const location = useLocation();
   
+  // Add this line to get userContext
+  const userContext = useContext(UserContext);
+  
   // Check if we're on the onboarding page
   const isOnboardingPage = location.pathname === '/onboarding';
   
+  // Check registration flags for additional context
+  const isNewRegistration = 
+    (localStorage.getItem('recently_registered') === 'true' && 
+     localStorage.getItem('recently_registered_user_id') === userContext?.user?.id);
+  
+  // Determine if this user needs onboarding
+  const requiresOnboarding = needsOnboarding || isNewRegistration;
+  
   // Only show navbar if not in onboarding OR if onboarding is complete
-  const showNavbar = !isOnboardingPage && !needsOnboarding;
+  const showNavbar = !isOnboardingPage && !requiresOnboarding;
   
   return (
     <div className="flex flex-col h-screen">
       {showNavbar && <NavBar />}
       <div className={`flex-1 overflow-auto ${showNavbar ? 'pt-16' : 'pt-0'}`}>
         <Routes>
-          <Route path="/" element={needsOnboarding ? <Navigate to="/onboarding" replace /> : <Connections />} />
-          <Route path="/about" element={needsOnboarding ? <Navigate to="/onboarding" replace /> : <About />} />
-          <Route path="/profile" element={needsOnboarding ? <Navigate to="/onboarding" replace /> : <Profile />} />
+          <Route path="/" element={requiresOnboarding ? <Navigate to="/onboarding" replace /> : <Connections />} />
+          <Route path="/about" element={requiresOnboarding ? <Navigate to="/onboarding" replace /> : <About />} />
+          <Route path="/profile" element={requiresOnboarding ? <Navigate to="/onboarding" replace /> : <Profile />} />
           <Route path="/error" element={<ErrorPage />} />
-          <Route path="/direct-messages" element={needsOnboarding ? <Navigate to="/onboarding" replace /> : <DirectMessages />} />
+          <Route path="/direct-messages" element={requiresOnboarding ? <Navigate to="/onboarding" replace /> : <DirectMessages />} />
           <Route path="/onboarding" element={<Onboarding />} />
           <Route path="/landing" element={<Navigate to="/" replace />} />
           <Route path="/login" element={<Navigate to="/" replace />} />
-          <Route path="/user/:userId" element={needsOnboarding ? <Navigate to="/onboarding" replace /> : <ProfileWrapper />} />
-          <Route path="/:username" element={needsOnboarding ? <Navigate to="/onboarding" replace /> : <ProfileWrapper />} />
+          <Route path="/user/:userId" element={requiresOnboarding ? <Navigate to="/onboarding" replace /> : <ProfileWrapper />} />
+          <Route path="/:username" element={requiresOnboarding ? <Navigate to="/onboarding" replace /> : <ProfileWrapper />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </div>
@@ -65,10 +76,24 @@ function App() {
   }, [userContext]);
 
   // Second useEffect - onboarding check
-  // This will run only if the dependency array values are truthy
   useEffect(() => {
-    if (userContext?.user && userContext.needsOnboarding && window.location.pathname !== '/onboarding') {
+    // Check multiple conditions for needing onboarding
+    const isNewRegistration = 
+      (localStorage.getItem('recently_registered') === 'true' && 
+       localStorage.getItem('recently_registered_user_id') === userContext?.user?.id) ||
+      sessionStorage.getItem('force_onboarding') === 'true';
+    
+    if (userContext?.user && 
+        (userContext.needsOnboarding || isNewRegistration) && 
+        window.location.pathname !== '/onboarding') {
+      
       console.log("User needs onboarding, redirecting...");
+      
+      // Clear the force flag if we're using it
+      if (sessionStorage.getItem('force_onboarding') === 'true') {
+        sessionStorage.removeItem('force_onboarding');
+      }
+      
       navigate('/onboarding');
     }
   }, [userContext?.user, userContext?.needsOnboarding]);

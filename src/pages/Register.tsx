@@ -57,12 +57,12 @@ const Register: React.FC = () => {
       
       console.log('Registration successful, user created:', newUser);
       
-      // Check if onboarding is needed
-      if (userContext.needsOnboarding) {
+      // ALWAYS redirect to onboarding after registration
+      // Add a short delay to ensure state is updated
+      setTimeout(() => {
+        console.log("Redirecting new user to onboarding");
         navigate('/onboarding');
-      } else {
-        navigate('/home');
-      }
+      }, 500);
     } catch (error: unknown) {
       // Type guard for error handling
       if (error instanceof Error) {
