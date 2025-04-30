@@ -2,6 +2,7 @@ import { useState, useContext } from 'react';
 import { UserContext } from '../../../UserContext';
 import { Comment } from '../../../services/commentsApi.ts'
 import NewReply from './NewReply.tsx';
+import { FaTrash } from 'react-icons/fa';
 
 interface PostCommentProps {
     comment: Comment;
@@ -32,7 +33,7 @@ function PostComment({ comment, currentUserId, onReply, setReplyBoxOpen }: PostC
                         <p className='ml-2 text-[18px] text-black'>{comment.content}</p>
                     </div>
 
-                    <div className=''>
+                    <div className='flex items-center justify-between '>
                         <button
                             id="replyButton"
                             type="button"
@@ -46,6 +47,13 @@ function PostComment({ comment, currentUserId, onReply, setReplyBoxOpen }: PostC
                             }
                             className={` !p-0 !bg-[#FDF7F4] focus:outline-none hover:bg-gray-200 !rounded-full transition-colors !border-none !button-focus: none ${openReply ? 'text-red-500' : 'text-black'}`}>
                             {openReply ? 'Cancel Reply' : 'Reply'}
+                        </button>
+                        <button 
+                            id="deleteComment" 
+                            aria-label="Delete Comment"  
+                            style={{ outline: "none" }} 
+                            className='!p-0 !bg-[#FDF7F4] focus:outline-none hover:text-red-500 !rounded-full transition-colors !border-none !button-focus: none'>
+                                <FaTrash className='text-lg' />
                         </button>
                     </div>
                 </div>
