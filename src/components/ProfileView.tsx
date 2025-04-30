@@ -26,13 +26,15 @@ function ProfileView({ profileUser }: ProfileViewProps) {
     return <div>Error: no user to show</div>;
   }
 
-  // Determine the correct ID property for displayedUser
+  // Normalize ID property
   const displayedUserId =
     'user_id' in displayedUser ? displayedUser.user_id : displayedUser.id;
   const isOwnProfile = loggedInUser?.id === displayedUserId;
 
-  const [activeTab, setActiveTab] = useState<'posts' | 'replies' | 'bookmarks'>('posts');
-  const [postsLoading, setPostsLoading] = useState(false)
+  const [activeTab, setActiveTab] = useState<'posts' | 'replies' | 'bookmarks'>(
+    'posts'
+  );
+  const [postsLoading, setPostsLoading] = useState(false);
   const [posts, setPosts] = useState<PostWithMedia[]>([]);
   const [isPostModalOpen, setIsPostModalOpen] = useState(false);
   const navigate = useNavigate();
@@ -40,8 +42,9 @@ function ProfileView({ profileUser }: ProfileViewProps) {
   async function loadPosts() {
     setPostsLoading(true);
     try {
-      // grab the current session & token
-      const { data: { session } } = await supabase.auth.getSession()
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
       const token = session?.access_token;
 
       const resp = await fetch(
@@ -53,9 +56,10 @@ function ProfileView({ profileUser }: ProfileViewProps) {
           },
           credentials: 'include',
         }
-      )
+      );
 
-      if (!resp.ok) throw new Error(`Failed to fetch posts: ${resp.statusText}`);
+      if (!resp.ok)
+        throw new Error(`Failed to fetch posts: ${resp.statusText}`);
 
       const postsData = await resp.json();
       setPosts(postsData);
@@ -71,12 +75,11 @@ function ProfileView({ profileUser }: ProfileViewProps) {
     loadPosts();
   }, [displayedUserId]);
 
+  // *** Updated Message button handler ***
   const handleMessageClick = () => {
-    if (profileUser)
-      navigate('/direct-messages', { state: { selectedUserId: profileUser.user_id } });
+    // Navigate into the DM route for this user:
+    navigate(`/direct-messages/${displayedUserId}`);
   };
-
-  if (!displayedUser) return <div>Error: no user to show</div>;
 
   return (
     <div className="profile-layout">
@@ -89,6 +92,7 @@ function ProfileView({ profileUser }: ProfileViewProps) {
         <h2 className="profile-name">{displayedUser.full_name}</h2>
         <h3 className="profile-bio">Just a regular old guy!</h3>
         <p className="profile-location">Pomona, CA | Joined 20XX</p>
+
         {!isOwnProfile ? (
           <button className="edit-btn" onClick={handleMessageClick}>
             Message
@@ -98,7 +102,7 @@ function ProfileView({ profileUser }: ProfileViewProps) {
         )}
         <button className="share-btn">Share Profile</button>
 
-        {/* New Post Button + Modal */}
+        {/* New Post + Modal */}
         {isOwnProfile && (
           <>
             <button
@@ -110,7 +114,10 @@ function ProfileView({ profileUser }: ProfileViewProps) {
 
             {isPostModalOpen && <PostForm onClose={() => setIsPostModalOpen(false)} />}
 
-            <PostModal isOpen={isPostModalOpen} onClose={() => setIsPostModalOpen(false)}>
+            <PostModal
+              isOpen={isPostModalOpen}
+              onClose={() => setIsPostModalOpen(false)}
+            >
               <PostForm
                 onClose={() => {
                   setIsPostModalOpen(false);
@@ -120,7 +127,6 @@ function ProfileView({ profileUser }: ProfileViewProps) {
             </PostModal>
           </>
         )}
-
       </div>
 
       <div className="profile-content">
@@ -150,8 +156,8 @@ function ProfileView({ profileUser }: ProfileViewProps) {
         </div>
 
         <div className="profile-posts">
-          {activeTab === 'posts' && (
-            postsLoading ? (
+          {activeTab === 'posts' &&
+            (postsLoading ? (
               <p>Loading posts...</p>
             ) : posts.length > 0 ? (
               posts.map((post) => (
@@ -160,17 +166,23 @@ function ProfileView({ profileUser }: ProfileViewProps) {
                   post={post}
                   user={{
                     name: displayedUser.full_name,
-                    profilePicture: displayedUser.avatar_url || defaultProfilePicture,
+                    profilePicture:
+                      displayedUser.avatar_url || defaultProfilePicture,
                   }}
-                  onDelete={() => loadPosts()} 
+                  onDelete={() => loadPosts()}
                   isOwnProfile={isOwnProfile}
                 />
               ))
             ) : (
               <p>No posts yet.</p>
             ))}
-          {isOwnProfile && activeTab === 'replies' && <p>Placeholder for replies...</p>}
-          {isOwnProfile && activeTab === 'bookmarks' && <p>Placeholder for bookmarks...</p>}
+
+          {isOwnProfile && activeTab === 'replies' && (
+            <p>Placeholder for replies...</p>
+          )}
+          {isOwnProfile && activeTab === 'bookmarks' && (
+            <p>Placeholder for bookmarks...</p>
+          )}
         </div>
       </div>
     </div>

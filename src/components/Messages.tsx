@@ -1,11 +1,11 @@
 import { useEffect, useState, useContext } from 'react';
-import { useLocation } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
+
 import MessagePreview from './MessagePreview';
 import ChatMessages from './ChatMessages';
 import supabaseClient from '../services/supabaseClient';
 import { UserContext } from '../UserContext';
 
-// Define a proper interface for conversation objects
 interface Conversation {
   other_user_id: string;
   full_name: string;
@@ -14,64 +14,141 @@ interface Conversation {
   id: string;
 }
 
-// Define a proper interface for the selected user
 interface SelectedUser {
   other_user_id: string;
   full_name: string;
   avatar_url?: string;
 }
 
-const Messages = () => {
-  const location = useLocation();
-  const userContext = useContext(UserContext);
-  
-  // Move all useState calls to the top
+const Messages: React.FC = () => {
+  const { user } = useContext(UserContext) || {};
+  const { selectedUserId: paramId } = useParams<{ selectedUserId?: string }>();
+  const navigate = useNavigate();
+
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [selectedUserId, setSelectedUserId] = useState<string | null>(
-    location.state?.selectedUserId || null
+    paramId || null
   );
   const [selectedUser, setSelectedUser] = useState<SelectedUser | null>(null);
 
-  // All hooks must be called before any conditional logic
+  // Sync state with route param
   useEffect(() => {
-    // Move the early return inside the effect
-    if (!userContext?.user?.id) return;
-    
-    const fetchConversations = async () => {
-      // Add explicit check to satisfy TypeScript
-      if (!userContext || !userContext.user) return;
-      
-      const userId = userContext.user.id;
-      
-      const { data, error } = await supabaseClient
-        .rpc('get_conversations', { current_user_id: userId });
+    setSelectedUserId(paramId || null);
+  }, [paramId]);
 
-      if (error) {
-        console.error(error);
-        return;
+  // 1) Load existing conversations for the logged-in user
+  useEffect(() => {
+    if (!user?.id) return;
+    supabaseClient
+      .rpc('get_conversations', { current_user_id: user.id })
+      .then(({ data, error }) => {
+        if (error) console.error('Failed to load convos', error);
+        else setConversations(data || []);
+      });
+  }, [user?.id]);
+
+  // 2) When a new user is selected, fetch or reuse their profile, then inject once
+  useEffect(() => {
+    if (!selectedUserId) {
+      setSelectedUser(null);
+      return;
+    }
+
+    // Already in list?
+    const existing = conversations.find(
+      (c) => c.other_user_id === selectedUserId
+    );
+    if (existing) {
+      setSelectedUser({
+        other_user_id: existing.other_user_id,
+        full_name: existing.full_name,
+        avatar_url: existing.avatar_url,
+      });
+      return;
+    }
+
+    // Otherwise fetch from profiles
+    supabaseClient
+      .from('profiles')
+      .select('full_name, avatar_url')
+      .eq('id', selectedUserId)
+      .single()
+      .then(({ data, error }) => {
+        if (error || !data) {
+          console.error('Failed to fetch profile', error);
+          return;
+        }
+        const newUser: SelectedUser = {
+          other_user_id: selectedUserId,
+          full_name: data.full_name,
+          avatar_url: data.avatar_url,
+        };
+        setSelectedUser(newUser);
+
+        // Deduped injection at top
+        setConversations((prev) => {
+          const filtered = prev.filter(
+            (c) => c.other_user_id !== newUser.other_user_id
+          );
+          return [
+            {
+              other_user_id: newUser.other_user_id,
+              full_name: newUser.full_name,
+              avatar_url: newUser.avatar_url,
+              last_message: '',
+              id: '',
+            },
+            ...filtered,
+          ];
+        });
+      });
+  }, [selectedUserId, conversations]);
+
+  // 3) Show/hide the pane and highlight when selection changes
+  useEffect(() => {
+    const sidebar = document.querySelector('.messages-container');
+    const chatPane = document.querySelector(
+      '.chat-container'
+    ) as HTMLElement;
+
+    if (selectedUserId) {
+      sidebar?.classList.add('shrink');
+      if (chatPane) {
+        chatPane.style.display = 'flex';
+        setTimeout(() => (chatPane.style.opacity = '1'), 10);
       }
+      // Highlight once we know the full_name
+      if (selectedUser) {
+        document.querySelectorAll('.message-preview').forEach((el) => {
+          el.classList.toggle(
+            'active',
+            el.textContent?.includes(selectedUser.full_name) || false
+          );
+        });
+      }
+    } else {
+      sidebar?.classList.remove('shrink');
+      if (chatPane) {
+        chatPane.style.opacity = '0';
+        setTimeout(() => (chatPane.style.display = 'none'), 300);
+      }
+    }
+  }, [selectedUserId, selectedUser]);
 
-      setConversations(data || []);
-    };
-
-    fetchConversations();
-  }, [userContext?.user?.id]); // Use userContext?.user?.id as dependency instead
-
-  // Now you can check context and return early if needed - AFTER all hooks are called
-  if (!userContext || !userContext.user) {
-    console.error('UserContext is undefined or user not logged in');
-    return null;
-  }
+  if (!user) return null;
 
   return (
     <div className="messages-wrapper">
       <div className="messages-container">
         <div className="messages-content">
-          <h2 className="text-xl font-bold border-b py-[18px] border-gray-300">Messages</h2>
-
+          <h2 className="text-xl font-bold border-b py-[18px] border-gray-300">
+            Messages
+          </h2>
           <div className="messages-list">
             {conversations.length === 0 ? (
-              <p className="text-gray-500 text-center mt-10">No chat history</p>
+              <p className="text-gray-500 text-center mt-10">
+                No chat history
+              </p>
             ) : (
               conversations.map((c) => (
                 <MessagePreview
@@ -80,11 +157,15 @@ const Messages = () => {
                     full_name: c.full_name,
                     avatar_url: c.avatar_url || '',
                     last_message: c.last_message || '',
-                    other_user_id: c.other_user_id
+                    other_user_id: c.other_user_id,
                   }}
                   onClick={() => {
-                    setSelectedUserId(c.other_user_id);
-                    setSelectedUser(c);
+                    // Toggle close if already selected
+                    if (selectedUserId === c.other_user_id) {
+                      navigate('/direct-messages');
+                    } else {
+                      navigate(`/direct-messages/${c.other_user_id}`);
+                    }
                   }}
                 />
               ))
@@ -95,11 +176,10 @@ const Messages = () => {
 
       <ChatMessages
         selectedUserId={selectedUserId}
-        selectedUser={selectedUser ? {
-          full_name: selectedUser.full_name,
-          avatar_url: selectedUser.avatar_url || ''
-        } : null}
-        setSelectedUserId={setSelectedUserId}
+        selectedUser={selectedUser}
+        setSelectedUserId={(id) =>
+          navigate(id ? `/direct-messages/${id}` : '/direct-messages')
+        }
         setConversations={setConversations}
       />
     </div>
