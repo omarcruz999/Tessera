@@ -22,6 +22,7 @@ import userRoutes from './routes/userRoutes';
 import connectionRoutes from './routes/connectionRoutes';
 import { postRoutes } from './routes/postsRoutes';
 import { postMediaRoutes } from './routes/postMediaRoutes';
+import { commentRoutes } from './routes/commentsRoutes';
 import selfieRoutes from './routes/selfieRoutes'; // Add this import
 
 const app: Application = express();
@@ -56,6 +57,7 @@ app.use('/api/connections', authenticate, connectionRoutes);
 app.use('/api/posts', authenticate, postRoutes);
 app.use('/api/post-media', authenticate, postMediaRoutes);
 app.use('/api/selfies', authenticate, selfieRoutes); // Add this route
+app.use('/api/comments', authenticate, commentRoutes);
 
 // Handle undefined routes
 app.use((req, res) => {
