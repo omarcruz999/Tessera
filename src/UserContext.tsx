@@ -1,4 +1,4 @@
-import { createContext, useState, useEffect, ReactNode } from 'react';
+import React, { createContext, useState, useEffect, ReactNode } from 'react';
 import supabase from './services/supabaseClient';
 import axios from 'axios';
 
@@ -26,48 +26,62 @@ interface UserContextType {
 
 const UserContext = createContext<UserContextType | undefined>(undefined);
 
+// Fix the health check function:
+
+const checkBackendAvailability = async (token: string): Promise<boolean> => {
+  try {
+    // Use a simple endpoint like /health that doesn't require auth
+    const response = await fetch('http://localhost:4000/api/health', {
+      method: 'GET'
+    });
+    
+    console.log('Backend health check status:', response.status);
+    return response.ok;
+  } catch (error) {
+    console.error('Backend health check error:', error);
+    return false;
+  }
+};
+
 // Helper function to create user profile via API
 const createUserProfileViaAPI = async (userData: User, token: string): Promise<boolean> => {
   try {
-    // Check if backend is available first
-    try {
-      const checkResponse = await fetch('http://localhost:4000/api/health', { 
-        method: 'GET',
-        headers: { 'Authorization': `Bearer ${token}` }
-      });
-      
-      if (!checkResponse.ok) {
-        console.log("Backend appears to be unavailable, using local-only mode");
-        return true; // Return true to allow the flow to continue
-      }
-    } catch (error) {
-      // Explicitly ignore the error - ESLint won't complain about this pattern
-      console.log("Backend connection check failed, using local-only mode", error);
-      return true; // Return true to allow the flow to continue
+    // First check if backend is available
+    const backendAvailable = await checkBackendAvailability(token);
+    if (!backendAvailable) {
+      console.error("Backend is unavailable - cannot create profile");
+      return false;
     }
     
-    // If we got here, backend appears to be available
-    await axios.post(
+    console.log("Creating user profile via API with ID:", userData.id);
+    const response = await axios.post(
       'http://localhost:4000/api/users/profile',
       {
         user_id: userData.id,
         full_name: userData.full_name,
         avatar_url: userData.avatar_url,
+        bio: userData.bio || '',
         is_active: true
       },
       {
         headers: {
-          Authorization: `Bearer ${token}`
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json'
         }
       }
     );
-    console.log("Created user profile via API");
-    return true;
-  } catch (error) {
+    
+    console.log("API response status:", response.status);
+    console.log("API response data:", response.data);
+    
+    return response.status === 201;
+  } catch (error: any) {
     console.error("Error creating profile via API:", error);
-    // Still return true to allow the flow to continue even if API fails
-    console.log("Continuing with local-only user profile");
-    return true;
+    if (error.response) {
+      console.error("Response status:", error.response.status);
+      console.error("Response data:", error.response.data);
+    }
+    return false;
   }
 };
 
@@ -75,23 +89,12 @@ const createUserProfileViaAPI = async (userData: User, token: string): Promise<b
 const fetchUserProfileViaAPI = async (userId: string, token: string): Promise<User | null> => {
   try {
     // Check if backend is available first
-    try {
-      const checkResponse = await fetch('http://localhost:4000/api/health', { 
-        method: 'GET',
-        headers: { 'Authorization': `Bearer ${token}` }
-      });
-      
-      if (!checkResponse.ok) {
-        console.log("Backend appears to be unavailable, using local-only mode");
-        return null; // Return null to trigger the local profile creation
-      }
-    } catch (error) {
-      // Explicitly ignore the error
-      console.log("Backend connection check failed, using local-only mode",  error);
+    const backendAvailable = await checkBackendAvailability(token);
+    if (!backendAvailable) {
+      console.log("Backend appears to be unavailable, using local-only mode");
       return null; // Return null to trigger the local profile creation
     }
     
-    // If we got here, backend appears to be available
     const response = await axios.get(
       `http://localhost:4000/api/users/profile?user_id=${userId}`,
       {
@@ -101,7 +104,13 @@ const fetchUserProfileViaAPI = async (userId: string, token: string): Promise<Us
       }
     );
     console.log("Fetched user profile via API");
-    return response.data;
+    
+    // Determine if onboarding is needed based on bio being empty
+    const profileComplete = response.data.bio && response.data.bio.trim().length > 0;
+    return {
+      ...response.data,
+      profileComplete: profileComplete
+    };
   } catch (error) {
     console.error("Error fetching profile via API:", error);
     return null;
@@ -129,6 +138,12 @@ const UserProvider = ({ children }: { children: ReactNode }) => {
         return false;
       }
       
+      // Ensure the bio field is included and not empty
+      if (!profileData.bio || profileData.bio.trim() === '') {
+        console.warn("Bio field is empty in profile completion");
+        // You may want to add a default value here
+      }
+      
       // Merge existing user data with new profile data
       const updatedUser: User = {
         ...user,
@@ -145,6 +160,9 @@ const UserProvider = ({ children }: { children: ReactNode }) => {
         setUser(updatedUser);
         setNeedsOnboarding(false);
         console.log("User profile completed:", updatedUser);
+        
+        // Set a flag in localStorage so we know onboarding was completed
+        localStorage.setItem(`onboarding_complete_${updatedUser.id}`, 'true');
         
         return true;
       } else {
@@ -175,18 +193,23 @@ const UserProvider = ({ children }: { children: ReactNode }) => {
           // If we found a profile, use it
           if (profileData) {
             console.log("Found profile data:", profileData);
+            
+            // Check if bio is empty to determine if onboarding is needed
+            const needsOnboarding = !profileData.bio || profileData.bio.trim().length === 0;
+            
             const userData: User = {
               id: profileData.id || session.user.id,
               full_name: profileData.full_name || session.user.user_metadata?.full_name || 'User',
               avatar_url: profileData.avatar_url || session.user.user_metadata?.avatar_url || '',
               is_active: true,
               email: session.user.email,
-              profileComplete: true
+              profileComplete: !needsOnboarding,
+              bio: profileData.bio || ''
             };
             
             setUser(userData);
-            setNeedsOnboarding(false);
-            console.log("User set from profile:", userData);
+            setNeedsOnboarding(needsOnboarding);
+            console.log("User set from profile, needs onboarding:", needsOnboarding);
           } 
           // If no profile yet but we have a session, create a default user object
           else if (session.user) {
@@ -228,40 +251,69 @@ const UserProvider = ({ children }: { children: ReactNode }) => {
         console.log("Auth state changed:", event, session ? "session exists" : "no session");
         
         if (event === 'SIGNED_IN' && session) {
-          // User signed in, get profile data from API
-          const profileData = await fetchUserProfileViaAPI(session.user.id, session.access_token);
-            
-          if (profileData) {
-            const userData: User = {
-              id: profileData.id || session.user.id,
-              full_name: profileData.full_name || session.user.user_metadata?.full_name || 'User',
-              avatar_url: profileData.avatar_url || session.user.user_metadata?.avatar_url || '',
-              is_active: true,
-              email: session.user.email,
-              profileComplete: true
-            };
-            
-            setUser(userData);
+          // Check if we've already completed onboarding for this user
+          const onboardingCompleted = localStorage.getItem(`onboarding_complete_${session.user.id}`) === 'true';
+          
+          if (onboardingCompleted) {
+            console.log("Onboarding already completed according to localStorage");
+            // If onboarding was completed, override the needsOnboarding flag
             setNeedsOnboarding(false);
-            console.log("User set after auth change:", userData);
-          } 
-          // If no profile found but we have session
-          else if (session.user) {
-            const userData: User = {
-              id: session.user.id,
-              full_name: session.user.user_metadata?.full_name || session.user.email?.split('@')[0] || 'User',
-              avatar_url: session.user.user_metadata?.avatar_url || '',
-              is_active: true,
-              email: session.user.email,
-              profileComplete: false
-            };
             
-            setUser(userData);
-            setNeedsOnboarding(true);
-            console.log("User set from session after auth change:", userData);
-            
-            // Create profile via API
-            await createUserProfileViaAPI(userData, session.access_token);
+            // Still fetch the profile for other data
+            const profileData = await fetchUserProfileViaAPI(session.user.id, session.access_token);
+            if (profileData) {
+              const userData: User = {
+                id: profileData.id || session.user.id,
+                full_name: profileData.full_name || session.user.user_metadata?.full_name || 'User',
+                avatar_url: profileData.avatar_url || session.user.user_metadata?.avatar_url || '',
+                is_active: true,
+                email: session.user.email,
+                profileComplete: true, // Force this to true regardless of bio
+                bio: profileData.bio || ''
+              };
+              
+              setUser(userData);
+              // Important: ALWAYS set to false if localStorage says complete
+              setNeedsOnboarding(false);
+            }
+          } else {
+            // Normal flow for users who haven't completed onboarding
+            const profileData = await fetchUserProfileViaAPI(session.user.id, session.access_token);
+            if (profileData) {
+              const needsOnboarding = !profileData.bio || profileData.bio.trim().length === 0;
+              
+              const userData: User = {
+                id: profileData.id || session.user.id,
+                full_name: profileData.full_name || session.user.user_metadata?.full_name || 'User',
+                avatar_url: profileData.avatar_url || session.user.user_metadata?.avatar_url || '',
+                is_active: true,
+                email: session.user.email,
+                profileComplete: !needsOnboarding,
+                bio: profileData.bio || ''
+              };
+              
+              setUser(userData);
+              setNeedsOnboarding(needsOnboarding);
+              console.log("User set after auth change, needs onboarding:", needsOnboarding);
+            } 
+            // If no profile found but we have session
+            else if (session.user) {
+              const userData: User = {
+                id: session.user.id,
+                full_name: session.user.user_metadata?.full_name || session.user.email?.split('@')[0] || 'User',
+                avatar_url: session.user.user_metadata?.avatar_url || '',
+                is_active: true,
+                email: session.user.email,
+                profileComplete: false
+              };
+              
+              setUser(userData);
+              setNeedsOnboarding(true);
+              console.log("User set from session after auth change:", userData);
+              
+              // Create profile via API
+              await createUserProfileViaAPI(userData, session.access_token);
+            }
           }
         } else if (event === 'SIGNED_OUT') {
           // User signed out
@@ -392,19 +444,17 @@ const UserProvider = ({ children }: { children: ReactNode }) => {
           avatar_url: '',
           is_active: true,
           email: data.user.email,
-          profileComplete: false
+          profileComplete: false,
+          bio: ''
         };
         
         // Set user state
         setUser(newUser);
         setNeedsOnboarding(true);
-        console.log("User created, proceeding to onboarding:", newUser);
+        console.log("User created, needs onboarding:", true);
         
-        // Force redirect to onboarding after a short delay
-        // This ensures state is updated before navigation
-        setTimeout(() => {
-          window.location.href = '/onboarding';
-        }, 200);
+        // Force redirect to onboarding
+        window.location.href = '/onboarding';
         
         return newUser;
       } else {

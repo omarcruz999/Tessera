@@ -7,6 +7,9 @@ import Joi from 'joi';
  */
 export const getUserProfile: RequestHandler = async (req: Request, res: Response): Promise<void> => {
     try {
+        console.log('Request headers:', req.headers);
+        console.log('Request body:', req.body);
+
         // Define the validation schema
         const schema = Joi.object({
             user_id: Joi.string().uuid().required(), // Validate that user_id is a valid UUID
@@ -44,6 +47,9 @@ export const getUserProfile: RequestHandler = async (req: Request, res: Response
  */
 export const updateUserProfile: RequestHandler = async (req: Request, res: Response): Promise<void> => {
     try {
+        console.log('Request headers:', req.headers);
+        console.log('Request body:', req.body);
+
         // Define the validation schema
         const schema = Joi.object({
             user_id: Joi.string().uuid().required(), // Validate that user_id is a valid UUID
@@ -85,54 +91,75 @@ export const updateUserProfile: RequestHandler = async (req: Request, res: Respo
  */
 export const createUserProfile = async (req: Request, res: Response): Promise<void> => {
     try {
-        const { user_id, full_name, avatar_url, is_active } = req.body;
+        console.log('Request headers:', req.headers);
+        console.log('Request body:', req.body);
 
-        // Validate required fields
+        const { user_id, full_name, avatar_url, bio, is_active } = req.body;
+        
         if (!user_id) {
             res.status(400).json({ error: 'User ID is required' });
             return;
         }
 
-        // Check if profile already exists
+        // First check if the profile already exists
         const { data: existingProfile, error: checkError } = await supabaseAdmin
             .from('profiles')
             .select('*')
-            .eq('user_id', user_id)
+            .eq('id', user_id)
             .single();
-
-        if (checkError && checkError.code !== 'PGRST116') { // PGRST116 is "no rows returned" error
+        
+        if (checkError && checkError.code !== 'PGRST116') { // PGRST116 is "no rows returned"
+            console.error('Error checking for existing profile:', checkError);
             res.status(500).json({ error: 'Error checking for existing profile' });
             return;
         }
 
+        // Generate a random connection_code in case we need it
+        const connection_code = Math.random().toString(36).substring(2, 8).toUpperCase();
+        
+        let result;
+        
         if (existingProfile) {
-            res.status(409).json({ error: 'Profile already exists for this user' });
-            return;
-        }
-
-        // Insert the new profile
-        const { data, error } = await supabaseAdmin
-            .from('profiles')
-            .insert([
-                {
-                    user_id,
+            // Profile exists, update it
+            console.log('Updating existing profile for user:', user_id);
+            
+            result = await supabaseAdmin
+                .from('profiles')
+                .update({
+                    full_name: full_name || existingProfile.full_name,
+                    avatar_url: avatar_url || existingProfile.avatar_url,
+                    bio: bio || existingProfile.bio || '',
+                    is_active: is_active !== undefined ? is_active : existingProfile.is_active
+                })
+                .eq('id', user_id)
+                .select();
+        } else {
+            // Profile doesn't exist, create it
+            console.log('Creating new profile for user:', user_id);
+            
+            result = await supabaseAdmin
+                .from('profiles')
+                .insert({
+                    id: user_id,
                     full_name: full_name || 'User',
                     avatar_url: avatar_url || '',
-                    is_active: is_active !== undefined ? is_active : true
-                }
-            ])
-            .select()
-            .single();
-
-        if (error) {
-            console.error('Error creating profile:', error);
-            res.status(500).json({ error: 'Failed to create profile' });
+                    bio: bio || '',
+                    is_active: is_active !== undefined ? is_active : true,
+                    connection_code: connection_code // Add this to make the database happy
+                })
+                .select();
+        }
+        
+        if (result.error) {
+            console.error('Error saving profile:', result.error);
+            res.status(500).json({ error: 'Failed to save profile' });
             return;
         }
 
-        res.status(201).json(data);
+        console.log('Profile saved successfully:', result.data);
+        res.status(201).json(result.data);
     } catch (error) {
-        console.error('Server error creating profile:', error);
+        console.error('Server error saving profile:', error);
         res.status(500).json({ error: 'Server error' });
     }
 };

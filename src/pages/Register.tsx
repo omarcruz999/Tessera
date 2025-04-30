@@ -154,7 +154,7 @@ const Register: React.FC = () => {
           <button
             type="submit"
             disabled={loading}
-            className="w-full bg-[#E7A691] hover:bg-[#D8957F] text-white py-2 rounded font-medium transition-colors"
+            className="w-full bg-[#E7A691] hover:bg-[#D8957F] text-gray py-2 rounded font-medium transition-colors"
           >
             {loading ? 'Creating Account...' : 'Create Account'}
           </button>
@@ -171,7 +171,7 @@ const Register: React.FC = () => {
         
         <button
           onClick={handleGoogleRegister}
-          className="w-full flex items-center justify-center bg-white border border-gray-300 text-white py-2 rounded hover:bg-gray-50 transition-colors"
+          className="w-full flex items-center justify-center bg-white border border-gray-300 text-gray py-2 rounded hover:bg-gray-50 transition-colors"
         >
           <svg className="w-5 h-5 mr-2" viewBox="0 0 24 24">
             <path
@@ -198,7 +198,7 @@ const Register: React.FC = () => {
           Already have an account?{' '}
           <button 
             onClick={() => navigate('/login')} 
-            className="text-white hover:underline"
+            className="text-[#D8957F] font-medium hover:underline"
           >
             Log in
           </button>
