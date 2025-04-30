@@ -2,7 +2,7 @@ name: Tessera CI/CD
 
 on:
   push:
-    branches: [ main ]
+    branches: [ main, deploy ]  # Add your deployment branch here
   pull_request:
     branches: [ main ]
 
@@ -47,7 +47,8 @@ jobs:
   deploy:
     needs: build
     runs-on: ubuntu-latest
-    if: false # github.ref == 'refs/heads/main' # Temporarily disable deployment until auth is implemented
+    # Only run deployment on the 'deploy' branch
+    if: github.ref == 'refs/heads/deploy'
     steps:
       - uses: actions/checkout@v4
       - name: Download build artifacts
