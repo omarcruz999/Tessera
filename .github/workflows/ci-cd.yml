@@ -34,18 +34,31 @@ jobs:
         with:
           node-version: '22.14.0'
           cache: 'npm'
-      - name: Install dependencies
+      - name: Install frontend dependencies
         run: npm ci
-      - name: Build application
+      - name: Build frontend
         run: npm run build
         env:
           VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
           VITE_SUPABASE_KEY: ${{ secrets.VITE_SUPABASE_KEY }}
-      - name: Upload build artifacts
+      - name: Install server dependencies
+        run: |
+          cd server
+          npm ci
+      - name: Build server
+        run: |
+          cd server
+          npm run build
+      - name: Upload frontend build artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: build-artifacts
+          name: frontend-build
           path: dist/
+      - name: Upload server build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: server-build
+          path: server/  # Upload the entire server directory
 
   deploy:
     needs: build
@@ -53,12 +66,14 @@ jobs:
     # Only run deployment on the 'deploy' branch
     if: github.ref == 'refs/heads/deploy'
     steps:
-      - uses: actions/checkout@v4
-      - name: Download build artifacts
-        uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v4
         with:
-          name: build-artifacts
+          name: frontend-build
           path: dist/
+      - uses: actions/download-artifact@v4
+        with:
+          name: server-build
+          path: server/
       - name: Setup SSH
         uses: webfactory/ssh-agent@v0.8.0
         with:
@@ -69,13 +84,33 @@ jobs:
           ssh-keyscan -H ${{ secrets.EC2_HOST }} >> ~/.ssh/known_hosts
       - name: Deploy to EC2
         run: |
-          ssh ${{ secrets.EC2_USERNAME }}@${{ secrets.EC2_HOST }} "mkdir -p ~/tessera/"
+          # Create directories
+          ssh ${{ secrets.EC2_USERNAME }}@${{ secrets.EC2_HOST }} "mkdir -p ~/tessera/server"
+          
+          # Transfer frontend files
           rsync -avz --delete dist/ ${{ secrets.EC2_USERNAME }}@${{ secrets.EC2_HOST }}:~/tessera/dist/
           rsync -avz package.json package-lock.json ${{ secrets.EC2_USERNAME }}@${{ secrets.EC2_HOST }}:~/tessera/
-          ssh ${{ secrets.EC2_USERNAME }}@${{ secrets.EC2_HOST }} 'cd ~/tessera/ && npm ci --production && pm2 restart tessera || pm2 start npm --name "tessera" -- start'
+          
+          # Transfer server files
+          rsync -avz server/ ${{ secrets.EC2_USERNAME }}@${{ secrets.EC2_HOST }}:~/tessera/server/
+          
+          # Install frontend dependencies
+          ssh ${{ secrets.EC2_USERNAME }}@${{ secrets.EC2_HOST }} 'cd ~/tessera/ && npm ci --production'
+          
+          # Install server dependencies
+          ssh ${{ secrets.EC2_USERNAME }}@${{ secrets.EC2_HOST }} 'cd ~/tessera/server && npm ci --production'
+          
+          # Start frontend with PM2 (if needed)
+          ssh ${{ secrets.EC2_USERNAME }}@${{ secrets.EC2_HOST }} 'cd ~/tessera/ && pm2 restart tessera || pm2 start npm --name "tessera" -- start'
+          
+          # Start server with PM2
+          ssh ${{ secrets.EC2_USERNAME }}@${{ secrets.EC2_HOST }} 'cd ~/tessera/server && pm2 restart tessera-api || pm2 start dist/index.js --name "tessera-api"'
+          
+          # Save PM2 configuration
+          ssh ${{ secrets.EC2_USERNAME }}@${{ secrets.EC2_HOST }} 'pm2 save'
+          
       - name: Create server environment file
         run: |
-          ssh ${{ secrets.EC2_USERNAME }}@${{ secrets.EC2_HOST }} "mkdir -p ~/tessera/server"
           ssh ${{ secrets.EC2_USERNAME }}@${{ secrets.EC2_HOST }} "echo 'SUPABASE_URL=${{ secrets.SUPABASE_URL }}' > ~/tessera/server/.env"
           ssh ${{ secrets.EC2_USERNAME }}@${{ secrets.EC2_HOST }} "echo 'SUPABASE_SERVICE_ROLE_KEY=${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}' >> ~/tessera/server/.env"
           ssh ${{ secrets.EC2_USERNAME }}@${{ secrets.EC2_HOST }} "echo 'VIBE_MATCHER_URL=${{ secrets.VIBE_MATCHER_URL }}' >> ~/tessera/server/.env"
