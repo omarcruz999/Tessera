@@ -58,9 +58,6 @@ app.use(express.json());    // Parse incoming JSON data
 app.use(morgan('dev'));     // Log incoming requests
 
 // Routes Setup
-// Public routes (if any)
-// app.use('/api/auth', authRoutes);
-
 // Health check endpoint
 app.get('/api/health', (req, res) => {
   res.status(200).json({ status: 'ok' });
