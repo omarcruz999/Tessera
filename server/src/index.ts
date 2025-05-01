@@ -30,17 +30,32 @@ const PORT = process.env.PORT || 4000;
 
 // Middleware Setup
 app.use(cors({
-  origin: ['http://localhost:5173'], // Your frontend URL
+  origin: function(origin, callback) {
+    // Allow requests with no origin (like mobile apps or curl)
+    if (!origin) return callback(null, true);
+    
+    // List of allowed origins
+    const allowedOrigins = [
+      'http://localhost:5173',     // Dev frontend
+      'http://tessera.it.com',     // Production HTTP
+      'https://tessera.it.com',    // Production HTTPS
+      // Add any other domains that need access here
+    ];
+    
+    // Check if the origin is allowed
+    if (allowedOrigins.indexOf(origin) !== -1 || !origin) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
   credentials: true,
-  methods: ['GET', 'POST', 'PUT', 'DELETE'],
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],  // Added OPTIONS for preflight
   allowedHeaders: ['Content-Type', 'Authorization'],
+  optionsSuccessStatus: 204  // Some legacy browsers choke on 204
 }));            // Allow Cross-Origin requests
 app.use(express.json());    // Parse incoming JSON data
 app.use(morgan('dev'));     // Log incoming requests
-
-// Configure multer for selfie uploads
-import multer from 'multer';
-const upload = multer({ storage: multer.memoryStorage() });
 
 // Routes Setup
 // Public routes (if any)
