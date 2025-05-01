@@ -1,12 +1,11 @@
 import { useEffect, useState, useContext, useRef } from 'react';
-import axios from 'axios';
 import PeerCard from '../components/Cards/PeerCard.tsx';
 import VibeMatcherModal from '../components/VibeMatcherModal';
 import { UserContext, User } from '../UserContext';
-import supabaseClient from '../services/supabaseClient';
-import { IoAdd } from 'react-icons/io5';  // Make sure to install react-icons with: npm install react-icons
+import { IoAdd } from 'react-icons/io5';
+import { getUserConnections, getUserProfile } from '../services/userApi';
 
-// Define interfaces for API data
+// Define connection interface
 interface Connection {
   connection_id: string;
   user_1: string;
@@ -77,42 +76,20 @@ function Connections() {
     }
 
     try {
-      // Get the auth token from Supabase
-      const { data } = await supabaseClient.auth.getSession();
-      const token = data.session?.access_token;
-      
-      if (!token) {
-        setError('Not authenticated');
-        setIsLoading(false);
-        return;
-      }
+      // Use our API service instead of direct axios call
+      const { data: connections } = await getUserConnections(myUserId);
 
-      // Create axios instance with auth header
-      const authenticatedAxios = axios.create({
-        headers: {
-          Authorization: `Bearer ${token}`
-        }
-      });
-
-      // Fetch user's connections with auth header
-      const connectionsResponse = await authenticatedAxios.get(
-        `http://localhost:4000/api/connections/all?user_id=${myUserId}`
-      );
-      const connections: Connection[] = connectionsResponse.data;
-
-      // Get IDs of connected users
-      const connectedUserIds = connections
-        .map(conn => conn.user_1 === myUserId ? conn.user_2 : conn.user_1)
+      // Get IDs of connected users - properly typed now
+      const connectedUserIds = (connections as Connection[])
+        .map((conn: Connection) => conn.user_1 === myUserId ? conn.user_2 : conn.user_1)
         .filter(id => id !== myUserId);
 
       // Fetch profile for each connected user
       const userProfiles: User[] = [];
       for (const userId of connectedUserIds) {
         try {
-          const profileResponse = await authenticatedAxios.get(
-            `http://localhost:4000/api/users/profile?user_id=${userId}`
-          );
-          userProfiles.push(profileResponse.data);
+          const { data: profile } = await getUserProfile(userId);
+          userProfiles.push(profile);
         } catch (profileError) {
           console.error(`Error fetching profile for ${userId}:`, profileError);
         }

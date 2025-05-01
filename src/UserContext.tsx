@@ -1,6 +1,6 @@
 import { createContext, useState, useEffect, ReactNode } from 'react';
 import supabase from './services/supabaseClient';
-import axios from 'axios';
+import { checkBackendHealth, getUserProfile, createUserProfile } from './services/userApi';
 
 export interface User {
   id: string;
@@ -26,50 +26,24 @@ interface UserContextType {
 
 const UserContext = createContext<UserContextType | undefined>(undefined);
 
-// Fix the health check function:
-
-const checkBackendAvailability = async (): Promise<boolean> => {
-  try {
-    // Use a simple endpoint like /health that doesn't require auth
-    const response = await fetch('http://localhost:4000/api/health', {
-      method: 'GET'
-    });
-    
-    console.log('Backend health check status:', response.status);
-    return response.ok;
-  } catch (error) {
-    console.error('Backend health check error:', error);
-    return false;
-  }
-};
-
-// Helper function to create user profile via API
-const createUserProfileViaAPI = async (userData: User, token: string): Promise<boolean> => {
+// Replace createUserProfileViaAPI with:
+const createUserProfileViaAPI = async (userData: User): Promise<boolean> => {
   try {
     // First check if backend is available
-    const backendAvailable = await checkBackendAvailability();
+    const backendAvailable = await checkBackendHealth();
     if (!backendAvailable) {
       console.error("Backend is unavailable - cannot create profile");
       return false;
     }
     
     console.log("Creating user profile via API with ID:", userData.id);
-    const response = await axios.post(
-      'http://localhost:4000/api/users/profile',
-      {
-        user_id: userData.id,
-        full_name: userData.full_name,
-        avatar_url: userData.avatar_url,
-        bio: userData.bio || '',
-        is_active: true
-      },
-      {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        }
-      }
-    );
+    const response = await createUserProfile({
+      user_id: userData.id,
+      full_name: userData.full_name,
+      avatar_url: userData.avatar_url,
+      bio: userData.bio || '',
+      is_active: true
+    });
     
     console.log("API response status:", response.status);
     console.log("API response data:", response.data);
@@ -77,35 +51,24 @@ const createUserProfileViaAPI = async (userData: User, token: string): Promise<b
     return response.status === 201;
   } catch (error: unknown) {
     console.error("Error creating profile via API:", error);
-    if (axios.isAxiosError(error) && error.response) {
-      console.error("Response status:", error.response.status);
-      console.error("Response data:", error.response.data);
-    }
     return false;
   }
 };
 
-// Helper function to fetch user profile via API
-const fetchUserProfileViaAPI = async (userId: string, token: string): Promise<User | null> => {
+// Replace fetchUserProfileViaAPI with:
+const fetchUserProfileViaAPI = async (userId: string): Promise<User | null> => {
   try {
     // Check if backend is available first
-    const backendAvailable = await checkBackendAvailability();
+    const backendAvailable = await checkBackendHealth();
     if (!backendAvailable) {
       console.log("Backend appears to be unavailable, using local-only mode");
       return null; // Return null to trigger the local profile creation
     }
     
-    const response = await axios.get(
-      `http://localhost:4000/api/users/profile?user_id=${userId}`,
-      {
-        headers: {
-          Authorization: `Bearer ${token}`
-        }
-      }
-    );
+    const { data } = await getUserProfile(userId);
     console.log("Fetched user profile via API");
     
-    return response.data;
+    return data;
   } catch (error) {
     console.error("Error fetching profile via API:", error);
     return null;
@@ -148,7 +111,7 @@ const UserProvider = ({ children }: { children: ReactNode }) => {
       };
       
       // Create the profile via API
-      const success = await createUserProfileViaAPI(updatedUser, session.access_token);
+      const success = await createUserProfileViaAPI(updatedUser);
       
       if (success) {
         // Update local state
@@ -183,7 +146,7 @@ const UserProvider = ({ children }: { children: ReactNode }) => {
           console.log("Session user ID:", session.user.id);
           
           // Try to get profile from API first
-          const profileData = await fetchUserProfileViaAPI(session.user.id, session.access_token);
+          const profileData = await fetchUserProfileViaAPI(session.user.id);
             
           // If we found a profile, use it
           if (profileData) {
@@ -220,7 +183,7 @@ const UserProvider = ({ children }: { children: ReactNode }) => {
             console.log("User set from session:", userData);
             
             // Create profile via API
-            await createUserProfileViaAPI(userData, session.access_token);
+            await createUserProfileViaAPI(userData);
           }
         } else {
           console.log("No session found, user is not logged in");
@@ -260,7 +223,7 @@ const UserProvider = ({ children }: { children: ReactNode }) => {
           }
           
           // Fetch profile as usual
-          const profileData = await fetchUserProfileViaAPI(session.user.id, session.access_token);
+          const profileData = await fetchUserProfileViaAPI(session.user.id);
           if (profileData) {
             const userData = {
               ...profileData,
@@ -325,7 +288,7 @@ const UserProvider = ({ children }: { children: ReactNode }) => {
       
       if (data.user && data.session) {
         // Get user profile data from API
-        const profileData = await fetchUserProfileViaAPI(data.user.id, data.session.access_token);
+        const profileData = await fetchUserProfileViaAPI(data.user.id);
           
         // If profile exists, use it; otherwise create from auth data
         if (profileData) {
@@ -357,7 +320,7 @@ const UserProvider = ({ children }: { children: ReactNode }) => {
           console.log("Created user data from auth after email login:", userData);
           
           // Create profile via API
-          await createUserProfileViaAPI(userData, data.session.access_token);
+          await createUserProfileViaAPI(userData);
         }
       }
     } catch (error) {

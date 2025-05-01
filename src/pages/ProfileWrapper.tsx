@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import ProfileView from "../components/ProfileView";
-import supabaseClient from "../services/supabaseClient";
-import axios, { AxiosError } from 'axios';
+import { getUserProfile } from "../services/userApi";
+import { AxiosError } from 'axios';
 
 interface User {
   user_id: string;
@@ -32,17 +32,6 @@ function ProfileWrapper() {
       console.log("Fetching profile for userId:", userId);
       
       try {
-        // Get the auth token from Supabase
-        const { data } = await supabaseClient.auth.getSession();
-        const token = data.session?.access_token;
-        
-        if (!token) {
-          console.error("No authentication token available");
-          setError('Not authenticated');
-          setLoading(false);
-          return;
-        }
-        
         if (!userId) {
           console.error("No userId provided in the URL");
           setError('Invalid user ID');
@@ -50,20 +39,10 @@ function ProfileWrapper() {
           return;
         }
         
-        // Create axios instance with auth header
-        const authenticatedAxios = axios.create({
-          headers: {
-            Authorization: `Bearer ${token}`
-          }
-        });
-        
-        // Make the API request with the userId
-        const profileResponse = await authenticatedAxios.get(
-          `http://localhost:4000/api/users/profile?user_id=${userId}`
-        );
-        
-        console.log("Profile data received:", profileResponse.data);
-        setProfileUser(profileResponse.data);
+        // Use our API service instead of direct axios call
+        const { data } = await getUserProfile(userId);
+        console.log("Profile data received:", data);
+        setProfileUser(data);
       } catch (err) {
         console.error("Error fetching profile:", err);
         
