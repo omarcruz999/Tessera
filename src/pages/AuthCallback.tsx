@@ -1,12 +1,9 @@
 import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useContext } from 'react';
-import { UserContext } from '../UserContext';
 import supabase from '../services/supabaseClient';
 
 const AuthCallback = () => {
   const navigate = useNavigate();
-  const userContext = useContext(UserContext);
   
   useEffect(() => {
     const handleAuthCallback = async () => {
