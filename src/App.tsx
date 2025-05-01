@@ -20,6 +20,7 @@ import ErrorPage from "./pages/ErrorPage";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
 import Onboarding from "./pages/Onboarding";
+import AuthCallback from "./pages/AuthCallback";
 
 import { UserContext } from "./UserContext";
 
@@ -114,6 +115,7 @@ const AuthenticatedLayout: React.FC<{ needsOnboarding: boolean }> = ({
               )
             }
           />
+          <Route path="/auth/callback" element={<AuthCallback />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </div>
@@ -179,6 +181,7 @@ function App() {
               <Route path="/onboarding" element={<Onboarding />} />
               <Route path="/about" element={<About />} />
               <Route path="/landing" element={<Landing />} />
+              <Route path="/auth/callback" element={<AuthCallback />} />
               <Route path="*" element={<Navigate to="/landing" replace />} />
             </Routes>
           </div>
