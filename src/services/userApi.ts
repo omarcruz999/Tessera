@@ -13,7 +13,7 @@ interface UserProfileData {
 
 // User profile functions
 export const getUserProfile = async (userId: string) => {
-  return apiClient.get(`/users/profile?user_id=${userId}`);
+  return apiClient.get<UserProfileData>(`/users/profile?user_id=${userId}`);
 };
 
 export const createUserProfile = async (profileData: UserProfileData) => {

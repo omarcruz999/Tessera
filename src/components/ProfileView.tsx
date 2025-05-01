@@ -11,6 +11,7 @@ interface ProfileUser {
   user_id: string;
   full_name: string;
   avatar_url?: string;
+  bio?: string;
   is_active: boolean;
 }
 
@@ -85,8 +86,8 @@ function ProfileView({ profileUser }: ProfileViewProps) {
           className="profile-image"
         />
         <h2 className="profile-name">{displayedUser.full_name}</h2>
-        <h3 className="profile-bio">Just a regular old guy!</h3>
-        <p className="profile-location">Pomona, CA | Joined 20XX</p>
+        <h3 className="profile-bio">{displayedUser.bio?.trim() || 'No bio yet.'} </h3>
+        {/* <p className="profile-location">Pomona, CA | Joined 20XX</p> */}
 
         {!isOwnProfile ? (
           <button className="edit-btn" onClick={handleMessageClick}>
