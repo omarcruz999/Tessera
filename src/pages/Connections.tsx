@@ -48,7 +48,7 @@ function Connections() {
     ];
   };
 
-  // Extracted for reuse in refresh and auto-refresh
+  // Updated loadConnections function with improved error handling
   const loadConnections = async () => {
     if (!userContext?.user) {
       setError('No user logged in');
@@ -58,7 +58,7 @@ function Connections() {
 
     const myUserId = userContext.user.id;
 
-    // Try cache first
+    // Try cache first (unchanged code)
     const cacheKey = `${CACHE_KEY_PREFIX}_${myUserId}`;
     const cachedRaw = localStorage.getItem(cacheKey);
     if (cachedRaw) {
@@ -76,29 +76,79 @@ function Connections() {
     }
 
     try {
-      // Use our API service instead of direct axios call
-      const { data: connections } = await getUserConnections(myUserId);
+      // Use API service to get connections
+      const connectionsResponse = await getUserConnections(myUserId);
+      
+      // Safety check - make sure we have an array of connections
+      if (!connectionsResponse || !connectionsResponse.data || typeof connectionsResponse.data !== 'object') {
+        console.error('Invalid connections response:', connectionsResponse);
+        throw new Error('Invalid connections data received');
+      }
+      
+      const connections = Array.isArray(connectionsResponse.data) 
+        ? connectionsResponse.data as Connection[]
+        : [];
+      
+      console.log('Raw connections data:', connections);
 
-      // Get IDs of connected users - properly typed now
-      const connectedUserIds = (connections as Connection[])
+      // Type safe array handling - ensure we have an array with valid properties
+      if (connections.length === 0) {
+        console.log('No connections found for user', myUserId);
+        setPeers([]);
+        setError(null);
+        setIsLoading(false);
+        return;
+      }
+      
+      // Extract connected user IDs with type safety
+      const connectedUserIds = connections
+        .filter((conn): conn is Connection => 
+          // Verify the connection object has the expected properties
+          Boolean(conn && typeof conn === 'object' && 'user_1' in conn && 'user_2' in conn)
+        )
         .map((conn: Connection) => conn.user_1 === myUserId ? conn.user_2 : conn.user_1)
         .filter(id => id !== myUserId);
+      
+      console.log('Connected user IDs:', connectedUserIds);
 
       // Fetch profile for each connected user
       const userProfiles: User[] = [];
       for (const userId of connectedUserIds) {
         try {
-          const { data: profile } = await getUserProfile(userId);
-          userProfiles.push(profile);
+          const profileResponse = await getUserProfile(userId);
+          
+          // Verify we got a valid profile and not HTML or other invalid response
+          const profile = profileResponse?.data;
+          
+          if (profile && typeof profile === 'object' && 'id' in profile) {
+            userProfiles.push(profile as User);
+          } else {
+            console.error('Invalid profile data received for user', userId, profile);
+          }
         } catch (profileError) {
           console.error(`Error fetching profile for ${userId}:`, profileError);
         }
       }
+      
+      console.log('Fetched user profiles:', userProfiles);
 
-      setPeers(userProfiles);
-      setCachedConnections(myUserId, userProfiles);
-      lastCacheTimestamp.current = Date.now();
-      setError(null);
+      // Only update state if we have valid profiles
+      if (userProfiles.length > 0) {
+        setPeers(userProfiles);
+        setCachedConnections(myUserId, userProfiles);
+        lastCacheTimestamp.current = Date.now();
+        setError(null);
+      } else if (connections.length > 0 && userProfiles.length === 0) {
+        // We had connections but couldn't fetch profiles - show error
+        console.warn('Found connections but failed to fetch profiles');
+        setError('Could not load connection profiles');
+        setPeers(await loadMockData());
+      } else {
+        // No connections found
+        console.log('No connections found');
+        setPeers([]);
+        setError(null);
+      }
     } catch (err) {
       console.error('Error fetching connections:', err);
       setError('Failed to load connections');
