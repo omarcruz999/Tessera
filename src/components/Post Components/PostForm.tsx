@@ -1,10 +1,9 @@
 import type React from "react"
 import { useState, useRef, useContext } from "react"
-import supabase  from "../../services/supabaseClient"
+import supabase from "../../services/supabaseClient"
+import apiClient from "../../services/apiClient"
 import { UserContext } from '../../UserContext';
 import imageIcon from "../../assets/imageIcon.svg"
-import apiClient from '../../services/apiClient';
-import { createPost } from '../../services/postsApi';
 
 interface PostFromProps {
     // Used to close the modal
@@ -65,7 +64,7 @@ const PostForm: React.FC<PostFromProps> = ({ onClose }) => {
         fileInputRef.current?.click()
     }
 
-    // Placeholder for handling post submission 
+    // Updated handleSubmit function
     const handleSubmit = async () => {
         if (!postContent.trim()) return;
 
@@ -89,13 +88,15 @@ const PostForm: React.FC<PostFromProps> = ({ onClose }) => {
                 formData.append('file', file);
             }
 
-            // Use apiClient instead of direct fetch
+            // Add the API call here to submit the post
             const response = await apiClient.post('/posts', formData, {
                 headers: {
                     'Content-Type': 'multipart/form-data',
                 },
             });
 
+            console.log('Post created successfully:', response.data);
+            
             // Reset the form after successful submission
             setPostContent("");
             setUploadedImage(null);
@@ -113,7 +114,7 @@ const PostForm: React.FC<PostFromProps> = ({ onClose }) => {
 
                 {/* Close Button */}
                 <div id="closeButton" className="flex justify-end p-3">
-                    <button type="button" onClick={onClose} style={{ outline: "none" }} className="!w-10 !h-10 !bg-[#FDF7F4] !rounded-full !p-0 !focus:outline-none !border-none !button-focus: none">
+                    <button type="button" onClick={onClose} aria-label="Close" className="!w-10 !h-10 !bg-[#FDF7F4] !rounded-full !p-0 !focus:outline-none !outline-none !border-none">
                         <svg viewBox="0 0 24 24" className="w-full h-full">
                             <path fill="#000" d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z" />
                         </svg>
@@ -165,19 +166,23 @@ const PostForm: React.FC<PostFromProps> = ({ onClose }) => {
                 {/* Options and Post Button */}
                 <div className="flex items-center space-x-3 px-5 py-5">
                     {/* Hidden Image File Input */}
+                    <label htmlFor="image-upload" className="sr-only">Upload an image</label>
                     <input 
                         type="file" 
+                        id="image-upload"
                         ref={fileInputRef} 
                         onChange={handleImageUpload} 
                         accept="image/*"
+                        title="Upload an image"
+                        aria-label="Upload an image"
                         className="hidden"/>
 
                     <button
                         id="uploadImageButton"
                         type="button"
                         onClick={triggerImageUpload}
-                        style={{ outline: "none" }}
-                        className="w-10 h-10 !p-0 !bg-[#FDF7F4] focus:outline-none hover:bg-gray-200 !rounded-full transition-colors !border-none !button-focus: none"
+                        aria-label="Upload Image"
+                        className="w-10 h-10 !p-0 !bg-[#FDF7F4] !outline-none focus:outline-none hover:bg-gray-200 !rounded-full transition-colors !border-none"
                     >
                         <div className="flex items-center justify-center w-full h-full">
                             <img src={imageIcon} alt="Image Icon" className="w-10 h-10"/>
@@ -187,12 +192,14 @@ const PostForm: React.FC<PostFromProps> = ({ onClose }) => {
                     {/* Toggle Switch */}
                     <p className="text-black">Allow Sharing:</p>
 
-                    <label className="relative inline-flex items-center cursor-pointer">
+                    <label htmlFor="allow-sharing" className="relative inline-flex items-center cursor-pointer">
                         <input 
                             type="checkbox"
+                            id="allow-sharing"
                             className="sr-only peer"
                             checked={allowSharing}
                             onChange={() => setAllowSharing(!allowSharing)}
+                            aria-label="Allow sharing of this post"
                         />
 
                         <div 
