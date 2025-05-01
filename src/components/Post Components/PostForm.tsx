@@ -3,6 +3,8 @@ import { useState, useRef, useContext } from "react"
 import supabase  from "../../services/supabaseClient"
 import { UserContext } from '../../UserContext';
 import imageIcon from "../../assets/imageIcon.svg"
+import apiClient from '../../services/apiClient';
+import { createPost } from '../../services/postsApi';
 
 interface PostFromProps {
     // Used to close the modal
@@ -75,14 +77,6 @@ const PostForm: React.FC<PostFromProps> = ({ onClose }) => {
                 return;
             }
 
-            const { data: sessionData, error: sessionError  } = await supabase.auth.getSession();
-            if ( sessionError || !sessionData?.session?.access_token){
-                console.error("Error fetching session:", sessionError);
-                return;
-            }
-
-            const token = sessionData.session.access_token;
-
             // Prepare form data to send to your server endpoint
             const formData = new FormData();
             formData.append('user_id', user.id);
@@ -95,18 +89,12 @@ const PostForm: React.FC<PostFromProps> = ({ onClose }) => {
                 formData.append('file', file);
             }
 
-            // Make a POST request to the server endpoint
-            const response = await fetch('http://localhost:4000/api/posts', {
-                method: 'POST',
+            // Use apiClient instead of direct fetch
+            const response = await apiClient.post('/posts', formData, {
                 headers: {
-                    Authorization: `Bearer ${token}`,
+                    'Content-Type': 'multipart/form-data',
                 },
-                body: formData,
             });
-
-            if (!response.ok){
-                throw new Error(`Failed to create post: ${response.statusText}`);
-            }
 
             // Reset the form after successful submission
             setPostContent("");

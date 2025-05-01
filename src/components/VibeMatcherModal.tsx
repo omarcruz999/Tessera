@@ -1,8 +1,7 @@
 import React, { useState, useRef, useContext } from 'react';
 import { UserContext } from '../UserContext';
-import axios from 'axios';
+import apiClient from '../services/apiClient';
 import { IoClose, IoCloudUpload, IoCheckmarkCircle } from 'react-icons/io5';
-import supabaseClient from '../services/supabaseClient';
 
 interface VibeMatcherModalProps {
   isOpen: boolean;
@@ -64,23 +63,6 @@ const VibeMatcherModal: React.FC<VibeMatcherModalProps> = ({ isOpen, onClose }) 
     setError(null);
 
     try {
-      // Get auth token following your standard pattern
-      const { data } = await supabaseClient.auth.getSession();
-      const token = data.session?.access_token;
-      
-      if (!token) {
-        setError('Not authenticated');
-        setIsProcessing(false);
-        return;
-      }
-
-      // Create authenticated axios instance
-      const authenticatedAxios = axios.create({
-        headers: {
-          Authorization: `Bearer ${token}`
-        }
-      });
-
       // Prepare form data
       const formData = new FormData();
       formData.append('selfie', selectedFile);
@@ -103,9 +85,9 @@ const VibeMatcherModal: React.FC<VibeMatcherModalProps> = ({ isOpen, onClose }) 
         }
       }
 
-      // For multipart/form-data requests, we need to add the Content-Type header
-      const response = await authenticatedAxios.post(
-        'http://localhost:4000/api/selfies/upload', 
+      // Use apiClient instead of axios
+      const response = await apiClient.post(
+        '/selfies/upload', 
         formData,
         {
           headers: {

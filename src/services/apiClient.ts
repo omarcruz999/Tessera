@@ -2,7 +2,23 @@
 import axios from 'axios';
 import supabaseClient from './supabaseClient';
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:4000/api';
+// Improved API URL detection
+const getApiUrl = () => {
+  // Use environment variable if available
+  if (import.meta.env.VITE_API_URL) {
+    return import.meta.env.VITE_API_URL;
+  }
+  
+  // In production, try to use the same domain
+  if (window.location.hostname !== 'localhost') {
+    return `${window.location.origin}/api`;
+  }
+  
+  // Default to localhost for development
+  return 'http://localhost:4000/api';
+};
+
+const API_URL = getApiUrl();
 
 const apiClient = axios.create({
   baseURL: API_URL,

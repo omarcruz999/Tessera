@@ -1,6 +1,6 @@
 import { useState, useContext } from 'react';
 import { UserContext } from '../../UserContext';
-import supabase from '../../services/supabaseClient';
+import apiClient from '../../services/apiClient';
 import {
     FaRegComment,
     FaRetweet,
@@ -52,27 +52,17 @@ function PostCard({ user, post, onDelete, isOwnProfile }: PostCardProps) {
 
     const handleDelete = async () => {
         if (!currentUser) return;
-        const { data: { session } } = await supabase.auth.getSession()
-        const token = session?.access_token;
-
-        const resp = await fetch(
-            `http://localhost:4000/api/posts/${post.id}`,
-            {
-                method: 'DELETE',
-                headers: {
-                    'Content-Type': 'application/json',
-                    Authorization: `Bearer ${token}`,
-                },
-                body: JSON.stringify({ user_id: currentUser.id }),
-            }
-        );
-        if (!resp.ok) {
-            console.error('Failed to delete post:', resp.statusText);
-            return;
+        
+        try {
+            await apiClient.delete(`/posts/${post.id}`, {
+                data: { user_id: currentUser.id }
+            });
+            
+            onDelete?.();
+        } catch (error) {
+            console.error('Failed to delete post:', error);
         }
-
-        onDelete?.();
-    }
+    };
 
     return (
         <div id='post' className="bg-[#FDF7F4] px-5 border border-[#ccc]">
@@ -178,4 +168,4 @@ function PostCard({ user, post, onDelete, isOwnProfile }: PostCardProps) {
     )
 }
 
-export default PostCard; 
+export default PostCard;

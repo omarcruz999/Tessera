@@ -3,14 +3,14 @@ import { useNavigate } from 'react-router-dom';
 import { UserContext } from '../UserContext';
 import defaultProfilePicture from '../assets/defaultProfilePicture.png';
 import PostCard, { PostWithMedia } from '../components/Post Components/PostCard.tsx';
-import supabase from '../services/supabaseClient.ts';
 import PostForm from './Post Components/PostForm.tsx';
 import PostModal from './Post Components/PostModal.tsx';
+import apiClient from '../services/apiClient';
 
 interface ProfileUser {
   user_id: string;
   full_name: string;
-  avatar_url: string;
+  avatar_url?: string;
   is_active: boolean;
 }
 
@@ -20,65 +20,60 @@ interface ProfileViewProps {
 
 function ProfileView({ profileUser }: ProfileViewProps) {
   const { user: loggedInUser } = useContext(UserContext)!;
-  const displayedUser = profileUser || loggedInUser;
-
-  if (!displayedUser) {
-    return <div>Error: no user to show</div>;
-  }
-
-  // Normalize ID property
-  const displayedUserId =
-    'user_id' in displayedUser ? displayedUser.user_id : displayedUser.id;
-  const isOwnProfile = loggedInUser?.id === displayedUserId;
-
-  const [activeTab, setActiveTab] = useState<'posts' | 'replies' | 'bookmarks'>(
-    'posts'
-  );
+  const navigate = useNavigate();
+  const [activeTab, setActiveTab] = useState<'posts' | 'replies' | 'bookmarks'>('posts');
   const [postsLoading, setPostsLoading] = useState(false);
   const [posts, setPosts] = useState<PostWithMedia[]>([]);
   const [isPostModalOpen, setIsPostModalOpen] = useState(false);
-  const navigate = useNavigate();
+  
+  // Calculate displayed user and related properties safely
+  const displayedUser = profileUser || loggedInUser || null;
+  const displayedUserId = displayedUser ? ('user_id' in displayedUser ? displayedUser.user_id : displayedUser.id) : null;
+  const isOwnProfile = !!loggedInUser && !!displayedUserId && loggedInUser.id === displayedUserId;
 
-  async function loadPosts() {
+  // Move loadPosts into useEffect to avoid using displayedUserId before it's defined
+  useEffect(() => {
+    if (!displayedUserId) return;
+    
+    const loadPosts = async () => {
+      setPostsLoading(true);
+      try {
+        const response = await apiClient.get(`/posts?user_id=${displayedUserId}`);
+        setPosts(response.data);
+      } catch (error) {
+        console.error('Error loading posts:', error);
+      } finally {
+        setPostsLoading(false);
+      }
+    };
+    
+    loadPosts();
+  }, [displayedUserId]);
+
+  // Early return if no user data is available
+  if (!displayedUser) {
+    return <div className="p-4 text-center text-red-500">Error: No user data available</div>;
+  }
+
+  const handleMessageClick = () => {
+    if (displayedUserId) {
+      navigate(`/direct-messages/${displayedUserId}`);
+    }
+  };
+
+  // Separate function for reloading posts that can be called from other places
+  const refreshPosts = async () => {
+    if (!displayedUserId) return;
+    
     setPostsLoading(true);
     try {
-      const {
-        data: { session },
-      } = await supabase.auth.getSession();
-      const token = session?.access_token;
-
-      const resp = await fetch(
-        `http://localhost:4000/api/posts?user_id=${displayedUserId}`,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            'Content-Type': 'application/json',
-          },
-          credentials: 'include',
-        }
-      );
-
-      if (!resp.ok)
-        throw new Error(`Failed to fetch posts: ${resp.statusText}`);
-
-      const postsData = await resp.json();
-      setPosts(postsData);
+      const response = await apiClient.get(`/posts?user_id=${displayedUserId}`);
+      setPosts(response.data);
     } catch (error) {
       console.error('Error loading posts:', error);
     } finally {
       setPostsLoading(false);
     }
-  }
-
-  useEffect(() => {
-    if (!displayedUserId) return;
-    loadPosts();
-  }, [displayedUserId]);
-
-  // *** Updated Message button handler ***
-  const handleMessageClick = () => {
-    // Navigate into the DM route for this user:
-    navigate(`/direct-messages/${displayedUserId}`);
   };
 
   return (
@@ -102,7 +97,6 @@ function ProfileView({ profileUser }: ProfileViewProps) {
         )}
         <button className="share-btn">Share Profile</button>
 
-        {/* New Post + Modal */}
         {isOwnProfile && (
           <>
             <button
@@ -112,8 +106,6 @@ function ProfileView({ profileUser }: ProfileViewProps) {
               New Post
             </button>
 
-            {isPostModalOpen && <PostForm onClose={() => setIsPostModalOpen(false)} />}
-
             <PostModal
               isOpen={isPostModalOpen}
               onClose={() => setIsPostModalOpen(false)}
@@ -121,7 +113,7 @@ function ProfileView({ profileUser }: ProfileViewProps) {
               <PostForm
                 onClose={() => {
                   setIsPostModalOpen(false);
-                  loadPosts();
+                  refreshPosts(); // Use the refreshPosts function here
                 }}
               />
             </PostModal>
@@ -130,6 +122,8 @@ function ProfileView({ profileUser }: ProfileViewProps) {
       </div>
 
       <div className="profile-content">
+        {/* Rest of your component remains unchanged */}
+        {/* But replace loadPosts() calls with refreshPosts() */}
         <div className="profile-tabs">
           <h2
             className={activeTab === 'posts' ? 'active-tab' : ''}
@@ -169,7 +163,7 @@ function ProfileView({ profileUser }: ProfileViewProps) {
                     profilePicture:
                       displayedUser.avatar_url || defaultProfilePicture,
                   }}
-                  onDelete={() => loadPosts()}
+                  onDelete={() => refreshPosts()} // Use refreshPosts here
                   isOwnProfile={isOwnProfile}
                 />
               ))
