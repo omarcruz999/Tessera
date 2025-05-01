@@ -394,19 +394,54 @@ const UserProvider = ({ children }: { children: ReactNode }) => {
     setUser(userData);
   };
 
-  // Logout function
+  // Enhanced logout function that clears ALL app-related localStorage items
   const logout = async () => {
     try {
       console.log("Attempting logout");
-      const { error } = await supabase.auth.signOut();
+      
+      // Option 2: Clear ALL app-related localStorage items
+      // Identify and clear connection cache
+      const keysToRemove = [];
+      for (let i = 0; i < localStorage.length; i++) {
+        const key = localStorage.key(i);
+        // Clear connection cache entries and any other app-specific data
+        if (key && (
+          key.startsWith('connections_') || 
+          key.startsWith('onboarding_') ||
+          key.startsWith('tessera_') ||
+          key.includes('user') || 
+          key.includes('profile') ||
+          key.includes('auth') ||
+          key.includes('cache')
+        )) {
+          keysToRemove.push(key);
+        }
+      }
+      
+      // Remove all identified keys
+      keysToRemove.forEach(key => {
+        console.log(`Removing localStorage item: ${key}`);
+        localStorage.removeItem(key);
+      });
+      
+      // Clear all sessionStorage
+      sessionStorage.clear();
+      
+      // Sign out from Supabase with scope: 'global'
+      const { error } = await supabase.auth.signOut({ 
+        scope: 'global' // This ensures all devices/tabs are signed out
+      });
+      
       if (error) {
         console.error("Logout error:", error);
         throw error;
       }
       
+      // Clear user state
       setUser(null);
       setNeedsOnboarding(false);
-      console.log("Logout successful, user state cleared");
+      
+      console.log("Logout successful, all user data and connections cache cleared");
     } catch (error) {
       console.error("Error in logout:", error);
       throw error;
