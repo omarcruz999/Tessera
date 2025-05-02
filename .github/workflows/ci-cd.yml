@@ -127,20 +127,19 @@ jobs:
           # Transfer server files
           rsync -avz server/ ${{ secrets.EC2_USERNAME }}@${{ secrets.EC2_HOST }}:~/tessera/server/
           
-          # Install dependencies
+          # Create server environment file FIRST
+          ssh ${{ secrets.EC2_USERNAME }}@${{ secrets.EC2_HOST }} "echo 'SUPABASE_URL=${{ secrets.SUPABASE_URL }}' > ~/tessera/server/.env"
+          ssh ${{ secrets.EC2_USERNAME }}@${{ secrets.EC2_HOST }} "echo 'SUPABASE_SERVICE_ROLE_KEY=${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}' >> ~/tessera/server/.env"
+          ssh ${{ secrets.EC2_USERNAME }}@${{ secrets.EC2_HOST }} "echo 'VIBE_MATCHER_URL=${{ secrets.VIBE_MATCHER_URL }}' >> ~/tessera/server/.env"
+          
+          # THEN install dependencies
           ssh ${{ secrets.EC2_USERNAME }}@${{ secrets.EC2_HOST }} 'cd ~/tessera/server && npm ci --production'
           
-          # Start server with PM2
+          # FINALLY start server with PM2
           ssh ${{ secrets.EC2_USERNAME }}@${{ secrets.EC2_HOST }} 'cd ~/tessera/server && pm2 delete tessera-api || echo "No previous process to delete"; pm2 start dist/index.js --name tessera-api'
           
           # Save PM2 configuration
           ssh ${{ secrets.EC2_USERNAME }}@${{ secrets.EC2_HOST }} 'pm2 save'
-          
-      - name: Create server environment file
-        run: |
-          ssh ${{ secrets.EC2_USERNAME }}@${{ secrets.EC2_HOST }} "echo 'SUPABASE_URL=${{ secrets.SUPABASE_URL }}' > ~/tessera/server/.env"
-          ssh ${{ secrets.EC2_USERNAME }}@${{ secrets.EC2_HOST }} "echo 'SUPABASE_SERVICE_ROLE_KEY=${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}' >> ~/tessera/server/.env"
-          ssh ${{ secrets.EC2_USERNAME }}@${{ secrets.EC2_HOST }} "echo 'VIBE_MATCHER_URL=${{ secrets.VIBE_MATCHER_URL }}' >> ~/tessera/server/.env"
           
       - name: Set up Nginx for API routing
         run: |
