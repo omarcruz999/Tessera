@@ -14,8 +14,8 @@ function About() {
     },
     {
       name: "Omar Cruz",
-      role: "Backend Developer",
-      bio: "Omar is our API expert with extensive experience in Node.js and database design. He ensures our application runs smoothly behind the scenes.",
+      role: "Full Stack Developer",
+      bio: "Omar builds high-performance, user-friendly full-stack apps by combining backend efficiency with thoughtful UI design to bring big ideas to life. A Computer Science student at Cal Poly Pomona, he’ll graduate in December 2025 and is passionate about turning ambitious concepts into polished, reliable software.",
       profilePicture: OmarAvatar,
     },
     {
