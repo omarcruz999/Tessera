@@ -131,7 +131,7 @@ jobs:
           ssh ${{ secrets.EC2_USERNAME }}@${{ secrets.EC2_HOST }} "echo 'SUPABASE_URL=${{ secrets.SUPABASE_URL }}' > ~/tessera/server/.env"
           ssh ${{ secrets.EC2_USERNAME }}@${{ secrets.EC2_HOST }} "echo 'SUPABASE_SERVICE_ROLE_KEY=${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}' >> ~/tessera/server/.env"
           ssh ${{ secrets.EC2_USERNAME }}@${{ secrets.EC2_HOST }} "echo 'VIBE_MATCHER_URL=${{ secrets.VIBE_MATCHER_URL }}' >> ~/tessera/server/.env"
-          ssh ${{ secrets.EC2_USERNAME }}@${{ secrets.EC2_HOST }} "echo 'ALLOWED_ORIGINS=http://tessera.it.com,http://www.tessera.it.com,http://54.82.27.27' >> ~/tessera/server/.env"
+          ssh ${{ secrets.EC2_USERNAME }}@${{ secrets.EC2_HOST }} "echo 'ALLOWED_ORIGINS=http://tessera.it.com,http://www.tessera.it.com,http://54.82.27.27,https://tessera.it.com,https://www.tessera.it.com' >> ~/tessera/server/.env"
           
           # THEN install dependencies
           ssh ${{ secrets.EC2_USERNAME }}@${{ secrets.EC2_HOST }} 'cd ~/tessera/server && npm ci --production'
@@ -146,10 +146,61 @@ jobs:
         run: |
           # Create the Nginx configuration file with proper formatting
           cat > nginx.conf << 'EOT'
+          # HTTP server
+          server {
+              listen 80;
+              server_name tessera.it.com www.tessera.it.com;
+
+              # Add CORS headers for all responses
+              add_header 'Access-Control-Allow-Origin' '$http_origin' always;
+              add_header 'Access-Control-Allow-Credentials' 'true' always;
+              add_header 'Access-Control-Allow-Methods' 'GET, POST, PUT, DELETE, OPTIONS' always;
+              add_header 'Access-Control-Allow-Headers' 'Accept,Authorization,Cache-Control,Content-Type,DNT,If-Modified-Since,Keep-Alive,Origin,User-Agent,X-Requested-With' always;
+
+              # API requests with CORS handling
+              location /api/ {
+                  proxy_pass http://localhost:4000;
+                  proxy_http_version 1.1;
+                  proxy_set_header Upgrade $http_upgrade;
+                  proxy_set_header Connection "upgrade";
+                  proxy_set_header Host $host;
+                  proxy_cache_bypass $http_upgrade;
+                  proxy_set_header X-Real-IP $remote_addr;
+                  proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+                  
+                  # Handle OPTIONS requests for CORS
+                  if ($request_method = 'OPTIONS') {
+                      add_header 'Access-Control-Allow-Origin' '$http_origin' always;
+                      add_header 'Access-Control-Allow-Credentials' 'true' always;
+                      add_header 'Access-Control-Allow-Methods' 'GET, POST, PUT, DELETE, OPTIONS' always;
+                      add_header 'Access-Control-Allow-Headers' 'Accept,Authorization,Cache-Control,Content-Type,DNT,If-Modified-Since,Keep-Alive,Origin,User-Agent,X-Requested-With' always;
+                      add_header 'Access-Control-Max-Age' 1728000;
+                      add_header 'Content-Type' 'text/plain charset=UTF-8';
+                      add_header 'Content-Length' 0;
+                      return 204;
+                  }
+              }
+
+              # Frontend files
+              location / {
+                  root /home/${{ secrets.EC2_USERNAME }}/tessera/dist;
+                  index index.html;
+                  try_files $uri $uri/ /index.html;
+              }
+
+              # Error pages
+              error_page 404 /404.html;
+              error_page 500 502 503 504 /50x.html;
+              location = /50x.html {
+                  root /usr/share/nginx/html;
+              }
+          }
+
+          # Default server for IP address access
           server {
               listen 80 default_server;
               listen [::]:80 default_server;
-              server_name tessera.it.com www.tessera.it.com localhost;
+              server_name _;
 
               # Add CORS headers for all responses
               add_header 'Access-Control-Allow-Origin' '$http_origin' always;
