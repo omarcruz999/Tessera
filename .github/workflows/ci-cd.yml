@@ -44,9 +44,20 @@ jobs:
         run: |
           mkdir -p nginx
           cat > nginx/tessera.conf << 'EOT'
+          # HTTP server - redirect to HTTPS
+          server {
+              listen 80;
+              server_name tessera.it.com www.tessera.it.com;
+              
+              # Redirect all HTTP requests to HTTPS
+              return 301 https://$host$request_uri;
+          }
+
+          # Default server for IP address access - no HTTPS available for raw IP
           server {
               listen 80 default_server;
-              server_name tessera.it.com www.tessera.it.com _;
+              listen [::]:80 default_server;
+              server_name _;
               
               # API requests
               location /api/ {
@@ -55,6 +66,42 @@ jobs:
                   proxy_set_header Upgrade $http_upgrade;
                   proxy_set_header Connection "upgrade";
                   proxy_set_header Host $host;
+                  proxy_set_header X-Real-IP $remote_addr;
+                  proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+                  proxy_set_header X-Forwarded-Proto $scheme;
+                  client_max_body_size 10M;
+              }
+              
+              # Frontend files
+              location / {
+                  root /home/ec2-user/tessera/dist;
+                  index index.html;
+                  try_files $uri $uri/ /index.html;
+              }
+          }
+
+          # HTTPS server
+          server {
+              listen 443 ssl;
+              listen [::]:443 ssl;
+              server_name tessera.it.com www.tessera.it.com;
+              
+              # SSL certificate files
+              ssl_certificate /etc/letsencrypt/live/tessera.it.com/fullchain.pem;
+              ssl_certificate_key /etc/letsencrypt/live/tessera.it.com/privkey.pem;
+              include /etc/letsencrypt/options-ssl-nginx.conf;
+              ssl_dhparam /etc/letsencrypt/ssl-dhparams.pem;
+              
+              # API requests
+              location /api/ {
+                  proxy_pass http://localhost:4000;
+                  proxy_http_version 1.1;
+                  proxy_set_header Upgrade $http_upgrade;
+                  proxy_set_header Connection "upgrade";
+                  proxy_set_header Host $host;
+                  proxy_set_header X-Real-IP $remote_addr;
+                  proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+                  proxy_set_header X-Forwarded-Proto $scheme;
                   client_max_body_size 10M;
               }
               
@@ -144,7 +191,7 @@ jobs:
             echo "SUPABASE_URL=${{ secrets.SUPABASE_URL }}" > ~/tessera/server/.env
             echo "SUPABASE_SERVICE_ROLE_KEY=${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}" >> ~/tessera/server/.env
             echo "VIBE_MATCHER_URL=http://localhost:8000" >> ~/tessera/server/.env
-            echo "ALLOWED_ORIGINS=*" >> ~/tessera/server/.env
+            echo "ALLOWED_ORIGINS=http://tessera.it.com,https://tessera.it.com,http://www.tessera.it.com,https://www.tessera.it.com,http://54.82.27.27" >> ~/tessera/server/.env
 
             cd ~/tessera/server
             npm ci --production
