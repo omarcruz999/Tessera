@@ -215,7 +215,7 @@ function Connections() {
         </div>
         
         {isLoading ? (
-          <div className="text-center py-8">Loading connections...</div>
+          <div className="text-center py-8 text-black">Loading connections...</div>
         ) : error ? (
           <div className="text-center py-8">
             <p className="text-red-500 mb-2">{error}</p>
@@ -224,7 +224,7 @@ function Connections() {
         ) : (
           <div className="w-[812px] mx-auto grid grid-cols-4 gap-x-6 gap-y-4">
             {peers.length === 0 ? (
-              <div className="col-span-4 text-center py-8">
+              <div className="col-span-4 text-center py-8 text-black">
                 No connections found. Add some connections to see them here!
               </div>
             ) : (

@@ -129,13 +129,15 @@ function EmailConnectionModal({ isOpen, onClose, onSuccess }: EmailConnectionMod
               <h3 className="text-lg leading-6 font-medium text-gray-900" id="modal-headline">
                 Connect with a Peer
               </h3>
+              {/* 
               <button
                 onClick={onClose}
-                className="text-gray-400 hover:text-gray-500 focus:outline-none"
+                className="!bg-[#997C70] text-white hover:text-gray-500 focus:outline-none"
                 aria-label="Close"
               >
                 <IoClose size={24} />
               </button>
+              */}
             </div>
           </div>
           
@@ -164,7 +166,7 @@ function EmailConnectionModal({ isOpen, onClose, onSuccess }: EmailConnectionMod
                     id="email"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-[#8EB486] focus:border-[#8EB486]"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-[#8EB486] focus:border-[#8EB486] text-black"
                     placeholder="Enter email address"
                     disabled={isLoading}
                   />
@@ -180,14 +182,14 @@ function EmailConnectionModal({ isOpen, onClose, onSuccess }: EmailConnectionMod
                   <button
                     type="button"
                     onClick={onClose}
-                    className="mr-3 px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#8EB486]"
+                    className="!bg-[#997C70] mr-3 px-4 py-2 text-sm font-medium text-white bg-white border border-gray-300 rounded-md shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#8EB486]"
                     disabled={isLoading}
                   >
                     Cancel
                   </button>
                   <button
                     type="submit"
-                    className="px-4 py-2 text-sm font-medium text-black bg-[#8EB486] border border-transparent rounded-md shadow-sm hover:bg-[#7ca474] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#8EB486]"
+                    className="px-4 py-2 text-sm font-medium text-white !bg-[#8EB486] border border-transparent rounded-md shadow-sm hover:bg-[#7ca474] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#8EB486]"
                     disabled={isLoading}
                   >
                     {isLoading ? 'Sending...' : 'Connect'}
