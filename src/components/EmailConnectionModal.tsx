@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import apiClient from '../services/apiClient';
-import { IoClose } from 'react-icons/io5';
+{/* import { IoClose } from 'react-icons/io5'; */} 
 
 interface EmailConnectionModalProps {
   isOpen: boolean;
