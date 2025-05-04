@@ -168,7 +168,7 @@ const Login: React.FC = () => {
           Don't have an account?{' '}
           <button 
             onClick={() => navigate('/register')} 
-            className="text-[#D8957F] font-medium hover:underline"
+            className="text-white font-medium hover:underline"
           >
             Sign up
           </button>
