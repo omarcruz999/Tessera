@@ -9,6 +9,7 @@ import {
     updateConnection,
     getConnection,
     getConnections,
+    createConnectionByEmail
 } from '../controllers/connectionController';
 
 const router = express.Router();
@@ -18,5 +19,6 @@ router.delete('/', deleteConnection);
 router.put('/', updateConnection);
 router.get('/', getConnection);
 router.get('/all', getConnections);
+router.post('/email', createConnectionByEmail);
 
 export default router;

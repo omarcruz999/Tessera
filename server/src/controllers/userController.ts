@@ -163,3 +163,65 @@ export const createUserProfile = async (req: Request, res: Response): Promise<vo
         res.status(500).json({ error: 'Server error' });
     }
 };
+
+/**
+ * Get the user profile by email address.
+ */
+export const getUserProfileByEmail: RequestHandler = async (req: Request, res: Response): Promise<void> => {
+    try {
+        console.log('Request query:', req.query);
+
+        // Define the validation schema
+        const schema = Joi.object({
+            email: Joi.string().email().required(), // Validate that email is a valid email format
+        });
+
+        // Validate the query parameters
+        const { error } = schema.validate(req.query);
+        if (error) {
+            res.status(400).json({ error: `Validation Error: ${error.message}` });
+            return;
+        }
+
+        const email = req.query.email as string;
+
+        // Use the admin auth API to search for user by email
+        const { data: userData, error: userError } = await supabaseAdmin.auth
+            .admin.listUsers({
+                // Use filters if available in your Supabase version
+                // Otherwise may need to retrieve all and filter
+            });
+
+        if (userError) {
+            res.status(500).json({ error: userError.message || 'Error searching for user' });
+            return;
+        }
+
+        // Find the user with the matching email
+        const user = userData.users.find(u => u.email === email);
+        
+        if (!user) {
+            res.status(404).json({ error: 'User not found with this email' });
+            return;
+        }
+
+        const userId = user.id;
+
+        // Now query the 'profiles' table using the user_id
+        const { data: profile, error: dbError } = await supabaseAdmin
+            .from('profiles')
+            .select('id, full_name, avatar_url, is_active, bio')
+            .eq('id', userId)
+            .single();
+
+        if (dbError || !profile) {
+            res.status(404).json({ error: dbError?.message || 'Profile not found' });
+            return;
+        }
+
+        res.status(200).json(profile); // Return the profile
+    } catch (error) {
+        console.error('Error in getUserProfileByEmail:', error);
+        res.status(500).json({ error: (error as Error).message });
+    }
+};

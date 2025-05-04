@@ -1,6 +1,6 @@
 import { useEffect, useState, useContext, useRef } from 'react';
 import PeerCard from '../components/Cards/PeerCard.tsx';
-import VibeMatcherModal from '../components/VibeMatcherModal';
+import EmailConnectionModal from '../components/EmailConnectionModal';
 import { UserContext, User } from '../UserContext';
 import { IoAdd } from 'react-icons/io5';
 import { getUserConnections, getUserProfile } from '../services/userApi';
@@ -31,7 +31,7 @@ function Connections() {
   const [peers, setPeers] = useState<User[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
-  const [showVibeMatcher, setShowVibeMatcher] = useState<boolean>(false);
+  const [showEmailModal, setShowEmailModal] = useState<boolean>(false);
 
   // Track last cache timestamp for auto-refresh
   const lastCacheTimestamp = useRef<number | null>(null);
@@ -159,6 +159,13 @@ function Connections() {
     }
   };
 
+  // Add this function to refresh connections after a successful connection
+  const handleSuccessfulConnection = () => {
+    // Force refresh connections
+    setIsLoading(true);
+    loadConnections();
+  };
+
   // Auto-refresh: check cache age on mount and when window/tab regains focus
   useEffect(() => {
     loadConnections();
@@ -196,12 +203,12 @@ function Connections() {
   return (
     <div className='flex flex-col items-center justify-center'>
       <div id="ConnectionsViewGrid" className="max-w-7xl mx-auto p-4 relative">
-        {/* Vibe Matcher button - now centered */}
+        {/* Email Connection button */}
         <div className="w-full flex justify-center mb-4">
           <button 
-            onClick={() => setShowVibeMatcher(true)}
+            onClick={() => setShowEmailModal(true)}
             className="w-16 h-16 rounded-full !bg-[#8EB486] shadow-lg flex items-center justify-center text-black hover:bg-[#7ca474] transition-colors duration-300"
-            aria-label="Take a vibe selfie"
+            aria-label="Connect with someone"
           >
             <IoAdd size={32} />
           </button>
@@ -234,10 +241,11 @@ function Connections() {
           </div>
         )}
 
-        {/* Vibe Matcher Modal */}
-        <VibeMatcherModal 
-          isOpen={showVibeMatcher} 
-          onClose={() => setShowVibeMatcher(false)} 
+        {/* Email Connection Modal */}
+        <EmailConnectionModal 
+          isOpen={showEmailModal}
+          onClose={() => setShowEmailModal(false)}
+          onSuccess={handleSuccessfulConnection}
         />
       </div>
     </div>
