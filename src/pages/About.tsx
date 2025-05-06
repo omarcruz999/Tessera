@@ -21,13 +21,13 @@ function About() {
     {
       name: "Jonathan Rodriguez",
       role: "UI/UX Designer",
-      bio: "Jonathan brings our application to life with beautiful designs. With a background in psychology, he creates interfaces that users love.",
+      bio: "Jonathan brings applications to life through clean, user-focused designs that balance form and function. He crafts intuitive interfaces users love — all while pursuing his degree in computer science at Cal Poly Pomona, graduating August 2025.",
       profilePicture: JonathanAvatar, // Updated to use Jonathan's avatar
     },
     {
       name: "Edgar Ortiz",
       role: "Full Stack Developer",
-      bio: "Sam works across our entire stack and specializes in performance optimization. They're passionate about creating fast, responsive applications.",
+      bio: "Edgar works across our entire stack and specializes in performance optimization. They're passionate about creating fast, responsive applications.",
       profilePicture: JohnPork,
     },
   ]
