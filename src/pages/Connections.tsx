@@ -1,201 +1,51 @@
-import { useEffect, useState, useContext, useRef } from 'react';
+import { useEffect, useState, useContext } from 'react';
 import PeerCard from '../components/Cards/PeerCard.tsx';
 import EmailConnectionModal from '../components/EmailConnectionModal';
 import { UserContext, User } from '../UserContext';
 import { IoAdd } from 'react-icons/io5';
-import { getUserConnections, getUserProfile } from '../services/userApi';
-
-// Define connection interface
-interface Connection {
-  connection_id: string;
-  user_1: string;
-  user_2: string;
-  status: string;
-  created_at: string;
-}
-
-// --- Cache helpers ---
-const CACHE_KEY_PREFIX = "connections_cache";
-const CACHE_TTL = 5 * 60 * 1000; // 5 minutes
-
-function setCachedConnections(userId: string, data: User[]) {
-  const cacheKey = `${CACHE_KEY_PREFIX}_${userId}`;
-  localStorage.setItem(
-    cacheKey,
-    JSON.stringify({ data, timestamp: Date.now() })
-  );
-}
+import { MOCK_CONNECTIONS, simulateApiDelay } from '../data/mockData';
 
 function Connections() {
   const userContext = useContext(UserContext);
   const [peers, setPeers] = useState<User[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(true);
-  const [error, setError] = useState<string | null>(null);
   const [showEmailModal, setShowEmailModal] = useState<boolean>(false);
 
-  // Track last cache timestamp for auto-refresh
-  const lastCacheTimestamp = useRef<number | null>(null);
-
-  // Fallback mock data function
-  const loadMockData = async (): Promise<User[]> => {
-    return [
-      { id: '1', full_name: 'Joseph Schmo', avatar_url: '/JohnPork.png', is_active: true },
-      { id: '2', full_name: 'Jane Doe', avatar_url: '/JohnPork.png', is_active: true },
-      { id: '3', full_name: 'John Smith', avatar_url: '/JohnPork.png', is_active: true },
-      { id: '4', full_name: 'Alice Johnson', avatar_url: '/JohnPork.png', is_active: true },
-      { id: '7', full_name: 'Charlie Davis', avatar_url: '/JohnPork.png', is_active: true },
-      { id: '9', full_name: 'David Evans', avatar_url: '/JohnPork.png', is_active: true },
-    ];
-  };
-
-  // Updated loadConnections function with improved error handling
+  // Load mock connections
   const loadConnections = async () => {
     if (!userContext?.user) {
-      setError('No user logged in');
       setIsLoading(false);
       return;
     }
 
-    const myUserId = userContext.user.id;
-
-    // Try cache first (unchanged code)
-    const cacheKey = `${CACHE_KEY_PREFIX}_${myUserId}`;
-    const cachedRaw = localStorage.getItem(cacheKey);
-    if (cachedRaw) {
-      try {
-        const { data, timestamp } = JSON.parse(cachedRaw);
-        lastCacheTimestamp.current = timestamp;
-        if (Date.now() - timestamp < CACHE_TTL) {
-          setPeers(data);
-          setIsLoading(false);
-          return;
-        }
-      } catch {
-        // Ignore parse errors, fall through to fetch
-      }
-    }
-
+    setIsLoading(true);
+    
     try {
-      // Use API service to get connections
-      const connectionsResponse = await getUserConnections(myUserId);
+      // Simulate API loading time
+      await simulateApiDelay(800);
       
-      // Safety check - make sure we have an array of connections
-      if (!connectionsResponse || !connectionsResponse.data || typeof connectionsResponse.data !== 'object') {
-        console.error('Invalid connections response:', connectionsResponse);
-        throw new Error('Invalid connections data received');
-      }
+      // Use mock connections data
+      setPeers(MOCK_CONNECTIONS);
+      console.log('Loaded mock connections:', MOCK_CONNECTIONS);
       
-      const connections = Array.isArray(connectionsResponse.data) 
-        ? connectionsResponse.data as Connection[]
-        : [];
-      
-      console.log('Raw connections data:', connections);
-
-      // Type safe array handling - ensure we have an array with valid properties
-      if (connections.length === 0) {
-        console.log('No connections found for user', myUserId);
-        setPeers([]);
-        setError(null);
-        setIsLoading(false);
-        return;
-      }
-      
-      // Extract connected user IDs with type safety
-      const connectedUserIds = connections
-        .filter((conn): conn is Connection => 
-          // Verify the connection object has the expected properties
-          Boolean(conn && typeof conn === 'object' && 'user_1' in conn && 'user_2' in conn)
-        )
-        .map((conn: Connection) => conn.user_1 === myUserId ? conn.user_2 : conn.user_1)
-        .filter(id => id !== myUserId);
-      
-      console.log('Connected user IDs:', connectedUserIds);
-
-      // Fetch profile for each connected user
-      const userProfiles: User[] = [];
-      for (const userId of connectedUserIds) {
-        try {
-          const profileResponse = await getUserProfile(userId);
-          
-          // Verify we got a valid profile and not HTML or other invalid response
-          const profile = profileResponse?.data;
-          
-          if (profile && typeof profile === 'object' && 'id' in profile) {
-            userProfiles.push(profile as User);
-          } else {
-            console.error('Invalid profile data received for user', userId, profile);
-          }
-        } catch (profileError) {
-          console.error(`Error fetching profile for ${userId}:`, profileError);
-        }
-      }
-      
-      console.log('Fetched user profiles:', userProfiles);
-
-      // Only update state if we have valid profiles
-      if (userProfiles.length > 0) {
-        setPeers(userProfiles);
-        setCachedConnections(myUserId, userProfiles);
-        lastCacheTimestamp.current = Date.now();
-        setError(null);
-      } else if (connections.length > 0 && userProfiles.length === 0) {
-        // We had connections but couldn't fetch profiles - show error
-        console.warn('Found connections but failed to fetch profiles');
-        setError('Could not load connection profiles');
-        setPeers(await loadMockData());
-      } else {
-        // No connections found
-        console.log('No connections found');
-        setPeers([]);
-        setError(null);
-      }
     } catch (err) {
-      console.error('Error fetching connections:', err);
-      setError('Failed to load connections');
-      // Load fallback data
-      setPeers(await loadMockData());
+      console.error('Error loading mock connections:', err);
     } finally {
       setIsLoading(false);
     }
   };
 
-  // Add this function to refresh connections after a successful connection
+  // Handle successful connection (for demo purposes)
   const handleSuccessfulConnection = () => {
-    // Force refresh connections
-    setIsLoading(true);
+    console.log('Demo: New connection added successfully');
+    // In demo mode, we could add the new connection to the list
+    // For now, just reload the existing connections
     loadConnections();
   };
 
-  // Auto-refresh: check cache age on mount and when window/tab regains focus
+  // Load connections on mount
   useEffect(() => {
     loadConnections();
-
-    // Handler for focus event
-    const handleFocus = () => {
-      if (!userContext?.user) return;
-      const cacheKey = `${CACHE_KEY_PREFIX}_${userContext.user.id}`;
-      const cachedRaw = localStorage.getItem(cacheKey);
-      if (cachedRaw) {
-        try {
-          const { timestamp } = JSON.parse(cachedRaw);
-          // If cache expired, reload
-          if (Date.now() - timestamp >= CACHE_TTL) {
-            setIsLoading(true);
-            loadConnections();
-          }
-        } catch {
-          setIsLoading(true);
-          loadConnections();
-        }
-      } else {
-        setIsLoading(true);
-        loadConnections();
-      }
-    };
-
-    window.addEventListener('focus', handleFocus);
-    return () => window.removeEventListener('focus', handleFocus);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [userContext]);
 
   console.log("Peers data:", peers);
@@ -215,17 +65,17 @@ function Connections() {
         </div>
         
         {isLoading ? (
-          <div className="text-center py-8 text-black">Loading connections...</div>
-        ) : error ? (
-          <div className="text-center py-8">
-            <p className="text-red-500 mb-2">{error}</p>
-            <p className="text-gray-500 text-sm">Showing mock data instead</p>
+          <div className="text-center py-8 text-black">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#E7A691] mx-auto mb-4"></div>
+            Loading connections...
           </div>
         ) : (
           <div className="w-[812px] mx-auto grid grid-cols-4 gap-x-6 gap-y-4">
             {peers.length === 0 ? (
               <div className="col-span-4 text-center py-8 text-black">
-                No connections found. Add some connections to see them here!
+                <h3 className="text-xl font-semibold mb-2">Welcome to Tessera Demo!</h3>
+                <p className="text-gray-600">You have some demo connections to explore.</p>
+                <p className="text-sm text-gray-500 mt-2">Click on any connection to view their profile.</p>
               </div>
             ) : (
               peers.map((peer) => (
@@ -241,7 +91,7 @@ function Connections() {
           </div>
         )}
 
-        {/* Email Connection Modal */}
+        {/* Email Connection Modal - simplified for demo */}
         <EmailConnectionModal 
           isOpen={showEmailModal}
           onClose={() => setShowEmailModal(false)}

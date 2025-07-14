@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import apiClient from '../services/apiClient';
+import { simulateApiDelay } from '../data/mockData';
 {/* import { IoClose } from 'react-icons/io5'; */} 
 
 interface EmailConnectionModalProps {
@@ -50,27 +50,17 @@ function EmailConnectionModal({ isOpen, onClose, onSuccess }: EmailConnectionMod
     setSuccess(false);
 
     try {
-      console.log('Sending connection request with data:', {
-        email: email.trim(),
-        connection_type: 'friend',
-        status: 'pending'
-      });
+      console.log('Demo: Simulating connection request for email:', email.trim());
 
-      // Add explicit Content-Type header
-      const response = await apiClient.post('connections/email', 
-        {
-          email: email.trim(),
-          connection_type: 'friend',
-          status: 'pending'
-        }, 
-        {
-          headers: {
-            'Content-Type': 'application/json'
-          }
-        }
-      );
+      // Simulate API delay
+      await simulateApiDelay(1000);
 
-      console.log('Connection created:', response.data);
+      // Demo simulation - always succeeds unless it's the demo user's email
+      if (email.trim() === 'alex.demo@tessera.app') {
+        throw new Error('Cannot connect to yourself');
+      }
+
+      console.log('Demo: Connection created successfully');
       setSuccess(true);
       setEmail('');
       
@@ -85,15 +75,18 @@ function EmailConnectionModal({ isOpen, onClose, onSuccess }: EmailConnectionMod
       }, 2000);
       
     } catch (err: any) {
-      console.error('Error creating connection:', err);
+      console.error('Demo: Error creating connection:', err);
       
-      // Handle different error scenarios
-      if (err.response?.status === 409) {
-        setError('You are already connected with this user');
-      } else if (err.response?.status === 404) {
-        setError('No user found with this email');
+      // Handle demo error scenarios
+      if (err.message?.includes('yourself')) {
+        setError('You cannot connect to yourself');
       } else {
-        setError(err.response?.data?.error || 'Failed to create connection');
+        setError('Demo: Connection request sent! (This is just a simulation)');
+        // Treat as success in demo mode
+        setSuccess(true);
+        setTimeout(() => {
+          onClose();
+        }, 2000);
       }
     } finally {
       setIsLoading(false);

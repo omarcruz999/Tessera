@@ -1,6 +1,6 @@
 import { useState, useContext } from 'react';
 import { UserContext } from '../../UserContext';
-import apiClient from '../../services/apiClient';
+import { simulateApiDelay } from '../../data/mockData';
 import {
     FaRegComment,
     FaRetweet,
@@ -54,10 +54,10 @@ function PostCard({ user, post, onDelete, isOwnProfile }: PostCardProps) {
         if (!currentUser) return;
         
         try {
-            await apiClient.delete(`/posts/${post.id}`, {
-                data: { user_id: currentUser.id }
-            });
+            // Simulate API call delay
+            await simulateApiDelay(300);
             
+            console.log(`Demo: Post ${post.id} deleted`);
             onDelete?.();
         } catch (error) {
             console.error('Failed to delete post:', error);
