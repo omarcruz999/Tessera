@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'react';
-import { Comment } from '../../../services/commentsApi.ts'
+import { Comment } from '../../../services/useComments'
 import NewReply from './NewReply.tsx';
 import { FaTrash } from 'react-icons/fa';
-import supabase from '../../../services/supabaseClient.ts';
+import { getMockUserById } from '../../../data/mockData';
 
 interface PostCommentProps {
     comment: Comment;
@@ -20,33 +20,32 @@ export default function PostComment({ comment, currentUserId, onReply, setReplyB
     const [author, setAuthor] = useState<{ full_name: string, avatar_url: string }>({ full_name: 'Unknown', avatar_url: '' });
 
     useEffect(() => {
-        let mounted = true;
-
-        async function fetchProfile() {
-            const cached = profileCache.get(comment.user_id);
-            if (cached) {
-                if (mounted) setAuthor(cached);
-                return;
-            }
-
-            const { data, error } = await supabase
-                .from('profiles')
-                .select('full_name, avatar_url')
-                .eq('id', comment.user_id)
-                .single();
-
-            if (!error && data && mounted) {
-                profileCache.set(comment.user_id, data as any);
-                setAuthor(data as any);
-            }
+        // Check if comment already has user data
+        if (comment.user) {
+            setAuthor({
+                full_name: comment.user.full_name,
+                avatar_url: comment.user.avatar_url
+            });
+            return;
         }
 
-        fetchProfile();
-        return () => {
-            mounted = false;
+        // Otherwise get from mock data
+        const cached = profileCache.get(comment.user_id);
+        if (cached) {
+            setAuthor(cached);
+            return;
+        }
 
-        };
-    }, [comment.user_id]);
+        const mockUser = getMockUserById(comment.user_id);
+        if (mockUser) {
+            const userData = {
+                full_name: mockUser.full_name,
+                avatar_url: mockUser.avatar_url
+            };
+            profileCache.set(comment.user_id, userData);
+            setAuthor(userData);
+        }
+    }, [comment.user_id, comment.user]);
 
     return (
         <div className='ml-[100px] '>

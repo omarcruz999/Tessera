@@ -5,7 +5,7 @@ import defaultProfilePicture from '../assets/defaultProfilePicture.png';
 import PostCard, { PostWithMedia } from '../components/Post Components/PostCard.tsx';
 import PostForm from './Post Components/PostForm.tsx';
 import PostModal from './Post Components/PostModal.tsx';
-import apiClient from '../services/apiClient';
+import { DEMO_USER, getMockPostsForUser, simulateApiDelay } from '../data/mockData';
 
 interface ProfileUser {
   user_id: string;
@@ -32,17 +32,22 @@ function ProfileView({ profileUser }: ProfileViewProps) {
   const displayedUserId = displayedUser ? ('user_id' in displayedUser ? displayedUser.user_id : displayedUser.id) : null;
   const isOwnProfile = !!loggedInUser && !!displayedUserId && loggedInUser.id === displayedUserId;
 
-  // Move loadPosts into useEffect to avoid using displayedUserId before it's defined
+  // Load mock posts
   useEffect(() => {
     if (!displayedUserId) return;
     
     const loadPosts = async () => {
       setPostsLoading(true);
       try {
-        const response = await apiClient.get(`/posts?user_id=${displayedUserId}`);
-        setPosts(response.data);
+        // Simulate API delay
+        await simulateApiDelay(600);
+        
+        // Get mock posts for this user
+        const mockPosts = getMockPostsForUser(displayedUserId);
+        setPosts(mockPosts);
+        console.log(`Loaded ${mockPosts.length} mock posts for user ${displayedUserId}`);
       } catch (error) {
-        console.error('Error loading posts:', error);
+        console.error('Error loading mock posts:', error);
       } finally {
         setPostsLoading(false);
       }
@@ -68,10 +73,15 @@ function ProfileView({ profileUser }: ProfileViewProps) {
     
     setPostsLoading(true);
     try {
-      const response = await apiClient.get(`/posts?user_id=${displayedUserId}`);
-      setPosts(response.data);
+      // Simulate API delay
+      await simulateApiDelay(400);
+      
+      // Get mock posts for this user
+      const mockPosts = getMockPostsForUser(displayedUserId);
+      setPosts(mockPosts);
+      console.log(`Refreshed ${mockPosts.length} mock posts for user ${displayedUserId}`);
     } catch (error) {
-      console.error('Error loading posts:', error);
+      console.error('Error refreshing mock posts:', error);
     } finally {
       setPostsLoading(false);
     }

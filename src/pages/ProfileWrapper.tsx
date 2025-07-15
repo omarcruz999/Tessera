@@ -1,14 +1,14 @@
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import ProfileView from "../components/ProfileView";
-import { getUserProfile } from "../services/userApi";
-import { AxiosError } from 'axios';
+import { getMockUserById, simulateApiDelay } from "../data/mockData";
 
 interface User {
   user_id: string;
   full_name: string;
   avatar_url: string;
   is_active: boolean;
+  bio?: string;
 }
 
 function ProfileWrapper() {
@@ -39,24 +39,29 @@ function ProfileWrapper() {
           return;
         }
         
-        // Use our API service instead of direct axios call
-        const { data } = await getUserProfile(userId);
-        console.log("Profile data received:", data);
-        setProfileUser(data);
-      } catch (err) {
-        console.error("Error fetching profile:", err);
+        // Simulate API delay
+        await simulateApiDelay(600);
         
-        // Use proper typing for Axios errors
-        const axiosError = err as AxiosError;
-        
-        // Log more detailed error information
-        if (axiosError.response) {
-          console.error("Response error data:", axiosError.response.data);
-          console.error("Response error status:", axiosError.response.status);
-          console.error("Response error headers:", axiosError.response.headers);
+        // Get mock user data
+        const mockUser = getMockUserById(userId);
+        if (!mockUser) {
+          throw new Error('User not found');
         }
         
-        setError(axiosError.message || 'Failed to load user profile');
+        // Transform to ProfileWrapper format
+        const profileData: User = {
+          user_id: mockUser.id,
+          full_name: mockUser.full_name,
+          avatar_url: mockUser.avatar_url,
+          is_active: mockUser.is_active,
+          bio: mockUser.bio
+        };
+        
+        console.log("Mock profile data:", profileData);
+        setProfileUser(profileData);
+      } catch (err) {
+        console.error("Error fetching mock profile:", err);
+        setError((err as Error).message || 'Failed to load user profile');
       } finally {
         setLoading(false);
       }

@@ -1,6 +1,6 @@
 import React, { useState, useRef, useContext } from 'react';
 import { UserContext } from '../UserContext';
-import apiClient from '../services/apiClient';
+import { simulateApiDelay } from '../data/mockData';
 import { IoClose, IoCloudUpload, IoCheckmarkCircle } from 'react-icons/io5';
 
 interface VibeMatcherModalProps {
@@ -85,18 +85,24 @@ const VibeMatcherModal: React.FC<VibeMatcherModalProps> = ({ isOpen, onClose }) 
         }
       }
 
-      // Use apiClient instead of axios
-      const response = await apiClient.post(
-        '/selfies/upload', 
-        formData,
-        {
-          headers: {
-            'Content-Type': 'multipart/form-data'
-          }
+      // Demo simulation
+      await simulateApiDelay(2000);
+      
+      // Mock response for demo
+      const mockResponse = {
+        matchFound: true,
+        connection: {
+          id: 'demo-match-1',
+          matchedUser: {
+            id: 'user-2',
+            full_name: 'John Porter',
+            avatar_url: '/JohnAboutAvatar.png'
+          },
+          similarityScore: 0.85
         }
-      );
+      };
 
-      setMatchResult(response.data);
+      setMatchResult(mockResponse);
     } catch (err) {
       console.error('Error uploading selfie:', err);
       setError('Failed to process your selfie. Please try again.');
