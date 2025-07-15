@@ -1,15 +1,18 @@
 import type React from "react"
 import { useState, useRef, useContext } from "react"
 import { UserContext } from '../../UserContext';
-import { simulateApiDelay } from '../../data/mockData';
+import { simulateApiDelay, addMockPost } from '../../data/mockData';
 import imageIcon from "../../assets/imageIcon.svg"
+import type { PostMedia } from './PostCard';
 
 interface PostFromProps {
     // Used to close the modal
-    onClose: () => void
+    onClose: () => void;
+    // Callback when a post is created
+    onPostCreated?: () => void;
 }
 
-const PostForm: React.FC<PostFromProps> = ({ onClose }) => {
+const PostForm: React.FC<PostFromProps> = ({ onClose, onPostCreated }) => {
 
     const { user: loggedInUser } = useContext(UserContext)!;    
 
@@ -63,7 +66,7 @@ const PostForm: React.FC<PostFromProps> = ({ onClose }) => {
         fileInputRef.current?.click()
     }
 
-    // Demo handleSubmit function
+    // Updated handleSubmit function
     const handleSubmit = async () => {
         if (!postContent.trim()) return;
 
@@ -76,17 +79,23 @@ const PostForm: React.FC<PostFromProps> = ({ onClose }) => {
             // Simulate API delay
             await simulateApiDelay(800);
 
-            console.log('Demo: Post created successfully', {
-                user_id: loggedInUser.id,
-                text: postContent,
-                allow_sharing: allowSharing,
-                has_image: !!uploadedImage
-            });
+            // Create post with image if one was uploaded
+            const media: PostMedia[] = uploadedImage ? [{
+                media_url: uploadedImage,
+                type: 'image' as const  // Explicitly type as 'image'
+            }] : [];
+
+            // Add the post to mock data
+            const newPost = addMockPost(loggedInUser.id, postContent, media);
+            console.log('Demo: Post created successfully', newPost);
             
             // Reset the form after successful submission
             setPostContent("");
             setUploadedImage(null);
             setAllowSharing(false);
+
+            // Notify parent component
+            onPostCreated?.();
             onClose();
         } catch (error) {
             console.error("Demo: Error creating post:", error);

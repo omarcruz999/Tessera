@@ -1,6 +1,6 @@
 // Mock data for Tessera app - replaces database functionality
 import { User } from '../UserContext';
-import { PostWithMedia } from '../components/Post Components/PostCard';
+import { PostWithMedia, PostMedia } from '../components/Post Components/PostCard';
 
 // Demo user (always "logged in")
 export const DEMO_USER: User = {
@@ -202,6 +202,53 @@ export const MOCK_COMMENTS: MockComment[] = [
 export const getMockUserById = (userId: string): User | undefined => {
   if (userId === DEMO_USER.id) return DEMO_USER;
   return MOCK_CONNECTIONS.find(user => user.id === userId);
+};
+
+// Function to add a new post
+export const addMockPost = (userId: string, text: string, media?: PostMedia[]): PostWithMedia => {
+  const newPost: PostWithMedia = {
+    id: `post-${Date.now()}`,
+    text,
+    created_at: new Date().toISOString(),
+    post_media: media || []
+  };
+
+  if (userId === DEMO_USER.id) {
+    MOCK_POSTS.unshift(newPost);
+  } else {
+    if (!MOCK_USER_POSTS[userId]) {
+      MOCK_USER_POSTS[userId] = [];
+    }
+    MOCK_USER_POSTS[userId].unshift(newPost);
+  }
+
+  return newPost;
+};
+
+// Function to delete a post
+export const deleteMockPost = async (postId: string, userId: string): Promise<boolean> => {
+  // Simulate API delay
+  await simulateApiDelay(300);
+
+  // Check demo user's posts
+  if (userId === DEMO_USER.id) {
+    const index = MOCK_POSTS.findIndex(post => post.id === postId);
+    if (index !== -1) {
+      MOCK_POSTS.splice(index, 1);
+      return true;
+    }
+  }
+
+  // Check other users' posts
+  if (MOCK_USER_POSTS[userId]) {
+    const index = MOCK_USER_POSTS[userId].findIndex(post => post.id === postId);
+    if (index !== -1) {
+      MOCK_USER_POSTS[userId].splice(index, 1);
+      return true;
+    }
+  }
+
+  return false;
 };
 
 export const getMockPostsForUser = (userId: string): PostWithMedia[] => {
