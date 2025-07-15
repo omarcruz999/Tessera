@@ -6,18 +6,21 @@ import { getMockUserById } from '../../../data/mockData';
 
 interface PostCommentProps {
     comment: Comment;
+    comments?: Comment[];  // All comments for the post, needed to find replies
     currentUserId: string;
-    onReply: (content: string, parentId: number) => void;
+    onReply: (content: string, parentId: string) => void;
     setReplyBoxOpen: React.Dispatch<React.SetStateAction<boolean>>;
-    onDelete: (id: number, userId: string) => void;
+    onDelete: (id: string, userId: string) => void;
 }
 
 const profileCache = new Map<string, { full_name: string, avatar_url: string }>();
 
-
-export default function PostComment({ comment, currentUserId, onReply, setReplyBoxOpen, onDelete }: PostCommentProps) {
+export default function PostComment({ comment, comments = [], currentUserId, onReply, setReplyBoxOpen, onDelete }: PostCommentProps) {
     const [openReply, setOpenReply] = useState(false);
     const [author, setAuthor] = useState<{ full_name: string, avatar_url: string }>({ full_name: 'Unknown', avatar_url: '' });
+
+    // Get replies to this comment
+    const replies = comments.filter(c => c.parent_comment_id === comment.id);
 
     useEffect(() => {
         // Check if comment already has user data
@@ -92,21 +95,23 @@ export default function PostComment({ comment, currentUserId, onReply, setReplyB
             </div>
 
             {/* --- children --- */}
-            {comment.replies.length > 0 &&
-                comment.replies.map((c) => (
-                    <PostComment
-                        key={c.id}
-                        comment={c}
-                        currentUserId={currentUserId}
-                        onReply={onReply}
-                        setReplyBoxOpen={setReplyBoxOpen}
-                        onDelete={onDelete} />
-                ))}
+            {replies.length > 0 && replies.map((reply) => (
+                <PostComment
+                    key={reply.id}
+                    comment={reply}
+                    comments={comments}
+                    currentUserId={currentUserId}
+                    onReply={onReply}
+                    setReplyBoxOpen={setReplyBoxOpen}
+                    onDelete={onDelete}
+                />
+            ))}
 
             {openReply && (
                 <NewReply onSubmit={(text) => {
                     onReply(text, comment.id)
                     setReplyBoxOpen(false)
+                    setOpenReply(false)  // Close reply form after submission
                 }} />
             )}
         </div>

@@ -141,10 +141,12 @@ function PostCard({ user, post, onDelete, isOwnProfile }: PostCardProps) {
                     {loading ? (
                         <p className='ml-[50px]'>Loading comments...</p>
                     ) : (
-                        comments.map((c) => (
+                        // Only show top-level comments (ones without parent_comment_id)
+                        comments.filter(c => !c.parent_comment_id).map((c) => (
                             <PostComment
                                 key={c.id}
                                 comment={c}
+                                comments={comments}  // Pass all comments
                                 currentUserId={currentUser!.id}
                                 setReplyBoxOpen={setReplyBoxOpen}
                                 onDelete={deleteComment}
