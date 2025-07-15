@@ -13,6 +13,7 @@ function EmailConnectionModal({ isOpen, onClose, onSuccess }: EmailConnectionMod
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<boolean>(false);
+  const [successEmail, setSuccessEmail] = useState<string>('');
 
   // Reset state when modal opens
   useEffect(() => {
@@ -20,6 +21,7 @@ function EmailConnectionModal({ isOpen, onClose, onSuccess }: EmailConnectionMod
       setEmail('');
       setError(null);
       setSuccess(false);
+      setSuccessEmail('');
     }
   }, [isOpen]);
 
@@ -61,8 +63,8 @@ function EmailConnectionModal({ isOpen, onClose, onSuccess }: EmailConnectionMod
       }
 
       console.log('Demo: Connection created successfully');
+      setSuccessEmail(email.trim());
       setSuccess(true);
-      setEmail('');
       
       // Call the optional success callback if provided
       if (onSuccess) {
@@ -96,25 +98,28 @@ function EmailConnectionModal({ isOpen, onClose, onSuccess }: EmailConnectionMod
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 overflow-y-auto bg-black/50">
-      <div className="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+    <div 
+      className="fixed inset-0 z-50 overflow-y-auto"
+      onClick={(e) => {
+        // Only close if clicking the dark overlay
+        if (e.target === e.currentTarget) {
+          onClose();
+        }
+      }}
+    >
+      <div className="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center">
         {/* Background overlay */}
         <div 
-          className="fixed inset-0 transition-opacity" 
+          className="fixed inset-0 bg-black/50 transition-opacity" 
           aria-hidden="true"
-          onClick={onClose}
-        >
-          <div className="absolute inset-0"></div>
-        </div>
+        />
 
         {/* Modal panel */}
-        <span className="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
         <div 
-          className="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full"
+          className="inline-block bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg w-full relative"
           role="dialog"
           aria-modal="true"
           aria-labelledby="modal-headline"
-          onClick={e => e.stopPropagation()}
         >
           {/* Modal header */}
           <div className="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
@@ -135,14 +140,14 @@ function EmailConnectionModal({ isOpen, onClose, onSuccess }: EmailConnectionMod
           </div>
           
           {/* Modal body */}
-          <div className="bg-white px-4 pb-5 sm:p-6">
+          <div className="!bg-white px-4 pb-5 sm:p-6">
             {success ? (
               <div className="text-center">
                 <div className="text-green-600 text-xl mb-4">
                   Connection request sent!
                 </div>
                 <p className="text-gray-600">
-                  We've sent a connection request to {email}.
+                  We've sent a connection request to {successEmail}.
                 </p>
               </div>
             ) : (
@@ -159,7 +164,7 @@ function EmailConnectionModal({ isOpen, onClose, onSuccess }: EmailConnectionMod
                     id="email"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-[#8EB486] focus:border-[#8EB486] text-black"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-[#8EB486] focus:border-[#8EB486] text-black transition-colors disabled:!bg-gray-100 disabled:cursor-not-allowed"
                     placeholder="Enter email address"
                     disabled={isLoading}
                   />
@@ -175,14 +180,14 @@ function EmailConnectionModal({ isOpen, onClose, onSuccess }: EmailConnectionMod
                   <button
                     type="button"
                     onClick={onClose}
-                    className="!bg-[#997C70] mr-3 px-4 py-2 text-sm font-medium text-white bg-white border border-gray-300 rounded-md shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#8EB486]"
+                    className="!bg-[#997C70] mr-3 px-4 py-2 text-sm font-medium text-white rounded-md shadow-sm hover:!bg-[#8d7267] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#997C70] transition-colors"
                     disabled={isLoading}
                   >
                     Cancel
                   </button>
                   <button
                     type="submit"
-                    className="px-4 py-2 text-sm font-medium text-white !bg-[#8EB486] border border-transparent rounded-md shadow-sm hover:bg-[#7ca474] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#8EB486]"
+                    className="px-4 py-2 text-sm font-medium text-white !bg-[#8EB486] border border-transparent rounded-md shadow-sm hover:!bg-[#7ca474] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#8EB486] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                     disabled={isLoading}
                   >
                     {isLoading ? 'Sending...' : 'Connect'}
