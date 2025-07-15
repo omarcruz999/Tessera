@@ -1,8 +1,7 @@
 import type React from "react"
 import { useState, useRef, useContext } from "react"
-import supabase from "../../services/supabaseClient"
-import apiClient from "../../services/apiClient"
 import { UserContext } from '../../UserContext';
+import { simulateApiDelay } from '../../data/mockData';
 import imageIcon from "../../assets/imageIcon.svg"
 
 interface PostFromProps {
@@ -64,46 +63,33 @@ const PostForm: React.FC<PostFromProps> = ({ onClose }) => {
         fileInputRef.current?.click()
     }
 
-    // Updated handleSubmit function
+    // Demo handleSubmit function
     const handleSubmit = async () => {
         if (!postContent.trim()) return;
 
         try {
-            // Fetch the current user 
-            const { data: { user }, error: userError } = await supabase.auth.getUser();
-            if (userError || !user) {
-                console.error("Error fetching user:", userError);
+            if (!loggedInUser) {
+                console.error("No user logged in");
                 return;
             }
 
-            // Prepare form data to send to your server endpoint
-            const formData = new FormData();
-            formData.append('user_id', user.id);
-            formData.append('text', postContent);
-            formData.append('allow_sharing', String(allowSharing));
+            // Simulate API delay
+            await simulateApiDelay(800);
 
-            // if a file is uploaded, append it under the key 'file'
-            const file = fileInputRef.current?.files?.[0];
-            if (file) {
-                formData.append('file', file);
-            }
-
-            // Add the API call here to submit the post
-            const response = await apiClient.post('/posts', formData, {
-                headers: {
-                    'Content-Type': 'multipart/form-data',
-                },
+            console.log('Demo: Post created successfully', {
+                user_id: loggedInUser.id,
+                text: postContent,
+                allow_sharing: allowSharing,
+                has_image: !!uploadedImage
             });
-
-            console.log('Post created successfully:', response.data);
             
             // Reset the form after successful submission
             setPostContent("");
             setUploadedImage(null);
-            onClose();
             setAllowSharing(false);
+            onClose();
         } catch (error) {
-            console.error("Error creating post:", error);
+            console.error("Demo: Error creating post:", error);
         }
     };
 

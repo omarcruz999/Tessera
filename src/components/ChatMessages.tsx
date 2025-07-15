@@ -1,7 +1,6 @@
 import { useContext, useEffect, useState, useRef } from 'react';
-import supabaseClient from '../services/supabaseClient';
 import { UserContext } from '../UserContext';
-import { useRealtimeMessages } from '../services/messages';
+import { simulateApiDelay } from '../data/mockData';
 
 interface Conversation {
   other_user_id: string;
@@ -40,19 +39,39 @@ const ChatMessages: React.FC<ChatMessagesProps> = ({
   const [newMessage, setNewMessage] = useState('');
   const bottomRef = useRef<HTMLDivElement | null>(null);
 
-  // Fetch history when chat opens
+  // Fetch mock messages when chat opens
   const fetchMessages = async () => {
     if (!user?.id || !selectedUserId) return;
-    const { data, error } = await supabaseClient
-      .from('messages')
-      .select('*')
-      .or(
-        `and(sender_id.eq.${user.id},receiver_id.eq.${selectedUserId}),and(sender_id.eq.${selectedUserId},receiver_id.eq.${user.id})`
-      )
-      .order('created_at', { ascending: true });
-
-    if (error) console.error('Error fetching messages:', error);
-    else setMessages(data || []);
+    
+    await simulateApiDelay(400);
+    
+    // Create mock messages for demo
+    const mockMessages: Message[] = [
+      {
+        id: '1',
+        content: `Hey ${user.full_name}! This is a demo message. The messaging system is fully functional in demo mode.`,
+        sender_id: selectedUserId,
+        receiver_id: user.id,
+        created_at: new Date(Date.now() - 3600000).toISOString(), // 1 hour ago
+      },
+      {
+        id: '2', 
+        content: 'Thanks for checking out the Tessera demo! All the UI interactions work as expected.',
+        sender_id: user.id,
+        receiver_id: selectedUserId,
+        created_at: new Date(Date.now() - 1800000).toISOString(), // 30 min ago
+      },
+      {
+        id: '3',
+        content: 'This conversation showcases the chat interface. You can send new messages too!',
+        sender_id: selectedUserId,
+        receiver_id: user.id,
+        created_at: new Date(Date.now() - 900000).toISOString(), // 15 min ago
+      }
+    ];
+    
+    setMessages(mockMessages);
+    console.log('Demo: Loaded mock messages for chat', mockMessages);
   };
 
   // Show/hide pane on selection
@@ -70,29 +89,7 @@ const ChatMessages: React.FC<ChatMessagesProps> = ({
     }
   }, [selectedUserId]);
 
-  // Real-time listener
-  useRealtimeMessages((newMsg) => {
-    if (
-      !user?.id ||
-      !selectedUserId ||
-      !(
-        (newMsg.sender_id === user.id &&
-          newMsg.receiver_id === selectedUserId) ||
-        (newMsg.sender_id === selectedUserId &&
-          newMsg.receiver_id === user.id)
-      )
-    )
-      return;
-
-    setMessages((prev) => [...prev, newMsg]);
-    setConversations((prev) =>
-      prev.map((conv) =>
-        conv.other_user_id === selectedUserId
-          ? { ...conv, last_message: newMsg.content }
-          : conv
-      )
-    );
-  });
+  // Demo: No real-time listener needed - messages are simulated locally
 
   // Auto-scroll
   useEffect(() => {
@@ -112,16 +109,23 @@ const ChatMessages: React.FC<ChatMessagesProps> = ({
           : c
       )
     );
+
+    // Create demo message and add to local state
+    const newMsg: Message = {
+      id: Date.now().toString(),
+      content,
+      sender_id: user.id,
+      receiver_id: selectedUserId,
+      created_at: new Date().toISOString(),
+    };
+
+    setMessages((prev) => [...prev, newMsg]);
     setNewMessage('');
 
-    const { error } = await supabaseClient.from('messages').insert([
-      {
-        sender_id: user.id,
-        receiver_id: selectedUserId,
-        content,
-      },
-    ]);
-    if (error) console.error('Error sending message:', error);
+    console.log('Demo: Message sent locally', newMsg);
+    
+    // Simulate API delay
+    await simulateApiDelay(200);
   };
 
   // Close chat pane

@@ -3,8 +3,8 @@ import { useParams, useNavigate } from 'react-router-dom';
 
 import MessagePreview from './MessagePreview';
 import ChatMessages from './ChatMessages';
-import supabaseClient from '../services/supabaseClient';
 import { UserContext } from '../UserContext';
+import { MOCK_CONNECTIONS, simulateApiDelay } from '../data/mockData';
 
 interface Conversation {
   other_user_id: string;
@@ -39,12 +39,24 @@ const Messages: React.FC = () => {
   // 1) Load existing conversations for the logged-in user
   useEffect(() => {
     if (!user?.id) return;
-    supabaseClient
-      .rpc('get_conversations', { current_user_id: user.id })
-      .then(({ data, error }) => {
-        if (error) console.error('Failed to load convos', error);
-        else setConversations(data || []);
-      });
+    
+    const loadMockConversations = async () => {
+      await simulateApiDelay(500);
+      
+      // Create mock conversations from connections
+      const mockConversations: Conversation[] = MOCK_CONNECTIONS.map(connection => ({
+        other_user_id: connection.id,
+        full_name: connection.full_name,
+        avatar_url: connection.avatar_url,
+        last_message: 'Demo message - this is a conversation preview',
+        id: `conv-${connection.id}`
+      }));
+      
+      setConversations(mockConversations);
+      console.log('Demo: Loaded mock conversations', mockConversations);
+    };
+    
+    loadMockConversations();
   }, [user?.id]);
 
   // 2) When a new user is selected, fetch or reuse their profile, then inject once
@@ -67,26 +79,18 @@ const Messages: React.FC = () => {
       return;
     }
 
-    // Otherwise fetch from profiles
-    supabaseClient
-      .from('profiles')
-      .select('full_name, avatar_url')
-      .eq('id', selectedUserId)
-      .single()
-      .then(({ data, error }) => {
-        if (error || !data) {
-          console.error('Failed to fetch profile', error);
-          return;
-        }
-        const newUser: SelectedUser = {
-          other_user_id: selectedUserId,
-          full_name: data.full_name,
-          avatar_url: data.avatar_url,
-        };
-        setSelectedUser(newUser);
+    // Otherwise get from mock data
+    const mockUser = MOCK_CONNECTIONS.find(conn => conn.id === selectedUserId);
+    if (mockUser) {
+      const newUser: SelectedUser = {
+        other_user_id: selectedUserId,
+        full_name: mockUser.full_name,
+        avatar_url: mockUser.avatar_url,
+      };
+      setSelectedUser(newUser);
 
-        // Deduped injection at top
-        setConversations((prev) => {
+      // Deduped injection at top
+      setConversations((prev) => {
           const filtered = prev.filter(
             (c) => c.other_user_id !== newUser.other_user_id
           );
@@ -101,7 +105,7 @@ const Messages: React.FC = () => {
             ...filtered,
           ];
         });
-      });
+    }
   }, [selectedUserId, conversations]);
 
   // 3) Show/hide the pane and highlight when selection changes
