@@ -2,6 +2,9 @@
 import { User } from '../UserContext';
 import { PostWithMedia, PostMedia } from '../components/Post Components/PostCard';
 import { generateDiceBearAvatar } from '../utils/avatarUtils';
+import AlexAvatar from "../assets/AlexAboutAvatar.png"; 
+import OmarAvatar from "../assets/OmarAboutAvatar.png";
+import JonathanAvatar from "../assets/JohnAboutAvatar.png"; // Import Jonathan's avatar
 
 // Demo user (always "logged in")
 export const DEMO_USER: User = {
@@ -18,21 +21,21 @@ export const MOCK_CONNECTIONS: User[] = [
   {
     id: 'user-alex',
     full_name: 'Alex Matei',
-    avatar_url: '/src/assets/AlexAboutAvatar.png',
+    avatar_url: AlexAvatar,
     is_active: true,
     bio: 'Team Lead & Full Stack Developer - Alex blends his diverse interests—including technology, literature, and philosophy—to build digital tools that make everyday life more thoughtful and connected. A CS undergrad at Cal Poly Pomona, graduating in Spring 2025, he works across the full stack and enjoys guiding collaborative teams to bring meaningful ideas to life.'
   },
   {
     id: 'user-omar',
     full_name: 'Omar Cruz',
-    avatar_url: '/src/assets/OmarAboutAvatar.png',
+    avatar_url: OmarAvatar,
     is_active: true,
     bio: 'Full Stack Developer - Omar builds high-performance, user-friendly full-stack apps by combining backend efficiency with thoughtful UI design to bring big ideas to life. A Computer Science student at Cal Poly Pomona, he\'ll graduate in December 2025 and is passionate about turning ambitious concepts into polished, reliable software.'
   },
   {
     id: 'user-jonathan',
     full_name: 'Jonathan Rodriguez',
-    avatar_url: '/src/assets/JohnAboutAvatar.png',
+    avatar_url: JonathanAvatar,
     is_active: true,
     bio: 'UI/UX Designer - Jonathan brings applications to life through clean, user-focused designs that balance form and function. He crafts intuitive interfaces users love — all while pursuing his degree in computer science at Cal Poly Pomona, graduating August 2025.'
   },
