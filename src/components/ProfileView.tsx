@@ -1,11 +1,11 @@
 import { useContext, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { UserContext } from '../UserContext';
-import defaultProfilePicture from '../assets/defaultProfilePicture.png';
+import { getAvatarUrl } from '../utils/avatarUtils';
 import PostCard, { PostWithMedia } from '../components/Post Components/PostCard.tsx';
 import PostForm from './Post Components/PostForm.tsx';
 import PostModal from './Post Components/PostModal.tsx';
-import { DEMO_USER, getMockPostsForUser, simulateApiDelay } from '../data/mockData';
+import { DEMO_USER, getMockPostsForUser } from '../data/mockData';
 
 interface ProfileUser {
   user_id: string;
@@ -39,8 +39,6 @@ function ProfileView({ profileUser }: ProfileViewProps) {
     const loadPosts = async () => {
       setPostsLoading(true);
       try {
-        // Simulate API delay
-        await simulateApiDelay(600);
         
         // Get mock posts for this user
         const mockPosts = getMockPostsForUser(displayedUserId);
@@ -73,8 +71,6 @@ function ProfileView({ profileUser }: ProfileViewProps) {
     
     setPostsLoading(true);
     try {
-      // Simulate API delay
-      await simulateApiDelay(400);
       
       // Get mock posts for this user
       const mockPosts = getMockPostsForUser(displayedUserId);
@@ -91,7 +87,7 @@ function ProfileView({ profileUser }: ProfileViewProps) {
     <div className="profile-layout">
       <div className="profile-sidebar">
         <img
-          src={displayedUser.avatar_url || defaultProfilePicture}
+          src={displayedUser.avatar_url || getAvatarUrl(displayedUser.full_name, 'personas')}
           alt="Profile"
           className="profile-image"
         />
@@ -172,7 +168,7 @@ function ProfileView({ profileUser }: ProfileViewProps) {
                   user={{
                     name: displayedUser.full_name,
                     profilePicture:
-                      displayedUser.avatar_url || defaultProfilePicture,
+                      displayedUser.avatar_url || getAvatarUrl(displayedUser.full_name, 'personas'),
                   }}
                   onDelete={() => refreshPosts()} // Use refreshPosts here
                   isOwnProfile={isOwnProfile}

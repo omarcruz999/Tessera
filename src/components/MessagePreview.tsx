@@ -42,7 +42,7 @@ interface MessagePreviewProps {
   
     return (
       <div className="message-preview" onClick={handleClick}>
-        <img src={user.avatar_url || "/src/assets/defaultProfilePicture.png"} alt="Profile" className="message-pfp" />
+        <img src={user.avatar_url || `https://api.dicebear.com/7.x/personas/svg?seed=${encodeURIComponent(user.full_name)}`} alt="Profile" className="message-pfp" />
         <div className="message-content">
           <p className="message-name">{user.full_name}</p>
           <p className="message-text">{user.last_message}</p>

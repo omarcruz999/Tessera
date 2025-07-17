@@ -1,5 +1,5 @@
 import { createContext, useState, useEffect, ReactNode } from 'react';
-import { DEMO_USER, simulateApiDelay } from './data/mockData';
+import { DEMO_USER } from './data/mockData';
 
 export interface User {
   id: string;
@@ -31,8 +31,6 @@ const UserProvider = ({ children }: { children: ReactNode }) => {
     const autoLogin = async () => {
       setIsLoading(true);
       
-      // Simulate loading time for realistic feel
-      await simulateApiDelay(800);
       
       // Auto-login with demo user
       setUser(DEMO_USER);
@@ -55,8 +53,6 @@ const UserProvider = ({ children }: { children: ReactNode }) => {
     try {
       console.log("Logout called - clearing demo user");
       
-      // Simulate logout delay
-      await simulateApiDelay(300);
       
       // For demo purposes, immediately log back in
       // In a real app, this would redirect to login

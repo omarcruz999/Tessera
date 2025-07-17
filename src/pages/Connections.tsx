@@ -3,7 +3,7 @@ import PeerCard from '../components/Cards/PeerCard.tsx';
 import EmailConnectionModal from '../components/EmailConnectionModal';
 import { UserContext, User } from '../UserContext';
 import { IoAdd } from 'react-icons/io5';
-import { MOCK_CONNECTIONS, simulateApiDelay } from '../data/mockData';
+import { MOCK_CONNECTIONS } from '../data/mockData';
 
 function Connections() {
   const userContext = useContext(UserContext);
@@ -21,8 +21,6 @@ function Connections() {
     setIsLoading(true);
     
     try {
-      // Simulate API loading time
-      await simulateApiDelay(800);
       
       // Use mock connections data
       setPeers(MOCK_CONNECTIONS);

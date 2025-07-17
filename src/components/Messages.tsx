@@ -4,7 +4,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import MessagePreview from './MessagePreview';
 import ChatMessages from './ChatMessages';
 import { UserContext } from '../UserContext';
-import { MOCK_CONNECTIONS, simulateApiDelay } from '../data/mockData';
+import { MOCK_CONNECTIONS } from '../data/mockData';
 
 interface Conversation {
   other_user_id: string;
@@ -41,7 +41,6 @@ const Messages: React.FC = () => {
     if (!user?.id) return;
     
     const loadMockConversations = async () => {
-      await simulateApiDelay(500);
       
       // Create mock conversations from connections
       const mockConversations: Conversation[] = MOCK_CONNECTIONS.map(connection => ({

@@ -3,7 +3,7 @@ import { Link, useNavigate, useLocation } from "react-router-dom";
 import { FaUser, FaHome, FaEnvelope, FaSignOutAlt } from "react-icons/fa";
 import logo from "../assets/Tessera.svg";
 import logoimage from "../assets/tesseraLogo.svg";
-import profile from "../assets/Avatar.svg";
+import { getAvatarUrl } from "../utils/avatarUtils";
 import { UserContext } from "../UserContext";
 
 const NavBar = () => {
@@ -132,7 +132,7 @@ const NavBar = () => {
           onMouseLeave={handleMouseLeave}
         >
           <img 
-            src={user?.avatar_url || profile} 
+            src={user?.avatar_url || getAvatarUrl(user?.full_name, 'personas')} 
             alt="Avatar" 
             className="h-10 w-10 rounded-full object-cover cursor-pointer border-2 border-transparent hover:border-amber-500" 
           />

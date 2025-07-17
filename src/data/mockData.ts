@@ -1,12 +1,13 @@
 // Mock data for Tessera app - replaces database functionality
 import { User } from '../UserContext';
 import { PostWithMedia, PostMedia } from '../components/Post Components/PostCard';
+import { generateDiceBearAvatar } from '../utils/avatarUtils';
 
 // Demo user (always "logged in")
 export const DEMO_USER: User = {
   id: 'demo-user-1',
   full_name: 'Alex Demo',
-  avatar_url: '/ProfilePictures/Alex.jpg',
+  avatar_url: generateDiceBearAvatar('alex-demo', 'personas'),
   is_active: true,
   email: 'alex.demo@tessera.app',
   profileComplete: true,
@@ -18,7 +19,7 @@ export const MOCK_CONNECTIONS: User[] = [
   {
     id: 'user-2',
     full_name: 'John Porter',
-    avatar_url: '/ProfilePictures/John.jpg',
+    avatar_url: generateDiceBearAvatar('john-porter', 'personas'),
     is_active: true,
     email: 'john.porter@example.com',
     profileComplete: true,
@@ -27,7 +28,7 @@ export const MOCK_CONNECTIONS: User[] = [
   {
     id: 'user-3',
     full_name: 'Omar Hassan',
-    avatar_url: '/ProfilePictures/Omar.jpg',
+    avatar_url: generateDiceBearAvatar('omar-hassan', 'personas'),
     is_active: true,
     email: 'omar.hassan@example.com',
     profileComplete: true,
@@ -36,7 +37,7 @@ export const MOCK_CONNECTIONS: User[] = [
   {
     id: 'user-4',
     full_name: 'Sarah Chen',
-    avatar_url: '/ProfilePictures/Sarah.jpg',
+    avatar_url: generateDiceBearAvatar('sarah-chen', 'personas'),
     is_active: true,
     email: 'sarah.chen@example.com',
     profileComplete: true,
@@ -45,7 +46,7 @@ export const MOCK_CONNECTIONS: User[] = [
   {
     id: 'user-5',
     full_name: 'Marcus Johnson',
-    avatar_url: '/ProfilePictures/Marcus.jpg',
+    avatar_url: generateDiceBearAvatar('marcus-johnson', 'personas'),
     is_active: true,
     email: 'marcus.j@example.com',
     profileComplete: true,
@@ -54,7 +55,7 @@ export const MOCK_CONNECTIONS: User[] = [
   {
     id: 'user-6',
     full_name: 'Elena Rodriguez',
-    avatar_url: '/ProfilePictures/Elena.jpg',
+    avatar_url: generateDiceBearAvatar('elena-rodriguez', 'personas'),
     is_active: true,
     email: 'elena.rodriguez@example.com',
     profileComplete: true,
@@ -63,7 +64,7 @@ export const MOCK_CONNECTIONS: User[] = [
   {
     id: 'user-7',
     full_name: 'David Kim',
-    avatar_url: '/ProfilePictures/David.jpg',
+    avatar_url: generateDiceBearAvatar('david-kim', 'personas'),
     is_active: true,
     email: 'david.kim@example.com',
     profileComplete: true,
@@ -227,9 +228,6 @@ export const addMockPost = (userId: string, text: string, media?: PostMedia[]): 
 
 // Function to delete a post
 export const deleteMockPost = async (postId: string, userId: string): Promise<boolean> => {
-  // Simulate API delay
-  await simulateApiDelay(300);
-
   // Check demo user's posts
   if (userId === DEMO_USER.id) {
     const index = MOCK_POSTS.findIndex(post => post.id === postId);
@@ -260,7 +258,3 @@ export const getMockCommentsForPost = (postId: string): MockComment[] => {
   return MOCK_COMMENTS.filter(comment => comment.post_id === postId);
 };
 
-// Simulate API delay for realistic feel
-export const simulateApiDelay = (ms: number = 500): Promise<void> => {
-  return new Promise(resolve => setTimeout(resolve, ms));
-};

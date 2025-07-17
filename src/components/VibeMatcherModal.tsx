@@ -1,6 +1,6 @@
 import React, { useState, useRef, useContext } from 'react';
 import { UserContext } from '../UserContext';
-import { simulateApiDelay } from '../data/mockData';
+import { generateDiceBearAvatar } from '../utils/avatarUtils';
 import { IoClose, IoCloudUpload, IoCheckmarkCircle } from 'react-icons/io5';
 
 interface VibeMatcherModalProps {
@@ -85,8 +85,6 @@ const VibeMatcherModal: React.FC<VibeMatcherModalProps> = ({ isOpen, onClose }) 
         }
       }
 
-      // Demo simulation
-      await simulateApiDelay(2000);
       
       // Mock response for demo
       const mockResponse = {
@@ -96,7 +94,7 @@ const VibeMatcherModal: React.FC<VibeMatcherModalProps> = ({ isOpen, onClose }) 
           matchedUser: {
             id: 'user-2',
             full_name: 'John Porter',
-            avatar_url: '/JohnAboutAvatar.png'
+            avatar_url: generateDiceBearAvatar('john-porter', 'personas')
           },
           similarityScore: 0.85
         }
@@ -149,7 +147,7 @@ const VibeMatcherModal: React.FC<VibeMatcherModalProps> = ({ isOpen, onClose }) 
                   <h3 className="text-xl font-bold text-green-800 mb-2">Match Found! 🎉</h3>
                   <div className="flex items-center justify-center mb-3">
                     <img 
-                      src={matchResult.connection?.matchedUser.avatar_url || '/default-avatar.png'} 
+                      src={matchResult.connection?.matchedUser.avatar_url || generateDiceBearAvatar(matchResult.connection?.matchedUser.full_name || 'user', 'personas')} 
                       alt="Match" 
                       className="w-16 h-16 rounded-full object-cover border-2 border-[#8EB486]"
                     />

@@ -1,7 +1,7 @@
 import type React from "react"
 import { useState, useRef, useContext } from "react"
 import { UserContext } from '../../UserContext';
-import { simulateApiDelay, addMockPost } from '../../data/mockData';
+import { addMockPost } from '../../data/mockData';
 import imageIcon from "../../assets/imageIcon.svg"
 import type { PostMedia } from './PostCard';
 
@@ -76,8 +76,6 @@ const PostForm: React.FC<PostFromProps> = ({ onClose, onPostCreated }) => {
                 return;
             }
 
-            // Simulate API delay
-            await simulateApiDelay(800);
 
             // Create post with image if one was uploaded
             const media: PostMedia[] = uploadedImage ? [{

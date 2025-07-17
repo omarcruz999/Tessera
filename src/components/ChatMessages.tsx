@@ -1,6 +1,5 @@
 import { useContext, useEffect, useState, useRef } from 'react';
 import { UserContext } from '../UserContext';
-import { simulateApiDelay } from '../data/mockData';
 
 interface Conversation {
   other_user_id: string;
@@ -43,7 +42,6 @@ const ChatMessages: React.FC<ChatMessagesProps> = ({
   const fetchMessages = async () => {
     if (!user?.id || !selectedUserId) return;
     
-    await simulateApiDelay(400);
     
     // Create mock messages for demo
     const mockMessages: Message[] = [
@@ -124,8 +122,6 @@ const ChatMessages: React.FC<ChatMessagesProps> = ({
 
     console.log('Demo: Message sent locally', newMsg);
     
-    // Simulate API delay
-    await simulateApiDelay(200);
   };
 
   // Close chat pane
@@ -157,7 +153,7 @@ const ChatMessages: React.FC<ChatMessagesProps> = ({
               <img
                 src={
                   selectedUser?.avatar_url ||
-                  '/src/assets/defaultProfilePicture.png'
+                  `https://api.dicebear.com/7.x/personas/svg?seed=${encodeURIComponent(selectedUser?.full_name || 'user')}`
                 }
                 alt="Profile"
                 className="inline-block w-12 h-12 mx-2 rounded-full"
