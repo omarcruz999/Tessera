@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Comment } from '../../../services/useComments'
+import { Comment } from '../../../hooks/useComments'
 import NewReply from './NewReply.tsx';
 import { FaTrash } from 'react-icons/fa';
 import { getMockUserById } from '../../../data/mockData';

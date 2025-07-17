@@ -1,8 +1,8 @@
 import DeveloperCard from "../components/AboutUsPage/DeveloperCard";
-import JohnPork from "/JohnPork.png?url";
 import AlexAvatar from "../assets/AlexAboutAvatar.png"; 
 import OmarAvatar from "../assets/OmarAboutAvatar.png";
 import JonathanAvatar from "../assets/JohnAboutAvatar.png"; // Import Jonathan's avatar
+import { generateDiceBearAvatar } from "../utils/avatarUtils";
 
 function About() {
   const developers = [
@@ -27,8 +27,8 @@ function About() {
     {
       name: "Edgar Ortiz",
       role: "Full Stack Developer",
-      bio: "Edgar works across our entire stack and specializes in performance optimization. They're passionate about creating fast, responsive applications.",
-      profilePicture: JohnPork,
+      bio: "",
+      profilePicture: generateDiceBearAvatar('edgar-ortiz', 'identicon'),
     },
   ]
 
@@ -47,7 +47,7 @@ function About() {
                 believe in building communities that foster genuine relationships and support.
               </p>
               <p className="text-xl mb-4 text-[#424242]">
-                Founded in 2023, we've been working to create a space where users can easily find and connect with
+                Starting as a class project in Spring 2025, we've been working to create a space where users can easily find and connect with
                 like-minded individuals, share their thoughts, and collaborate on projects that matter to them.
               </p>
               <p className="text-xl text-[#424242]">

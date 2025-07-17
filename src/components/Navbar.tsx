@@ -8,9 +8,8 @@ import { UserContext } from "../UserContext";
 
 const NavBar = () => {
   const userContext = useContext(UserContext);
-  const { user, loginWithGoogle, logout } = userContext || { 
+  const { user, logout } = userContext || { 
     user: null, 
-    loginWithGoogle: undefined, 
     logout: undefined 
   };
   
@@ -30,28 +29,12 @@ const NavBar = () => {
     return location.pathname === path;
   };
 
-  const handleGoogleLogin = async () => {
-    try {
-      if (loginWithGoogle) {
-        await loginWithGoogle();
-      } else {
-        console.error('Google login function not available');
-      }
-    } catch (error: unknown) {
-      console.error('Google login failed:', error);
-    }
-  };
-
-  const navigateToLogin = () => {
-    setIsDropdownOpen(false);
-    navigate('/login');
-  };
   
   const handleLogout = async () => {
     try {
       if (logout) {
         await logout();
-        navigate('/landing');
+        navigate('/');
       }
     } catch (error: unknown) {
       console.error('Logout failed:', error);
@@ -167,24 +150,11 @@ const NavBar = () => {
                     </li>
                   </>
                 ) : (
-                  <>
-                    <li>
-                      <span
-                        onClick={navigateToLogin}
-                        className="block px-4 py-2 text-black hover:bg-gray-200 cursor-pointer"
-                      >
-                        Login with Email
-                      </span>
-                    </li>
-                    <li>
-                      <span
-                        onClick={handleGoogleLogin}
-                        className="block px-4 py-2 text-black hover:bg-gray-200 cursor-pointer"
-                      >
-                        Login with Google
-                      </span>
-                    </li>
-                  </>
+                  <li>
+                    <span className="block px-4 py-2 text-gray-500 text-center">
+                      Demo Mode
+                    </span>
+                  </li>
                 )}
               </ul>
             </div>

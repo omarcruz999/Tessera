@@ -6,8 +6,6 @@ export interface User {
   full_name: string;
   avatar_url: string;
   is_active: boolean;
-  email?: string;
-  profileComplete?: boolean;
   bio?: string;
 }
 
@@ -16,7 +14,7 @@ interface UserContextType {
   login: () => Promise<void>; 
   logout: () => Promise<void>;
   isLoading: boolean;
-  needsOnboarding: boolean;
+  isLoggedOut: boolean;
 }
 
 const UserContext = createContext<UserContextType | undefined>(undefined);
@@ -24,41 +22,48 @@ const UserContext = createContext<UserContextType | undefined>(undefined);
 const UserProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(true);
-  const [needsOnboarding] = useState<boolean>(false); // Always false for demo
+  const [isLoggedOut, setIsLoggedOut] = useState<boolean>(false);
 
-  // Auto-login with demo user on app start
+  // Check if we should auto-login based on current route
   useEffect(() => {
     const autoLogin = async () => {
       setIsLoading(true);
       
+      // Check if we're on a public route (landing or about)
+      const currentPath = window.location.pathname;
+      const isPublicRoute = currentPath === '/' || currentPath === '/about' || currentPath === '/landing';
       
-      // Auto-login with demo user
-      setUser(DEMO_USER);
+      if (!isPublicRoute) {
+        // Auto-login with demo user for protected routes
+        setUser(DEMO_USER);
+        setIsLoggedOut(false);
+        console.log("Demo user automatically logged in:", DEMO_USER);
+      } else {
+        // Stay logged out for public routes
+        setUser(null);
+        setIsLoggedOut(true);
+      }
+      
       setIsLoading(false);
-      
-      console.log("Demo user automatically logged in:", DEMO_USER);
     };
 
     autoLogin();
   }, []);
 
-  // Mock login function (already logged in with demo user)
+  // Mock login function - logs in the demo user
   const login = async () => {
-    console.log("Login called - demo user already logged in");
-    // In demo mode, user is always logged in
+    console.log("Login called - logging in demo user");
+    setUser(DEMO_USER);
+    setIsLoggedOut(false);
   };
 
-  // Mock logout function
+  // Mock logout function - actually logs out for demo
   const logout = async () => {
     try {
       console.log("Logout called - clearing demo user");
-      
-      
-      // For demo purposes, immediately log back in
-      // In a real app, this would redirect to login
-      setUser(DEMO_USER);
-      
-      console.log("Demo: User logged out and immediately logged back in");
+      setUser(null);
+      setIsLoggedOut(true);
+      console.log("Demo: User logged out");
     } catch (error) {
       console.error("Error in logout:", error);
     }
@@ -70,7 +75,7 @@ const UserProvider = ({ children }: { children: ReactNode }) => {
       login,
       logout,
       isLoading,
-      needsOnboarding
+      isLoggedOut
     }}>
       {children}
     </UserContext.Provider>

@@ -30,7 +30,6 @@ export function useComments(postId: number | string) {
   const refresh = useCallback(async () => {
     setLoading(true);
     try {
-      
       // Get mock comments for this post
       const mockComments = getMockCommentsForPost(String(postId));
       
@@ -64,7 +63,6 @@ export function useComments(postId: number | string) {
   /* ---- mutations ---- */
   const create = async (payload: Omit<CreateCommentPayload, 'post_id'>) => {
     try {
-      
       // In demo mode, add the comment locally
       const user = getMockUserById(payload.user_id) || DEMO_USER;
       const newComment: Comment = {
@@ -90,7 +88,6 @@ export function useComments(postId: number | string) {
 
   const edit = async (id: number | string, content: string) => {
     try {
-      
       // Update comment locally
       setComments(prev => prev.map(comment => 
         comment.id === String(id) ? { ...comment, content } : comment
@@ -103,7 +100,6 @@ export function useComments(postId: number | string) {
 
   const remove = async (id: number | string, userId: string) => {
     try {
-      
       // Remove comment locally
       setComments(prev => prev.filter(comment => comment.id !== String(id)));
       console.log(`Demo: Comment ${id} removed locally`);

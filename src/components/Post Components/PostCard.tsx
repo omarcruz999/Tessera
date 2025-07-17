@@ -13,7 +13,7 @@ import {
 } from 'react-icons/fa';
 import PostComment from './Comments/PostComment';
 import NewComment from './Comments/NewComment';
-import { useComments } from '../../services/useComments';
+import { useComments } from '../../hooks/useComments';
 
 export interface PostMedia {
     media_url: string;
