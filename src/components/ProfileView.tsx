@@ -5,7 +5,7 @@ import defaultProfilePicture from '../assets/defaultProfilePicture.png';
 import PostCard, { PostWithMedia } from '../components/Post Components/PostCard.tsx';
 import PostForm from './Post Components/PostForm.tsx';
 import PostModal from './Post Components/PostModal.tsx';
-import { DEMO_USER, getMockPostsForUser, simulateApiDelay } from '../data/mockData';
+import { DEMO_USER, getMockPostsForUser } from '../data/mockData';
 
 interface ProfileUser {
   user_id: string;
@@ -39,8 +39,6 @@ function ProfileView({ profileUser }: ProfileViewProps) {
     const loadPosts = async () => {
       setPostsLoading(true);
       try {
-        // Simulate API delay
-        await simulateApiDelay(600);
         
         // Get mock posts for this user
         const mockPosts = getMockPostsForUser(displayedUserId);
@@ -73,8 +71,6 @@ function ProfileView({ profileUser }: ProfileViewProps) {
     
     setPostsLoading(true);
     try {
-      // Simulate API delay
-      await simulateApiDelay(400);
       
       // Get mock posts for this user
       const mockPosts = getMockPostsForUser(displayedUserId);

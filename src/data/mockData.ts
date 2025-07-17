@@ -6,7 +6,7 @@ import { PostWithMedia } from '../components/Post Components/PostCard';
 export const DEMO_USER: User = {
   id: 'demo-user-1',
   full_name: 'Alex Demo',
-  avatar_url: '/AlexAboutAvatar.png',
+  avatar_url: 'https://api.dicebear.com/7.x/avataaars/svg?seed=alex-demo',
   is_active: true,
   email: 'alex.demo@tessera.app',
   profileComplete: true,
@@ -18,7 +18,7 @@ export const MOCK_CONNECTIONS: User[] = [
   {
     id: 'user-2',
     full_name: 'John Porter',
-    avatar_url: '/JohnAboutAvatar.png',
+    avatar_url: 'https://api.dicebear.com/7.x/avataaars/svg?seed=john-porter',
     is_active: true,
     email: 'john.porter@example.com',
     profileComplete: true,
@@ -27,7 +27,7 @@ export const MOCK_CONNECTIONS: User[] = [
   {
     id: 'user-3',
     full_name: 'Omar Hassan',
-    avatar_url: '/OmarAboutAvatar.png',
+    avatar_url: 'https://api.dicebear.com/7.x/avataaars/svg?seed=omar-hassan',
     is_active: true,
     email: 'omar.hassan@example.com',
     profileComplete: true,
@@ -36,7 +36,7 @@ export const MOCK_CONNECTIONS: User[] = [
   {
     id: 'user-4',
     full_name: 'Sarah Chen',
-    avatar_url: '/defaultProfilePicture.png',
+    avatar_url: 'https://api.dicebear.com/7.x/avataaars/svg?seed=sarah-chen',
     is_active: true,
     email: 'sarah.chen@example.com',
     profileComplete: true,
@@ -45,7 +45,7 @@ export const MOCK_CONNECTIONS: User[] = [
   {
     id: 'user-5',
     full_name: 'Marcus Johnson',
-    avatar_url: '/defaultProfilePicture.png',
+    avatar_url: 'https://api.dicebear.com/7.x/avataaars/svg?seed=marcus-johnson',
     is_active: true,
     email: 'marcus.j@example.com',
     profileComplete: true,
@@ -54,7 +54,7 @@ export const MOCK_CONNECTIONS: User[] = [
   {
     id: 'user-6',
     full_name: 'Elena Rodriguez',
-    avatar_url: '/defaultProfilePicture.png',
+    avatar_url: 'https://api.dicebear.com/7.x/avataaars/svg?seed=elena-rodriguez',
     is_active: true,
     email: 'elena.rodriguez@example.com',
     profileComplete: true,
@@ -63,7 +63,7 @@ export const MOCK_CONNECTIONS: User[] = [
   {
     id: 'user-7',
     full_name: 'David Kim',
-    avatar_url: '/defaultProfilePicture.png',
+    avatar_url: 'https://api.dicebear.com/7.x/avataaars/svg?seed=david-kim',
     is_active: true,
     email: 'david.kim@example.com',
     profileComplete: true,
@@ -213,7 +213,3 @@ export const getMockCommentsForPost = (postId: string): MockComment[] => {
   return MOCK_COMMENTS.filter(comment => comment.post_id === postId);
 };
 
-// Simulate API delay for realistic feel
-export const simulateApiDelay = (ms: number = 500): Promise<void> => {
-  return new Promise(resolve => setTimeout(resolve, ms));
-};

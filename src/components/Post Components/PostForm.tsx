@@ -1,7 +1,6 @@
 import type React from "react"
 import { useState, useRef, useContext } from "react"
 import { UserContext } from '../../UserContext';
-import { simulateApiDelay } from '../../data/mockData';
 import imageIcon from "../../assets/imageIcon.svg"
 
 interface PostFromProps {
@@ -73,8 +72,6 @@ const PostForm: React.FC<PostFromProps> = ({ onClose }) => {
                 return;
             }
 
-            // Simulate API delay
-            await simulateApiDelay(800);
 
             console.log('Demo: Post created successfully', {
                 user_id: loggedInUser.id,

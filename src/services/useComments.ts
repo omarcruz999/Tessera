@@ -1,6 +1,6 @@
 // Mock version of useComments hook
 import { useCallback, useEffect, useState } from 'react';
-import { getMockCommentsForPost, simulateApiDelay, getMockUserById, DEMO_USER } from '../data/mockData';
+import { getMockCommentsForPost, getMockUserById, DEMO_USER } from '../data/mockData';
 
 export interface Comment {
   id: string;
@@ -30,8 +30,6 @@ export function useComments(postId: number | string) {
   const refresh = useCallback(async () => {
     setLoading(true);
     try {
-      // Simulate API delay
-      await simulateApiDelay(400);
       
       // Get mock comments for this post
       const mockComments = getMockCommentsForPost(String(postId));
@@ -66,8 +64,6 @@ export function useComments(postId: number | string) {
   /* ---- mutations ---- */
   const create = async (payload: Omit<CreateCommentPayload, 'post_id'>) => {
     try {
-      // Simulate API delay
-      await simulateApiDelay(300);
       
       // In demo mode, add the comment locally
       const user = getMockUserById(payload.user_id) || DEMO_USER;
@@ -94,8 +90,6 @@ export function useComments(postId: number | string) {
 
   const edit = async (id: number | string, content: string) => {
     try {
-      // Simulate API delay
-      await simulateApiDelay(300);
       
       // Update comment locally
       setComments(prev => prev.map(comment => 
@@ -109,8 +103,6 @@ export function useComments(postId: number | string) {
 
   const remove = async (id: number | string, userId: string) => {
     try {
-      // Simulate API delay
-      await simulateApiDelay(300);
       
       // Remove comment locally
       setComments(prev => prev.filter(comment => comment.id !== String(id)));

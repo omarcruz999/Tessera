@@ -1,5 +1,4 @@
 import { useState, useEffect } from 'react';
-import { simulateApiDelay } from '../data/mockData';
 {/* import { IoClose } from 'react-icons/io5'; */} 
 
 interface EmailConnectionModalProps {
@@ -52,8 +51,6 @@ function EmailConnectionModal({ isOpen, onClose, onSuccess }: EmailConnectionMod
     try {
       console.log('Demo: Simulating connection request for email:', email.trim());
 
-      // Simulate API delay
-      await simulateApiDelay(1000);
 
       // Demo simulation - always succeeds unless it's the demo user's email
       if (email.trim() === 'alex.demo@tessera.app') {

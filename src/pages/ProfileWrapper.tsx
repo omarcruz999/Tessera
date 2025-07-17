@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import ProfileView from "../components/ProfileView";
-import { getMockUserById, simulateApiDelay } from "../data/mockData";
+import { getMockUserById } from "../data/mockData";
 
 interface User {
   user_id: string;
@@ -39,8 +39,6 @@ function ProfileWrapper() {
           return;
         }
         
-        // Simulate API delay
-        await simulateApiDelay(600);
         
         // Get mock user data
         const mockUser = getMockUserById(userId);

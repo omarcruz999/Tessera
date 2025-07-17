@@ -1,6 +1,5 @@
 import React, { useState, useRef, useContext } from 'react';
 import { UserContext } from '../UserContext';
-import { simulateApiDelay } from '../data/mockData';
 import { IoClose, IoCloudUpload, IoCheckmarkCircle } from 'react-icons/io5';
 
 interface VibeMatcherModalProps {
@@ -85,8 +84,6 @@ const VibeMatcherModal: React.FC<VibeMatcherModalProps> = ({ isOpen, onClose }) 
         }
       }
 
-      // Demo simulation
-      await simulateApiDelay(2000);
       
       // Mock response for demo
       const mockResponse = {

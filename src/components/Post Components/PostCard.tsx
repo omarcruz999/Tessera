@@ -1,6 +1,5 @@
 import { useState, useContext } from 'react';
 import { UserContext } from '../../UserContext';
-import { simulateApiDelay } from '../../data/mockData';
 import {
     FaRegComment,
     FaRetweet,
@@ -54,8 +53,6 @@ function PostCard({ user, post, onDelete, isOwnProfile }: PostCardProps) {
         if (!currentUser) return;
         
         try {
-            // Simulate API call delay
-            await simulateApiDelay(300);
             
             console.log(`Demo: Post ${post.id} deleted`);
             onDelete?.();
