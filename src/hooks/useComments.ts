@@ -98,7 +98,7 @@ export function useComments(postId: number | string) {
     }
   };
 
-  const remove = async (id: number | string, userId: string) => {
+  const remove = async (id: number | string,) => {
     try {
       // Remove comment locally
       setComments(prev => prev.filter(comment => comment.id !== String(id)));

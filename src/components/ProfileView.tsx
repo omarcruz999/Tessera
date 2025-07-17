@@ -5,7 +5,7 @@ import { getAvatarUrl } from '../utils/avatarUtils';
 import PostCard, { PostWithMedia } from '../components/Post Components/PostCard.tsx';
 import PostForm from './Post Components/PostForm.tsx';
 import PostModal from './Post Components/PostModal.tsx';
-import { DEMO_USER, getMockPostsForUser } from '../data/mockData';
+import { getMockPostsForUser } from '../data/mockData';
 
 interface ProfileUser {
   user_id: string;
