@@ -51,18 +51,32 @@ function PostCard({ user, post, onDelete, isOwnProfile }: PostCardProps) {
     } = useComments(Number(post.id))
 
     const handleDelete = async () => {
-        if (!currentUser) return;
+        if (!currentUser) {
+            console.error('No user logged in');
+            return;
+        }
         
         try {
+            console.log('Deleting post:', { postId: post.id, userId: currentUser.id });
             const deleted = await deleteMockPost(post.id, currentUser.id);
+            
             if (deleted) {
-                console.log(`Demo: Post ${post.id} deleted`);
-                onDelete?.();
+                console.log(`Demo: Post ${post.id} deleted successfully`);
+                // Ensure parent component updates
+                if (onDelete) {
+                    // Wait for state updates to complete
+                    await Promise.resolve();
+                    await onDelete();
+                } else {
+                    console.warn('No onDelete handler provided to PostCard');
+                }
             } else {
-                console.error('Failed to delete post: Post not found');
+                console.error('Failed to delete post: Post not found or unauthorized');
+                alert('Failed to delete post. Please try again.');
             }
         } catch (error) {
-            console.error('Failed to delete post:', error);
+            console.error('Error deleting post:', error);
+            alert('An error occurred while deleting the post.');
         }
     };
 

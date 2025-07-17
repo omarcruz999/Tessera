@@ -71,10 +71,14 @@ function ProfileView({ profileUser }: ProfileViewProps) {
     
     setPostsLoading(true);
     try {
+      // Small delay to ensure delete operation has completed
+      await new Promise(resolve => setTimeout(resolve, 0));
       
-      // Get mock posts for this user
+      // Get fresh mock posts for this user
       const mockPosts = getMockPostsForUser(displayedUserId);
-      setPosts(mockPosts);
+      
+      // Force a new array reference to ensure React detects the change
+      setPosts([...mockPosts]);
       console.log(`Refreshed ${mockPosts.length} mock posts for user ${displayedUserId}`);
     } catch (error) {
       console.error('Error refreshing mock posts:', error);

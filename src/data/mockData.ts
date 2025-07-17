@@ -364,11 +364,15 @@ export const addMockPost = (userId: string, text: string, media?: PostMedia[]): 
 
 // Function to delete a post
 export const deleteMockPost = async (postId: string, userId: string): Promise<boolean> => {
+  console.log('Attempting to delete post:', { postId, userId });
+  
   // Check demo user's posts
   if (userId === DEMO_USER.id) {
     const index = MOCK_POSTS.findIndex(post => post.id === postId);
+    console.log('Found post in MOCK_POSTS at index:', index);
     if (index !== -1) {
       MOCK_POSTS.splice(index, 1);
+      console.log('Post deleted from MOCK_POSTS');
       return true;
     }
   }
@@ -376,12 +380,15 @@ export const deleteMockPost = async (postId: string, userId: string): Promise<bo
   // Check other users' posts
   if (MOCK_USER_POSTS[userId]) {
     const index = MOCK_USER_POSTS[userId].findIndex(post => post.id === postId);
+    console.log('Found post in MOCK_USER_POSTS at index:', index);
     if (index !== -1) {
       MOCK_USER_POSTS[userId].splice(index, 1);
+      console.log('Post deleted from MOCK_USER_POSTS');
       return true;
     }
   }
 
+  console.log('Post not found in any mock data');
   return false;
 };
 
