@@ -26,3 +26,4 @@ dist-ssr
 *.sw?
 venv/
 server/src/vibe_matcher/venv/
+tessera-archived
